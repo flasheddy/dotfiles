@@ -1,0 +1,5 @@
+# Ignore SSH private keys and sensitive material; only track config/public keys.
+*
+!config
+!*.pub
+!.gitignore

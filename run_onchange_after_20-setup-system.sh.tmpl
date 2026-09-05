@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# keyd: {{ include "system/keyd/default.conf" | sha256sum }}
+
+set -euo pipefail
+
+# -----------------------------------------------------------------------------
+# Keyd keyboard remapping
+# -----------------------------------------------------------------------------
+
+if ! command -v keyd >/dev/null 2>&1; then
+  sudo pacman -S --needed --noconfirm keyd
+fi
+
+sudo mkdir -p /etc/keyd
+sudo cp "{{ joinPath .chezmoi.sourceDir "system/keyd/default.conf" }}" /etc/keyd/default.conf
+sudo systemctl enable --now keyd
+sudo keyd reload || true
+
+# -----------------------------------------------------------------------------
+# UFW firewall defaults
+# -----------------------------------------------------------------------------
+
+if command -v ufw >/dev/null 2>&1; then
+  sudo ufw default deny incoming
+  sudo ufw default allow outgoing
+  sudo ufw --force enable
+fi
+
+# -----------------------------------------------------------------------------
+# System maintenance timers
+# -----------------------------------------------------------------------------
+
+sudo systemctl enable --now fstrim.timer paccache.timer 2>/dev/null || true
+
+# -----------------------------------------------------------------------------
+# Background daemons
+# -----------------------------------------------------------------------------
+
+# Clash Verge proxy service
+if command -v clash-verge-service >/dev/null 2>&1; then
+  sudo systemctl enable clash-verge-service
+fi
+
+# PostgreSQL: initialize cluster if needed and start service
+if command -v initdb >/dev/null 2>&1; then
+  # Idempotency check runs via sudo: /var/lib/postgres/data is mode 700
+  # owned by postgres, so an unprivileged path test always fails and
+  # would re-run initdb over the existing cluster.
+  if ! sudo test -f /var/lib/postgres/data/PG_VERSION; then
+    echo ":: Initializing PostgreSQL database cluster..."
+    sudo -u postgres initdb -D /var/lib/postgres/data --locale=C.UTF-8 --encoding=UTF8 --data-checksums
+  fi
+  sudo systemctl enable --now postgresql || true
+fi

@@ -1,0 +1,9 @@
+# Repository-meta files: tracked in git for documentation, but must not be
+# deployed into $HOME by chezmoi apply.
+# - AGENTS.md would overwrite the pre-existing global ~/AGENTS.md (Codex).
+# - README.md would create an unwanted ~/README.md.
+AGENTS.md
+README.md
+
+# Local-only SSH host definitions (cloud servers/VPS): never manage or deploy.
+.ssh/config.local

@@ -1,0 +1,39 @@
+theme = "catppuccin_mocha"
+
+[editor]
+line-number = "relative" # Helps with modal navigation
+cursorline = true
+color-modes = true
+auto-format = true
+idle-timeout = 50
+true-color = true
+bufferline = "multiple"  # Shows open files when more than one
+# mouse = false            # Disable mouse for terminal-centric workflow
+
+# --- The "Pure Minimalism" UI ---
+gutters = ["diff", "diagnostics", "line-numbers", "spacer"]
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+# --- Soft Wrapping (Crucial for Markdown/Docs) ---
+[editor.soft-wrap]
+enable = true
+wrap-at-text-width = true
+
+[editor.statusline]
+left = ["mode", "spacer", "spinner", "file-name", "read-only-indicator", "file-modification-indicator"]
+right = ["diagnostics", "selections", "position", "file-encoding", "file-line-ending", "file-type", "version-control"]
+mode.normal = "NORMAL"
+mode.insert = "INSERT"
+mode.select = "SELECT"
+
+[editor.whitespace.render]
+space = "none"
+tab = "none"
+
+[editor.indent-guides]
+render = true
+character = "╎" # Subtle guide character

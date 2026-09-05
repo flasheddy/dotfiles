@@ -1,0 +1,7 @@
+# uv-managed Python tools
+# Installed via: uv tool install <name>
+# Generated from toolchains/raw-uv.txt
+litecli
+pgcli
+python-lsp-server
+ruff

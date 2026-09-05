@@ -1,0 +1,4 @@
+com.discordapp.Discord
+com.remnote.RemNote
+com.spotify.Client
+com.super_productivity.SuperProductivity

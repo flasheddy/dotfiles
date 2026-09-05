@@ -1,0 +1,18 @@
+# cargo-installed Rust crates
+# Installed via: cargo install <crate>
+# Generated from toolchains/raw-cargo.txt
+# Provided binaries:
+#   cargo-binstall -> cargo-binstall
+#   cargo-ndk -> cargo-ndk, cargo-ndk-env, cargo-ndk-runner, cargo-ndk-test
+#   cargo-update -> cargo-install-update, cargo-install-update-config
+#   cos-cli -> cos-cli
+#   ensub-cli -> esb
+#   wasm-pack -> wasm-pack
+#   xleak -> xleak
+cargo-binstall
+cargo-ndk
+cargo-update
+cos-cli
+ensub-cli
+wasm-pack
+xleak

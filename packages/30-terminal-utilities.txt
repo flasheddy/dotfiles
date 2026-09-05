@@ -1,0 +1,50 @@
+# 30-terminal-utilities.txt
+# Terminal emulators, editors, shell enhancements, Git tooling, and everyday CLI utilities.
+#
+# Stripped packages (direct dependencies of CachyOS config/meta packages kept here
+# that were present in the original package lists):
+#   - cachyos-fish-config: fastfetch, pkgfile
+#     (also pulls: bat, eza, fish, fish-autopair, fish-pure-prompt, fisher, fzf,
+#      tealdeer, ttf-fantasque-nerd)
+#   - cachyos-micro-settings: micro
+
+# Terminal emulators
+alacritty
+kitty
+
+# Editors
+helix
+nano
+nano-syntax-highlighting
+
+# Shell enhancements
+bash-completion
+starship
+zoxide
+
+# Git and version control
+git
+git-delta
+github-cli
+gitleaks
+lazygit
+
+# Everyday CLI utilities
+7zip
+btop
+diffutils
+dust
+fd
+hyperfine
+jless
+less
+procs
+ripgrep
+sd
+tinyxxd
+tokei
+unrar
+unzip
+vivid
+wget
+xh

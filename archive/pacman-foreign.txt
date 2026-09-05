@@ -1,0 +1,9 @@
+4kvideodownloaderplus
+android-studio
+catppuccin-cursors-mocha
+catppuccin-whiskers-bin
+cc-switch-bin
+clash-verge-rev-bin
+codex-desktop-linux
+pandoc-bin
+wechat-universal-bwrap
