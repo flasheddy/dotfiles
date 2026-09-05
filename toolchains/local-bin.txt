@@ -1,0 +1,4 @@
+# Standalone binaries manually installed in ~/.local/bin
+# (Not managed by uv, cargo, bun, rustup, or other toolchain managers.)
+exercism
+goose

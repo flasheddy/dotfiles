@@ -1,0 +1,100 @@
+# 10-desktop-environment.txt
+# COSMIC desktop environment, display server, display manager, audio stack, input methods,
+# fonts, themes, browsers, media codecs, Wayland utilities, and GUI applications.
+#
+# Stripped packages (direct dependencies of meta-packages kept here that were
+# present in the original package lists):
+#   - cosmic-session: noto-fonts, ttf-opensans, xorg-xwayland
+#   - cachyos-plymouth-*: plymouth
+
+# COSMIC desktop
+# cosmic-session pulls: cosmic-applets, cosmic-app-library, cosmic-bg, cosmic-comp,
+# cosmic-files, cosmic-greeter, cosmic-icon-theme, cosmic-idle, cosmic-launcher,
+# cosmic-notifications, cosmic-osd, cosmic-panel, cosmic-randr, cosmic-screenshot,
+# cosmic-settings, cosmic-settings-daemon, cosmic-workspaces, switcheroo-control, ...
+cosmic-initial-setup
+cosmic-player
+cosmic-session
+cosmic-store
+cosmic-terminal
+cosmic-text-editor
+cosmic-wallpapers
+
+# Display manager and display utilities
+mesa-utils
+polkit-kde-agent
+sddm
+
+# Audio stack
+# pipewire-jack: replaces legacy `jack` (AUR); provides libjack.so for
+# ffmpeg, mpv, fluidsynth, portaudio, wechat-universal-bwrap
+alsa-firmware
+alsa-plugins
+alsa-utils
+pavucontrol
+pipewire-alsa
+pipewire-jack
+pipewire-pulse
+playerctl
+wireplumber
+
+# Input methods and key remapping
+fcitx5
+fcitx5-configtool
+fcitx5-gtk
+fcitx5-mozc
+fcitx5-qt
+fcitx5-rime
+keyd
+
+# Fonts
+awesome-terminal-fonts
+cantarell-fonts
+inter-font
+noto-fonts-cjk
+noto-fonts-emoji
+ttf-bitstream-vera
+ttf-dejavu
+ttf-fira-code
+ttf-firacode-nerd
+ttf-jetbrains-mono
+ttf-jetbrains-mono-nerd
+ttf-liberation
+ttf-meslo-nerd
+
+# Theming, cursors, and wallpapers
+
+# Web browsers
+firefox
+ungoogled-chromium-bin
+
+# Media players and codecs
+ffmpegthumbnailer
+gst-libav
+gst-plugin-pipewire
+gst-plugin-va
+gst-plugins-bad
+gst-plugins-ugly
+libdvdcss
+libgsf
+libopenraw
+mpv
+poppler-glib
+resvg
+
+# Wayland and desktop integration
+grim
+gvfs-gphoto2
+gvfs-mtp
+mtpfs
+wl-clipboard
+xdg-user-dirs
+xdg-utils
+
+# Keyring and secrets
+gnome-keyring
+seahorse
+
+# GUI applications
+meld
+solaar

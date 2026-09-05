@@ -1,0 +1,110 @@
+# --- C ---
+[[language]]
+name = "c"
+formatter = { command = "clang-format", args = ["-i", "4"] }
+auto-format = true
+
+
+# --- Go (Backend) ---
+[[language]]
+name = "go"
+language-servers = [ "gopls", "golangci-lint-lsp" ]
+auto-format = true
+
+[language-server.gopls.config]
+# Helpful Go-specific features
+hints = { assignVariableTypes = true, compositeLiteralFields = true, constantValues = true, functionTypeParameters = true, parameterNames = true, rangeVariableTypes = true }
+
+[language-server.golangci-lint-lsp]
+command = "golangci-lint-langserver"
+
+
+# --- Rust (Backend) ---
+[[language]]
+name = "rust"
+auto-format = true
+
+
+# --- Python ---
+[[language]]
+name = "python"
+roots = ["pyproject.toml", "setup.py", "requirements.txt", ".git"]
+language-servers = [ "pylsp" ]
+formatter = { command = "ruff", args = ["format", "-"] }
+auto-format = true
+
+[language.debugger]
+name = "debugpy"
+transport = "tcp"
+command = "python3"
+args = ["-m", "debugpy.adapter"]
+
+[[language.debugger.templates]]
+name = "source"
+request = "launch"
+completion = [ { name = "entrypoint", completion = "filename", default = "main.py" } ]
+args = { program = "{0}" }
+
+
+# --- JS ---
+[[language]]
+name = "javascript"
+language-servers = [ "typescript-language-server" ]
+formatter = { command = "prettier" }
+auto-format = true
+
+[[language]]
+name = "typescript"
+language-servers = [ "typescript-language-server" ]
+auto-format = true
+
+
+# --- Bash ---
+[[language]]
+name = "bash"
+formatter = { command = "shfmt" }
+auto-format = true
+
+
+# --- Markdown (YouTube Scripts / Docs / Notes) ---
+[[language]]
+name = "markdown"
+# Only list Marksman here to keep the health check clean
+language-servers = [ "marksman" ]
+formatter = { command = "prettier" }
+auto-format = true
+
+[language-server.marksman]
+command = "marksman"
+args = ["server"]
+
+
+# --- TOML (Configs) ---
+[[language]]
+name = "toml"
+language-servers = [ "taplo" ]
+auto-format = true
+
+[language-server.taplo]
+command = "taplo"
+args = ["lsp", "stdio"]
+
+
+# --- SQL ---
+# Define the server
+[language-server.sql-language-server]
+command = "sql-language-server"
+args = [ "up", "--method", "stdio" ]
+
+[[language]]
+name = "sql"
+language-servers = [ "sql-language-server" ]
+formatter = { command = "pg_format" }
+auto-format = true
+
+
+# --- HTML ---
+[[language]]
+name = "html"
+auto-format = true
+formatter = { command = "prettier", args = ["--parser", "html"] }

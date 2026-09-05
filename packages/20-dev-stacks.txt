@@ -1,0 +1,51 @@
+# 20-dev-stacks.txt
+# Compilers, language runtimes (Go, Node, Java, Python), language servers,
+# build/test/linters, databases, and Android tooling.
+# Rust (rustup/cargo) and uv are managed as standalone toolchains; see toolchains/.
+#
+# Stripped packages (direct dependencies of base-devel kept here that were
+# present in the original package lists):
+#   - sudo, texinfo, which
+
+# Compilers and language runtimes
+go
+jdk17-openjdk
+nodejs-lts-jod
+npm
+perl
+postgresql
+python
+
+# Go toolchain
+delve
+golangci-lint
+gopls
+
+# Python tooling
+openai-codex
+python-adblock
+python-defusedxml
+python-packaging
+
+# Build, test, and lint tools
+bats
+bats-assert
+bats-file
+bats-support
+shellcheck
+shfmt
+taplo-cli
+
+# Language servers and documentation tools
+bash-language-server
+gobject-introspection
+lldb
+marksman
+zola
+
+# Database tools
+pgformatter
+
+# Android development
+android-tools
+android-udev

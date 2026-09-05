@@ -1,0 +1,8 @@
+# Bun global packages
+# Installed via: bun install -g <name>
+# Generated from toolchains/raw-bun.txt
+prettier
+sql-language-server
+typescript
+typescript-language-server
+vscode-langservers-extracted

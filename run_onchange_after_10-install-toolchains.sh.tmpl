@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# toolchains/uv.txt: {{ include "toolchains/uv.txt" | sha256sum }}
+# toolchains/cargo.txt: {{ include "toolchains/cargo.txt" | sha256sum }}
+# toolchains/bun.txt: {{ include "toolchains/bun.txt" | sha256sum }}
+# toolchains/go.txt: {{ include "toolchains/go.txt" | sha256sum }}
+
+set -euo pipefail
+
+export HOME="${HOME:-$(getent passwd "$(id -u)" | cut -d: -f6)}"
+
+# Locate the chezmoi source directory.
+if [ -z "${CHEZMOI_SOURCE_DIR:-}" ]; then
+  CHEZMOI_SOURCE_DIR="$(chezmoi source-path 2>/dev/null || echo "$HOME/.local/share/chezmoi")"
+fi
+
+export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$HOME/.bun/bin:$HOME/go/bin:$PATH"
+
+# -----------------------------------------------------------------------------
+# Bootstrap official standalone installers (only if not already present)
+# -----------------------------------------------------------------------------
+
+# Rust (rustup + cargo + rustc)
+if ! command -v rustup >/dev/null 2>&1 && [ ! -x "$HOME/.cargo/bin/rustup" ]; then
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+fi
+
+# uv (Python tooling)
+if ! command -v uv >/dev/null 2>&1 && [ ! -x "$HOME/.local/bin/uv" ]; then
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+fi
+
+# Bun (JavaScript/TypeScript runtime)
+if ! command -v bun >/dev/null 2>&1 && [ ! -x "$HOME/.bun/bin/bun" ]; then
+  curl -fsSL https://bun.sh/install | bash
+fi
+
+# Zed editor
+if ! command -v zed >/dev/null 2>&1 && [ ! -x "$HOME/.local/bin/zed" ] && [ ! -x "$HOME/.local/zed.app/bin/zed" ]; then
+  curl -f https://zed.dev/install.sh | sh
+fi
+
+# GHCup (Haskell toolchain: ghc, cabal, hls)
+if ! command -v ghcup >/dev/null 2>&1 && [ ! -x "$HOME/.ghcup/bin/ghcup" ]; then
+  BOOTSTRAP_HASKELL_NONINTERACTIVE=1 \
+  BOOTSTRAP_HASKELL_GHC_VERSION=recommended \
+  BOOTSTRAP_HASKELL_CABAL_VERSION=recommended \
+  BOOTSTRAP_HASKELL_INSTALL_HLS=1 \
+    curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+fi
+
+# Re-export PATH in case any of the above installers added new directories.
+export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$HOME/.bun/bin:$HOME/go/bin:$PATH"
+
+# -----------------------------------------------------------------------------
+# Restore sub-packages from toolchain manifests
+# -----------------------------------------------------------------------------
+
+install_uv_tools() {
+  local manifest="$CHEZMOI_SOURCE_DIR/toolchains/uv.txt"
+  [ -f "$manifest" ] || return 0
+  grep -v '^#' "$manifest" | grep -v '^$' | while read -r tool; do
+    uv tool install "$tool" || true
+  done
+}
+
+install_cargo_crates() {
+  local manifest="$CHEZMOI_SOURCE_DIR/toolchains/cargo.txt"
+  [ -f "$manifest" ] || return 0
+  grep -v '^#' "$manifest" | grep -v '^$' | while read -r crate; do
+    if ! cargo install --list | grep -q "^${crate} v"; then
+      cargo install "$crate" || true
+    fi
+  done
+}
+
+install_bun_packages() {
+  local manifest="$CHEZMOI_SOURCE_DIR/toolchains/bun.txt"
+  [ -f "$manifest" ] || return 0
+  grep -v '^#' "$manifest" | grep -v '^$' | while read -r pkg; do
+    bun add -g "$pkg" || true
+  done
+}
+
+install_go_tools() {
+  local manifest="$CHEZMOI_SOURCE_DIR/toolchains/go.txt"
+  [ -f "$manifest" ] || return 0
+  grep -v '^#' "$manifest" | grep -v '^$' | while read -r mod; do
+    go install "${mod}@latest" || true
+  done
+}
+
+install_uv_tools
+install_cargo_crates
+install_bun_packages
+install_go_tools
