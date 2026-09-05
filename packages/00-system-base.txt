@@ -1,0 +1,153 @@
+# 00-system-base.txt
+# Core CachyOS tooling, kernel utilities, hardware drivers, base system meta-packages,
+# filesystem/storage tools, networking, and system-wide services.
+#
+# Stripped packages (direct dependencies of meta-packages kept here that were
+# present in the original package lists):
+#   - base-devel: sudo, texinfo, which
+#   - cachyos-fish-config: fastfetch, pkgfile
+#   - cachyos-kernel-manager: chwd
+#   - cachyos-micro-settings: micro
+#   - cachyos-plymouth-*: plymouth
+#   - cosmic-session: noto-fonts, ttf-opensans, xorg-xwayland
+#
+# Meta-package pulls (informational; pulled automatically as dependencies —
+# do NOT add these components explicitly):
+#   - cachyos-fish-config: bat, eza, fastfetch, fish, fisher, fzf, pkgfile, tealdeer, ...
+#   - cachyos-kernel-manager: chwd, polkit, qt6-base, scx-manager
+#   - cachyos-micro-settings: micro
+#   - cachyos-plymouth-bootanimation / cachyos-plymouth-theme: plymouth
+#   - cachyos-rate-mirrors: rate-mirrors
+
+# Base system meta-packages
+base
+base-devel
+
+# CachyOS tooling and repository configuration
+cachy-update
+cachyos-fish-config
+cachyos-hello
+cachyos-hooks
+cachyos-kernel-manager
+cachyos-keyring
+cachyos-micro-settings
+cachyos-mirrorlist
+cachyos-packageinstaller
+cachyos-plymouth-bootanimation
+cachyos-plymouth-theme
+cachyos-rate-mirrors
+cachyos-settings
+cachyos-v3-mirrorlist
+cachyos-v4-mirrorlist
+cachyos-wallpapers
+
+# Boot, kernel, and firmware
+amd-ucode
+linux-cachyos
+linux-cachyos-headers
+linux-cachyos-lts
+linux-cachyos-lts-headers
+linux-cachyos-lts-nvidia-open
+linux-cachyos-nvidia-open
+linux-firmware
+mkinitcpio
+sof-firmware
+
+# Boot/power management utilities
+cpupower
+os-prober
+perf
+systemd-boot-manager
+
+# GPU and hardware drivers
+egl-wayland
+lib32-nvidia-utils
+lib32-opencl-nvidia
+lib32-vulkan-icd-loader
+lib32-vulkan-radeon
+libva-nvidia-driver
+libva-utils
+nvidia-settings
+nvidia-utils
+opencl-nvidia
+vulkan-icd-loader
+vulkan-radeon
+xf86-video-amdgpu
+
+# Filesystem and storage tools
+btrfs-progs
+cryptsetup
+device-mapper
+dmraid
+dosfstools
+duf
+e2fsprogs
+efibootmgr
+efitools
+exfatprogs
+f2fs-tools
+fsarchiver
+hdparm
+jfsutils
+logrotate
+lsscsi
+lvm2
+man-db
+man-pages
+mdadm
+mtools
+nfs-utils
+nilfs-utils
+plocate
+pv
+sg3_utils
+smartmontools
+usbutils
+xfsprogs
+
+# Hardware detection and power management
+accountsservice
+dmidecode
+hwdetect
+hwinfo
+power-profiles-daemon
+sysfsutils
+upower
+
+# Networking, Bluetooth, firewall, and remote access
+bind
+bluez
+bluez-hid2hci
+bluez-libs
+bluez-obex
+bluez-utils
+bpftune-git
+dnsmasq
+ethtool
+glances
+inetutils
+iptables
+iwd
+modemmanager
+netctl
+networkmanager
+networkmanager-openvpn
+nss-mdns
+openssh
+rsync
+s-nail
+ufw
+ufw-extras
+usb_modeswitch
+wpa_supplicant
+xl2tpd
+
+# Dotfiles and package-management helpers
+chezmoi
+lsb-release
+pacman-contrib
+paru
+rebuild-detector
+reflector
+shelly
+yay

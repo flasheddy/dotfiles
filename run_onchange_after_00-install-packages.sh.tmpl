@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# packages/00-system-base.txt: {{ include "packages/00-system-base.txt" | sha256sum }}
+# packages/10-desktop-environment.txt: {{ include "packages/10-desktop-environment.txt" | sha256sum }}
+# packages/20-dev-stacks.txt: {{ include "packages/20-dev-stacks.txt" | sha256sum }}
+# packages/30-terminal-utilities.txt: {{ include "packages/30-terminal-utilities.txt" | sha256sum }}
+# archive/pacman-foreign.txt: {{ include "archive/pacman-foreign.txt" | sha256sum }}
+# packages/flatpak.txt: {{ if stat "packages/flatpak.txt" }}{{ include "packages/flatpak.txt" | sha256sum }}{{ else }}absent{{ end }}
+
+set -euo pipefail
+
+export HOME="${HOME:-$(getent passwd "$(id -u)" | cut -d: -f6)}"
+
+# Locate the chezmoi source directory.
+if [ -z "${CHEZMOI_SOURCE_DIR:-}" ]; then
+  CHEZMOI_SOURCE_DIR="$(chezmoi source-path 2>/dev/null || echo "$HOME/.local/share/chezmoi")"
+fi
+
+PACMAN_FILES=(
+  "packages/00-system-base.txt"
+  "packages/10-desktop-environment.txt"
+  "packages/20-dev-stacks.txt"
+  "packages/30-terminal-utilities.txt"
+)
+
+# -----------------------------------------------------------------------------
+# Native repository packages
+# -----------------------------------------------------------------------------
+
+install_native() {
+  local manifest="$CHEZMOI_SOURCE_DIR/$1"
+  [ -f "$manifest" ] || return 0
+
+  # Strip inline/full-line comments and trim whitespace, then feed pure
+  # package names to pacman via stdin. Clean up the temp file directly:
+  # a trap on EXIT would reference this local out of scope under `set -u`.
+  local filtered
+  filtered=$(mktemp)
+  sed -e 's/#.*//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "$manifest" | grep -v '^$' > "$filtered"
+
+  if [ -s "$filtered" ]; then
+    sudo pacman -S --needed --noconfirm - < "$filtered" || \
+      echo ":: Warning: Some native packages from $1 failed to install; proceeding to AUR step..."
+  fi
+  rm -f "$filtered"
+}
+
+for pkgfile in "${PACMAN_FILES[@]}"; do
+  install_native "$pkgfile"
+done
+
+# -----------------------------------------------------------------------------
+# AUR / foreign packages
+# -----------------------------------------------------------------------------
+
+AUR_HELPER=""
+if command -v paru >/dev/null 2>&1; then
+  AUR_HELPER="paru"
+elif command -v yay >/dev/null 2>&1; then
+  AUR_HELPER="yay"
+fi
+
+FOREIGN_MANIFEST="$CHEZMOI_SOURCE_DIR/archive/pacman-foreign.txt"
+if [ -n "$AUR_HELPER" ] && [ -f "$FOREIGN_MANIFEST" ]; then
+  mapfile -t aur_pkgs < <(sed -e 's/#.*//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "$FOREIGN_MANIFEST" | grep -v '^$')
+  if [ ${#aur_pkgs[@]} -gt 0 ]; then
+    "$AUR_HELPER" -S --needed --noconfirm "${aur_pkgs[@]}"
+  fi
+fi
+
+# -----------------------------------------------------------------------------
+# Flatpak applications
+# -----------------------------------------------------------------------------
+
+FLATPAK_MANIFEST="$CHEZMOI_SOURCE_DIR/packages/flatpak.txt"
+if command -v flatpak >/dev/null 2>&1 && [ -f "$FLATPAK_MANIFEST" ]; then
+  # Ensure the flathub remote exists for the user installation (idempotent).
+  flatpak remote-add --if-not-exists --user flathub \
+    https://dl.flathub.org/repo/flathub.flatpakrepo || true
+
+  mapfile -t flatpaks < <(sed -e 's/#.*//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "$FLATPAK_MANIFEST" | grep -v '^$')
+  for app in "${flatpaks[@]}"; do
+    if flatpak info "$app" >/dev/null 2>&1; then
+      continue  # already installed — idempotent skip
+    fi
+    flatpak install -y --noninteractive --user flathub "$app" || \
+      echo ":: Warning: Flatpak app $app failed to install; continuing..."
+  done
+fi
