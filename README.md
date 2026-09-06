@@ -196,13 +196,21 @@ cma
 
 #### System / AUR Package
 
-1. Edit the appropriate modular manifest under `packages/`:
-   - `packages/00-system-base.txt` — core system, drivers, networking
-   - `packages/10-desktop-environment.txt` — desktop, fonts, GUI apps
-   - `packages/20-dev-stacks.txt` — compilers, runtimes, dev tools
-   - `packages/30-terminal-utilities.txt` — terminal, editors, CLI utilities
+1. Edit the appropriate manifest, by package origin:
+   - **Native** (official CachyOS/Arch repos) → one of the modular manifests
+     under `packages/`:
+     - `packages/00-system-base.txt` — core system, drivers, networking
+     - `packages/10-desktop-environment.txt` — desktop, fonts, GUI apps
+     - `packages/20-dev-stacks.txt` — compilers, runtimes, dev tools
+     - `packages/30-terminal-utilities.txt` — terminal, editors, CLI utilities
+   - **AUR-only** → `archive/pacman-foreign.txt` (installed with `paru`, or
+     `yay` as fallback). Never add AUR names to the `packages/*.txt`
+     manifests: they feed `pacman -S` directly, and an unknown name aborts
+     the whole install run (AGENTS.md §1.3). Unsure of the origin?
+     `pacman -Si <pkg>` succeeds for native packages; `paru -Si <pkg>`
+     reveals AUR origin.
 2. Run `cma`.
-3. The `run_onchange_after_00-install-packages.sh.tmpl` hook detects the changed checksum and installs the new package.
+3. The `run_onchange_after_00-install-packages.sh.tmpl` hook detects the changed checksum and installs new packages — native via `pacman`, AUR via `paru`/`yay`.
 
 #### Language CLI Tool
 
@@ -215,6 +223,11 @@ cma
 3. The `run_onchange_after_10-install-toolchains.sh.tmpl` hook installs the new tool.
 
 ### Updating Standalone Toolchains
+
+The primary update workflow is the `aup` Fish function (documented below).
+The raw commands here are the manual per-manager equivalents — a fallback
+reference for debugging, or for updating a single manager without a full
+`aup` run.
 
 ```bash
 # Rust
@@ -241,9 +254,9 @@ ghcup install cabal recommended
 tldr --update
 ```
 
-All of the above are automated by the custom Fish function `aup` (defined in
-`dot_config/fish/functions/aup.fish`), which runs every stage with isolation —
-one failure never aborts the rest — and prints an OK / SKIP / FAIL summary.
+The `aup` Fish function (defined in `dot_config/fish/functions/aup.fish`)
+automates all of the above with per-stage isolation — one failure never
+aborts the rest — and prints an OK / SKIP / FAIL summary.
 
 | Stage | Command | Notes |
 |---|---|---|
