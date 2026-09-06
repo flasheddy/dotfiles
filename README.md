@@ -332,6 +332,37 @@ Rule of thumb: agents may read freely, must document every install in a manifest
 
 ---
 
+## Security & Threat Model
+
+This repository is defended in depth. Four boundaries keep routine
+automation — human or AI — from becoming system compromise:
+
+1. **Isolated blast radius.** Standalone developer toolchains
+   (`toolchains/` → `~/.cargo`, `~/.local/bin`, `~/.bun`, `~/go`) live
+   entirely in user space and never touch Pacman or `/etc`. A broken or
+   malicious user-level tool cannot corrupt the system package layer,
+   and a system update cannot silently replace a pinned toolchain.
+2. **Controlled privilege escalation.** Root mutations exist in exactly
+   one place: the tracked, checksummed `run_onchange_*.sh.tmpl` hooks
+   (and the tracked `system/keyd/default.conf` they deploy). Hooks are
+   idempotent, degrade gracefully, and re-run only when their rendered
+   content changes. There are no ad-hoc sudo one-liners, and any
+   proposed change to a sudo-invoking template must declare a
+   `[ROOT IMPACT]` tag (AGENTS.md §2.7).
+3. **Zero-secret baseline.** No private keys, tokens, or credentials are
+   tracked — ever. Only `private_dot_ssh/config` is managed;
+   `private_dot_ssh/.gitignore` excludes key material, and hooks never
+   print secrets. Untrusted external code is never executed or ingested
+   into tracked state (AGENTS.md §3).
+4. **Human-gated AI mutations.** Agents operate under
+   [`AGENTS.md`](AGENTS.md): they read freely, but every state change
+   passes the §2.7 review protocol (ground-truth probes → constraint
+   audit → refined prompt → explicit approval), destructive operations
+   always require confirmation, and forbidden actions stop the task
+   rather than being refined around.
+
+---
+
 ## Safety & Troubleshooting
 
 ### The `chezmoi diff` Gotcha
