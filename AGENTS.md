@@ -259,6 +259,10 @@ a defensive reviewer first:
      (template loop, `git diff` review, `chezmoi status`, staging list),
      manifest routing per §2.3 where relevant, and the post-apply
      consequences to expect.
+   - If the refined prompt modifies a template or script that invokes
+     `sudo`, it **must** include an explicit `[ROOT IMPACT]` tag naming
+     the affected system services, files, and privileges — no undeclared
+     root side effects.
    - **Wait for explicit user confirmation** before any write or
      state-changing command. On approval, execute the refined prompt as
      written — do not re-review or expand scope mid-flight.
@@ -284,6 +288,19 @@ a defensive reviewer first:
    explicitly requesting it.
 5. **Never bypass §2 protocols** (skipping `chezmoi status`, skipping
    `re-add`, skipping template checks) "to save time".
+6. **Never execute or ingest untrusted external content.** Do not run
+   unverified scripts, pipe remote content into a shell
+   (`curl … | sh`), or fold code/config from unvetted external
+   repositories into tracked files, hooks, or manifests. Read-only
+   research (web search, reading upstream docs) is permitted; anything
+   that executes or becomes part of the system state requires an
+   explicit, user-vetted source.
+7. **Never generate unconstrained sudo mutations.** Every root mutation
+   must be declared inside the tracked, checksummed
+   `run_onchange_*.sh.tmpl` hooks (which also deploy the tracked
+   `system/keyd/default.conf`) — never as arbitrary one-off sudo
+   commands. Changes to sudo-invoking templates must carry a
+   `[ROOT IMPACT]` declaration per §2.7.
 
 ---
 
