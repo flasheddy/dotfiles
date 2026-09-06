@@ -1,4 +1,7 @@
-source /usr/share/cachyos-fish-config/cachyos-config.fish
+# CachyOS shell defaults (guarded: path exists only on CachyOS)
+if test -f /usr/share/cachyos-fish-config/cachyos-config.fish
+    source /usr/share/cachyos-fish-config/cachyos-config.fish
+end
 
 # Override greeting
 function fish_greeting
@@ -40,11 +43,11 @@ if status is-interactive
     abbr --add --global cms 'chezmoi status'
 
     # Prompt
-    starship init fish | source
+    type -q starship; and starship init fish | source
 
     # Smarter cd
-    zoxide init fish | source
+    type -q zoxide; and zoxide init fish | source
 
     # LS_COLORS generator
-    set -gx LS_COLORS (vivid generate catppuccin-mocha)
+    type -q vivid; and set -gx LS_COLORS (vivid generate catppuccin-mocha)
 end
