@@ -227,7 +227,7 @@ uv tool upgrade --all
 
 # Bun
 bun upgrade
-cd ~/.bun/install/global && bun update --latest && cd ~
+bun update --global --latest
 
 # Go
 gup update
@@ -236,9 +236,46 @@ gup update
 ghcup upgrade
 ghcup install ghc recommended
 ghcup install cabal recommended
+
+# tldr pages
+tldr --update
 ```
 
-There is also a custom Fish function `aup` (defined in `dot_config/fish/functions/aup.fish`) that runs all of the above in one shot.
+All of the above are automated by the custom Fish function `aup` (defined in
+`dot_config/fish/functions/aup.fish`), which runs every stage with isolation —
+one failure never aborts the rest — and prints an OK / SKIP / FAIL summary.
+
+| Stage | Command | Notes |
+|---|---|---|
+| **system** | `cachy-update` | pacman + AUR via arch-update (prompts for sudo) |
+| **rustup** | `rustup update` | Rust toolchain manager |
+| **cargo** | `cargo install-update -a` | all cargo-installed crates |
+| **uv-self** | `uv self update` | uv itself |
+| **uv-tools** | `uv tool upgrade --all` | all uv-managed Python tools |
+| **bun-self** | `bun upgrade` | bun itself |
+| **bun-globals** | `bun update --global --latest` | global npm packages, no `cd` needed |
+| **go** | `gup update` | all `go install`ed binaries |
+| **ghcup** | `ghcup upgrade` | ghcup itself (GHC/cabal via `ghcup install`) |
+| **tldr** | `tldr --update` | tldr page cache |
+
+| Flag | Effect |
+|---|---|
+| *(none)* | run the system stage and all toolchain stages |
+| `-t`, `--toolchains` (alias `--no-sys`) | skip the system stage — retry toolchains only |
+| `-s`, `--sys-only` | run only the system stage |
+| `-f`, `--force` | ignore the success cache and re-run every stage |
+| `-h`, `--help` | show usage |
+
+Behavior notes:
+
+- **Isolation:** each stage runs independently; a failure is recorded and the
+  remaining stages still execute. `aup` exits 1 if any stage failed.
+- **Guards:** a missing tool is reported as `SKIP (not installed)` instead of
+  aborting the run.
+- **Success cache:** a stage that succeeds writes a marker to
+  `~/.cache/aup/<stage>.ok` and is auto-skipped for the next 2 hours
+  (`SKIP (recently completed)`); `--force` bypasses. The cache is user-local
+  and intentionally unmanaged by chezmoi.
 
 ### Modifying Root Settings
 
@@ -279,6 +316,40 @@ This workstation is maintained with the help of AI agents (e.g. [Goose](https://
 > "Run a complete dotfiles refinement audit per AGENTS.md §2.5. Reconcile pacman, AUR, Flatpak, and standalone toolchains with the manifests, scan for drift and portability issues, and report findings before modifying any files."
 
 Rule of thumb: agents may read freely, must document every install in a manifest, and must ask before anything destructive.
+
+### Adopting This Workflow for Your Machine
+
+This repository is personal, but the workflow is portable. To adapt it to a
+different Arch-based machine:
+
+1. **Fork** this repository on GitHub, then bootstrap chezmoi from your fork:
+
+   ```bash
+   chezmoi init <your-fork-url>   # clones into ~/.local/share/chezmoi
+   ```
+
+   Do **not** run `chezmoi apply` yet — the manifests describe the original
+   machine, not yours.
+
+2. **Reconcile with a single agent prompt.** Point Goose (or any agent) at
+   the repo and ask for a manifest reconciliation audit:
+
+   > "I forked this dotfiles repository. Run a package and manifest
+   > reconciliation per AGENTS.md §2.5 Phase 2: compare my installed pacman,
+   > AUR, and Flatpak packages and my standalone toolchains against the
+   > manifests under `packages/`, `archive/`, and `toolchains/`. Report what
+   > to add or remove so the manifests describe THIS machine. Follow AGENTS.md
+   > and stop before modifying any files."
+
+3. **Review, then apply.** The agent reports Critical / Missing / Polish
+   findings and waits for approval (AGENTS.md §2.5 Phase 4). Approve the
+   manifest edits, then run `chezmoi apply` — the `run_onchange` hooks install
+   everything declaratively.
+
+Before committing to your fork, personalize the machine-specific parts:
+replace the hosts in `private_dot_ssh/config` (never commit key material —
+AGENTS.md §3), review `system/keyd/default.conf` against your keyboard, and
+trim fish abbreviations or environment variables you don't want.
 
 ---
 
