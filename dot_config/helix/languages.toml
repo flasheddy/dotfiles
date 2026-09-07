@@ -1,3 +1,80 @@
+# ============================================================================
+# Primary stack: Python / TypeScript / JavaScript / Bash (Web3 backend)
+# ============================================================================
+
+# --- Python (primary backend) ---
+[[language]]
+name = "python"
+roots = ["pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git"]
+language-servers = [ "basedpyright", "ruff" ]
+formatter = { command = "ruff", args = ["format", "-"] }
+auto-format = true
+
+[language.debugger]
+name = "debugpy"
+transport = "tcp"
+command = "python3"
+args = ["-m", "debugpy.adapter"]
+
+[[language.debugger.templates]]
+name = "source"
+request = "launch"
+completion = [ { name = "entrypoint", completion = "filename", default = "main.py" } ]
+args = { program = "{0}" }
+
+
+# --- TypeScript (Web3 backend: Node/bun services) ---
+[[language]]
+name = "typescript"
+roots = ["package.json", "tsconfig.json", ".git"]
+language-servers = [ "typescript-language-server" ]
+formatter = { command = "prettier", args = ["--parser", "typescript"] }
+auto-format = true
+
+
+# --- JavaScript (Web3 scripts / SDKs) ---
+[[language]]
+name = "javascript"
+roots = ["package.json", "jsconfig.json", ".git"]
+language-servers = [ "typescript-language-server" ]
+formatter = { command = "prettier", args = ["--parser", "babel"] }
+auto-format = true
+
+
+# --- Bash (ops / chezmoi hooks) ---
+[[language]]
+name = "bash"
+language-servers = [ "bash-language-server" ]
+formatter = { command = "shfmt", args = ["-i", "2", "-ci"] }
+auto-format = true
+
+
+# --- Server tuning for the primary stack ---
+
+# basedpyright: fast type checking + auto-imports (prereq: uv tool install basedpyright)
+[language-server.basedpyright]
+command = "basedpyright-langserver"
+args = ["--stdio"]
+
+[language-server.basedpyright.config.basedpyright.analysis]
+typeCheckingMode = "recommended"
+autoImportCompletions = true
+disableOrganizeImports = true # ruff owns import sorting
+
+# ruff native server: lint diagnostics + organize imports
+[language-server.ruff]
+command = "ruff"
+args = ["server"]
+
+# tsserver inlay hints (applies to both TS and JS buffers)
+[language-server.typescript-language-server.config]
+typescript.inlayHints.parameterNames.enabled = "all"
+typescript.inlayHints.variableTypes.enabled = true
+typescript.inlayHints.functionLikeReturnTypes.enabled = true
+javascript.inlayHints.parameterNames.enabled = "all"
+javascript.inlayHints.variableTypes.enabled = true
+
+
 # --- C ---
 [[language]]
 name = "c"
@@ -25,53 +102,12 @@ name = "rust"
 auto-format = true
 
 
-# --- Python ---
-[[language]]
-name = "python"
-roots = ["pyproject.toml", "setup.py", "requirements.txt", ".git"]
-language-servers = [ "pylsp" ]
-formatter = { command = "ruff", args = ["format", "-"] }
-auto-format = true
-
-[language.debugger]
-name = "debugpy"
-transport = "tcp"
-command = "python3"
-args = ["-m", "debugpy.adapter"]
-
-[[language.debugger.templates]]
-name = "source"
-request = "launch"
-completion = [ { name = "entrypoint", completion = "filename", default = "main.py" } ]
-args = { program = "{0}" }
-
-
-# --- JS ---
-[[language]]
-name = "javascript"
-language-servers = [ "typescript-language-server" ]
-formatter = { command = "prettier" }
-auto-format = true
-
-[[language]]
-name = "typescript"
-language-servers = [ "typescript-language-server" ]
-auto-format = true
-
-
-# --- Bash ---
-[[language]]
-name = "bash"
-formatter = { command = "shfmt" }
-auto-format = true
-
-
 # --- Markdown (YouTube Scripts / Docs / Notes) ---
 [[language]]
 name = "markdown"
 # Only list Marksman here to keep the health check clean
 language-servers = [ "marksman" ]
-formatter = { command = "prettier" }
+formatter = { command = "prettier", args = ["--parser", "markdown"] }
 auto-format = true
 
 [language-server.marksman]

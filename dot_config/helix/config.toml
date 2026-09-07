@@ -9,9 +9,22 @@ idle-timeout = 50
 true-color = true
 bufferline = "multiple"  # Shows open files when more than one
 # mouse = false            # Disable mouse for terminal-centric workflow
+end-of-line-diagnostics = "hint"   # Inline first diagnostic at end of line
+popup-border = "all"               # Bordered hover/signature-help popups
+rulers = [100]                     # Backend line-length guide (ruff/prettier)
+completion-trigger-len = 1         # Completion pops after first typed char
 
 # --- The "Pure Minimalism" UI ---
 gutters = ["diff", "diagnostics", "line-numbers", "spacer"]
+
+# --- LSP feedback ---
+[editor.lsp]
+display-inlay-hints = true   # TS/Python parameter & return-type hints inline
+display-messages = true      # Server status/progress messages
+
+# --- File picker ---
+[editor.file-picker]
+hidden = false               # Show dotfiles (dotfiles repo lives in .config); .gitignore still respected
 
 [editor.cursor-shape]
 insert = "bar"
@@ -25,7 +38,7 @@ wrap-at-text-width = true
 
 [editor.statusline]
 left = ["mode", "spacer", "spinner", "file-name", "read-only-indicator", "file-modification-indicator"]
-right = ["diagnostics", "selections", "position", "file-encoding", "file-line-ending", "file-type", "version-control"]
+right = ["diagnostics", "workspace-diagnostics", "selections", "position", "file-encoding", "file-line-ending", "file-type", "version-control"]
 mode.normal = "NORMAL"
 mode.insert = "INSERT"
 mode.select = "SELECT"
@@ -37,3 +50,15 @@ tab = "none"
 [editor.indent-guides]
 render = true
 character = "╎" # Subtle guide character
+
+# --- Keymaps: navigation & buffers ---
+# Helix merges these with defaults; same-key conflicts override, "no_op" unbinds.
+[keys.normal]
+C-s = ":w"                                      # Save (if terminal freezes on C-s: stty -ixon)
+C-d = ["half_page_down", "align_view_center"]   # Centered half-page down
+C-u = ["half_page_up", "align_view_center"]     # Centered half-page up
+"]" = { b = "goto_next_buffer" }                # Buffer cycling: ]b / [b
+"[" = { b = "goto_previous_buffer" }
+
+[keys.normal.space]
+x = ":buffer-close"                             # Space-x closes current buffer
