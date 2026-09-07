@@ -2,3 +2,4 @@
 # (Not managed by uv, cargo, bun, rustup, or other toolchain managers.)
 exercism
 goose
+# hx -> /usr/bin/helix (chezmoi-managed symlink: dot_local/bin/symlink_hx)

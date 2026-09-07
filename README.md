@@ -164,7 +164,7 @@ Defined in `~/.config/fish/config.fish`:
 
 | Abbreviation | Expands To | Purpose |
 |---|---|---|
-| `hx` | `helix` | Launch Helix editor |
+| `hx` | `helix` | Launch Helix editor (fish abbr + chezmoi symlink in ~/.local/bin) |
 | `cm` | `chezmoi cd` | Jump to the chezmoi source directory |
 | `cma` | `chezmoi apply` | Apply chezmoi-managed changes to the live system |
 | `cms` | `chezmoi status` | Show pending changes |
