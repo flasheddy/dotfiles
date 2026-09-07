@@ -37,7 +37,6 @@ fish_add_path $HOME/.local/bin $HOME/.bun/bin $HOME/go/bin
 
 if status is-interactive
     # Interactive command-line abbreviations
-    abbr --add --global hx helix
     abbr --add --global cm 'chezmoi cd'
     abbr --add --global cma 'chezmoi apply'
     abbr --add --global cms 'chezmoi status'
