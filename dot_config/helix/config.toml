@@ -55,8 +55,8 @@ character = "╎" # Subtle guide character
 # Helix merges these with defaults; same-key conflicts override, "no_op" unbinds.
 [keys.normal]
 C-s = ":w"                                      # Save (if terminal freezes on C-s: stty -ixon)
-C-d = ["half_page_down", "align_view_center"]   # Centered half-page down
-C-u = ["half_page_up", "align_view_center"]     # Centered half-page up
+C-d = ["page_cursor_half_down", "align_view_center"]   # Centered cursor half-page down
+C-u = ["page_cursor_half_up", "align_view_center"]     # Centered cursor half-page up
 "]" = { b = "goto_next_buffer" }                # Buffer cycling: ]b / [b
 "[" = { b = "goto_previous_buffer" }
 
