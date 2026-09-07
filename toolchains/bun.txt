@@ -2,6 +2,7 @@
 # Installed via: bun install -g <name>
 # Generated from toolchains/raw-bun.txt
 prettier
+fish-lsp
 sql-language-server
 typescript
 typescript-language-server
