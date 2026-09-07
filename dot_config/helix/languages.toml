@@ -102,30 +102,6 @@ name = "rust"
 auto-format = true
 
 
-# --- Markdown (YouTube Scripts / Docs / Notes) ---
-[[language]]
-name = "markdown"
-# Only list Marksman here to keep the health check clean
-language-servers = [ "marksman" ]
-formatter = { command = "prettier", args = ["--parser", "markdown"] }
-auto-format = true
-
-[language-server.marksman]
-command = "marksman"
-args = ["server"]
-
-
-# --- TOML (Configs) ---
-[[language]]
-name = "toml"
-language-servers = [ "taplo" ]
-auto-format = true
-
-[language-server.taplo]
-command = "taplo"
-args = ["lsp", "stdio"]
-
-
 # --- SQL ---
 # Define the server
 [language-server.sql-language-server]
@@ -139,8 +115,66 @@ formatter = { command = "pg_format" }
 auto-format = true
 
 
+# ============================================================================
+# Document & configuration formats: Markdown / HTML / TOML / JSON / JSONC / YAML
+# ============================================================================
+
+# --- Markdown (YouTube Scripts / Docs / Notes) ---
+[[language]]
+name = "markdown"
+# Only list Marksman here to keep the health check clean
+language-servers = [ "marksman" ]
+formatter = { command = "prettier", args = ["--parser", "markdown"] }
+auto-format = true
+
+[language-server.marksman]
+command = "marksman"
+args = ["server"]
+
+
 # --- HTML ---
 [[language]]
 name = "html"
-auto-format = true
+# Only list vscode-html-language-server to keep the health check clean
+language-servers = [ "vscode-html-language-server" ]
 formatter = { command = "prettier", args = ["--parser", "html"] }
+auto-format = true
+
+
+# --- TOML (Configs) ---
+[[language]]
+name = "toml"
+language-servers = [ "taplo" ]
+formatter = { command = "taplo", args = ["format", "-"] }
+auto-format = true
+
+[language-server.taplo]
+command = "taplo"
+args = ["lsp", "stdio"]
+
+
+# --- JSON / JSONC (configs, tsconfig, package manifests) ---
+[[language]]
+name = "json"
+language-servers = [ "vscode-json-language-server" ]
+formatter = { command = "prettier", args = ["--parser", "json"] }
+auto-format = true
+
+[[language]]
+name = "jsonc"
+language-servers = [ "vscode-json-language-server" ]
+formatter = { command = "prettier", args = ["--parser", "jsonc"] }
+auto-format = true
+
+
+# --- YAML (CI pipelines / Compose / K8s manifests) ---
+[[language]]
+name = "yaml"
+# Only list yaml-language-server to keep the health check clean
+language-servers = [ "yaml-language-server" ]
+formatter = { command = "prettier", args = ["--parser", "yaml"] }
+auto-format = true
+
+[language-server.yaml-language-server]
+command = "yaml-language-server"
+args = ["--stdio"]
