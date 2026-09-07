@@ -164,10 +164,17 @@ Defined in `~/.config/fish/config.fish`:
 
 | Abbreviation | Expands To | Purpose |
 |---|---|---|
-| `hx` | `helix` | Launch Helix editor (fish abbr + chezmoi symlink in ~/.local/bin) |
 | `cm` | `chezmoi cd` | Jump to the chezmoi source directory |
 | `cma` | `chezmoi apply` | Apply chezmoi-managed changes to the live system |
 | `cms` | `chezmoi status` | Show pending changes |
+
+### PATH Symlinks
+
+Managed by chezmoi via `dot_local/bin/symlink_*` (tracked in `toolchains/local-bin.txt`):
+
+| Symlink | Target | Purpose |
+|---|---|---|
+| `hx` | `/usr/bin/helix` | Launch Helix editor (chezmoi-managed symlink in ~/.local/bin) |
 
 ### Editing Files
 
