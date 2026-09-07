@@ -49,6 +49,18 @@ formatter = { command = "shfmt", args = ["-i", "2", "-ci"] }
 auto-format = true
 
 
+# --- Fish (daily shell / dotfiles) ---
+[[language]]
+name = "fish"
+language-servers = [ "fish-lsp" ]
+formatter = { command = "fish_indent" }
+auto-format = true
+
+[language-server.fish-lsp]
+command = "fish-lsp"
+args = ["start"]
+
+
 # --- Server tuning for the primary stack ---
 
 # basedpyright: fast type checking + auto-imports (prereq: uv tool install basedpyright)
