@@ -267,6 +267,37 @@ a defensive reviewer first:
      state-changing command. On approval, execute the refined prompt as
      written — do not re-review or expand scope mid-flight.
 
+### 2.8 Git Commit Discipline & Attribution
+
+Applies to every commit an agent creates or rewrites in this repository.
+
+1. **Conventional Commits, scope mandatory.** Format:
+   `type(scope): subject`. The scope is never optional; an unscoped
+   `type: subject` commit is a defect. Use the narrowest accurate scope
+   — established scopes include `agents`, `aup`, `fcitx5`, `fish`,
+   `git`, `helix`, `toolchains` — and introduce a new single-token
+   lowercase scope only when none fit.
+2. **Goose co-author attribution.** Every agent-authored commit carries
+   exactly one trailer, separated from the subject/body by a blank
+   line:
+
+   ```text
+   Co-authored-by: goose <271095942+aaif-goose@users.noreply.github.com>
+   ```
+
+   This is the verified GitHub identity of goose (org `aaif-goose`, ID
+   271095942) — never substitute another address, and never drop the
+   trailer when amending or rewriting.
+3. **History rewrites: scripted, backed up, remote restored.** No
+   interactive rebases (§2.6). Use `git filter-repo` with a scripted
+   callback. Before rewriting, create a `git bundle` backup *outside*
+   the repo — filter-repo rewrites all refs, expires reflogs, and gc's,
+   so in-repo branches are not backups. Afterwards restore the `origin`
+   remote. The rewrite plan itself goes through §2.7 review.
+4. **Force-push gate.** Publishing rewritten history requires explicit
+   user confirmation and must use `git push --force-with-lease`, never
+   bare `--force`.
+
 ---
 
 ## 3. Forbidden Actions
