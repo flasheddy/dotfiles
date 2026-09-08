@@ -1,6 +1,13 @@
+[commit]
+	gpgsign = true
+[gpg]
+	format = ssh
+[gpg "ssh"]
+	allowedSignersFile = ~/.config/git/allowed_signers
 [user]
 	name = flasheddy
 	email = 326801595@qq.com
+	signingkey = ~/.ssh/id_ed25519.pub
 [init]
 	defaultBranch = main
 [url "git@github.com:"]
