@@ -16,6 +16,8 @@
 	syntax-theme = Catppuccin Mocha
 [merge]
 	conflictStyle = zdiff3
+[rerere]
+	enabled = true
 [credential "https://github.com"]
 	helper = 
 	helper = !/usr/bin/gh auth git-credential
@@ -24,3 +26,7 @@
 	helper = !/usr/bin/gh auth git-credential
 [pull]
 	rebase = true
+[push]
+	autoSetupRemote = true
+[rebase]
+	autoStash = true
