@@ -39,7 +39,7 @@ Three `run_onchange_after_*.sh.tmpl` hooks re-run whenever their rendered conten
 
 1. **`00-install-packages`** — installs/updates native Pacman packages, AUR packages (`paru`/`yay`), and Flatpaks from the manifests.
 2. **`10-install-toolchains`** — bootstraps `rustup`, `uv`, `bun`, `zed`, `ghcup` if missing, then restores sub-tools from `toolchains/*.txt`.
-3. **`20-setup-system`** — root-level services: deploys `system/keyd/default.conf` → `/etc/keyd/default.conf` and reloads `keyd`; sets UFW defaults (deny incoming, allow outgoing, enable); enables `fstrim.timer` and `paccache.timer`; enables `clash-verge-service` and initializes/starts `postgresql` if installed.
+3. **`20-setup-system`** — root-level services: deploys `system/keyd/default.conf` → `/etc/keyd/default.conf` and reloads `keyd`; sets UFW defaults (deny incoming, allow outgoing, enable); enables `fstrim.timer` and `paccache.timer`; enables `clash-verge-service` and initializes/starts `postgresql` if installed. Also ensures the user-level symlink `~/AGENTS.md` → `~/.AGENTS.md` exists (no sudo).
 
 ### Key Remapping
 
@@ -193,7 +193,7 @@ This workstation is maintained with AI agents (e.g. [Goose](https://github.com/b
 
 **The binding contract for all agents is [`AGENTS.md`](AGENTS.md).** Point any agent at it before letting it touch this repository or the live system.
 
-> **Context-loading note:** agents that support context files (goose: `AGENTS.md`/`.goosehints`) auto-load them from the working directory up to the repo root into every session — this repo's `AGENTS.md` qualifies. Rules living *above* the repo root (e.g. a global `~/AGENTS.md`) are not auto-loaded; mirror them globally via `~/.config/goose/.goosehints` if needed.
+> **Context-loading note:** agents that support context files (goose: `AGENTS.md`/`.goosehints`) auto-load them from the working directory up to the repo root into every session — this repo's `AGENTS.md` qualifies. Rules living *above* the repo root are covered too: global inlining via `~/.config/goose/.goosehints` is active and managed by chezmoi (`dot_config/goose/dot_goosehints.tmpl` renders `dot_AGENTS.md` inline into every goose session), and hook 20 keeps `~/AGENTS.md` symlinked to `~/.AGENTS.md` for tools that read the home path directly.
 
 ### Safe Instruction Patterns
 
@@ -238,9 +238,11 @@ Before committing to your fork, personalize the machine-specific parts: replace 
 ├── archive/
 │   ├── pacman-foreign.txt                 # AUR package manifest (paru/yay)
 │   └── pacman-native.txt                  # legacy native package dump
+├── dot_AGENTS.md                          # global agent rules & safety floor → ~/.AGENTS.md
 ├── dot_config/
 │   ├── alacritty/                         # Alacritty terminal config
 │   ├── fish/                              # config.fish, completions/bun.fish, conf.d/rustup.fish, functions/aup.fish
+│   ├── goose/                             # Goose agent config (config.yaml, dot_goosehints.tmpl → .goosehints)
 │   ├── helix/                             # Helix editor config
 │   ├── kitty/                             # Kitty terminal config
 │   ├── private_fcitx5/                    # fcitx5 input method (Mozc/Rime) config

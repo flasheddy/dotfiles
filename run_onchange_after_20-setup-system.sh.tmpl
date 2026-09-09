@@ -52,3 +52,15 @@ if command -v initdb >/dev/null 2>&1; then
   fi
   sudo systemctl enable --now postgresql || true
 fi
+
+# -----------------------------------------------------------------------------
+# User-level agent rules symlink
+# -----------------------------------------------------------------------------
+
+# ~/.AGENTS.md is deployed by chezmoi (dot_AGENTS.md); also expose it as
+# ~/AGENTS.md so agents resolve the global rules from either path. Skip if
+# anything (file or symlink) already occupies the path — strictly idempotent,
+# no sudo required.
+if [ ! -e "$HOME/AGENTS.md" ] && [ ! -L "$HOME/AGENTS.md" ]; then
+  ln -s .AGENTS.md "$HOME/AGENTS.md"
+fi
