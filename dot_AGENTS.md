@@ -130,6 +130,21 @@ reviewer:
      approval, execute as written — no re-review or scope expansion
      mid-flight.
 
+### GUI Privilege Escalation Protocol
+
+Non-interactive agent shells have no TTY and cannot answer terminal `sudo`
+password prompts — a bare interactive `sudo` hangs the session.
+
+1. Probe whether passwordless sudo is active: `sudo -n true 2>/dev/null`.
+2. If a password is required, agents **MUST** use `pkexec <command>` instead
+   of bare `sudo`. `pkexec` delegates authentication via D-Bus to the active
+   desktop Polkit agent (`polkit-kde-agent`), which presents a modal prompt
+   to the operator instead of hanging the shell.
+3. Bound every `pkexec` call with `timeout` (e.g. `timeout 150 pkexec …`) so
+   an unanswered prompt cannot hang the session, and state the exact command
+   to the operator before triggering it, so the modal prompt is expected.
+   The operator-approved command then runs unchanged — no scope expansion.
+
 ### Forbidden Actions (Workstation-Wide)
 
 In addition to the Hard Safety Constraints above:
