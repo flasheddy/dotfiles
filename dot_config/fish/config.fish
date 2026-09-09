@@ -37,7 +37,8 @@ fish_add_path $HOME/.local/bin $HOME/.bun/bin $HOME/go/bin
 
 if status is-interactive
     # Interactive command-line abbreviations
-    abbr --add --global cm 'chezmoi cd'
+    # native cd: `chezmoi cd` wraps a subshell in a chezmoi process that pkill cleanup kills, taking the terminal with it
+    abbr --add --global cm 'cd ~/.local/share/chezmoi'
     abbr --add --global cma 'chezmoi apply'
     abbr --add --global cms 'chezmoi status'
 

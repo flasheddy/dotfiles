@@ -113,7 +113,7 @@ Defined in `~/.config/fish/config.fish`:
 
 | Abbreviation | Expands To | Purpose |
 |---|---|---|
-| `cm` | `chezmoi cd` | jump to the chezmoi source directory |
+| `cm` | `cd ~/.local/share/chezmoi` | jump to the chezmoi source directory (native `cd` — no wrapper process) |
 | `cma` | `chezmoi apply` | apply source changes to the live system |
 | `cms` | `chezmoi status` | show pending changes |
 
