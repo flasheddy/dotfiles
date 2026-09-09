@@ -22,7 +22,6 @@ golangci-lint
 gopls
 
 # Python tooling
-openai-codex
 python-adblock
 python-defusedxml
 python-packaging
