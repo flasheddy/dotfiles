@@ -7,16 +7,6 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
-  "agent_servers": {
-    "codex-acp": {
-      "default_config_options": {
-        "collaboration_mode": "default",
-        "model": "kimi-k3",
-        "reasoning_effort": "medium"
-      },
-      "type": "registry"
-    }
-  },
   "format_on_save": "on",
   "helix_mode": true,
   "vim": {
