@@ -7,3 +7,15 @@ README.md
 
 # Local-only SSH host definitions (cloud servers/VPS): never manage or deploy.
 .ssh/config.local
+
+# Goose: OAuth token caches, secret stores, and lockfiles hold credentials and
+# must never be tracked in the source state or deployed (§3.1 secrets rule).
+# Only dot_config/goose/config.yaml and dot_goosehints are managed.
+.config/goose/secrets.yaml
+.config/goose/secrets.yaml.lock
+.config/goose/chatgpt_codex
+.config/goose/chatgpt_codex/**
+.config/goose/gemini_oauth
+.config/goose/gemini_oauth/**
+.config/goose/xai_oauth
+.config/goose/xai_oauth/**
