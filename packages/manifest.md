@@ -49,7 +49,7 @@ Key groups:
 - Language runtimes: Go, OpenJDK 17, Node.js LTS (+ `npm`), Perl, PostgreSQL,
   Python
 - Go toolchain (`delve`, `golangci-lint`, `gopls`)
-- Python tooling (`openai-codex`, plus selected Python libraries)
+- Python tooling (selected Python libraries)
 - Build/test/linters (`bats*`, `shellcheck`, `shfmt`, `taplo-cli`)
 - Language servers and documentation tools (`bash-language-server`, `lldb`,
   `marksman`, `pandoc-bin`, `zola`)
