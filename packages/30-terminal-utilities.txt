@@ -43,7 +43,6 @@ ripgrep
 sd
 tinyxxd
 tokei
-unrar
 unzip
 vivid
 wget
