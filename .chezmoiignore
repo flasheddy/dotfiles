@@ -19,3 +19,13 @@ README.md
 .config/goose/gemini_oauth/**
 .config/goose/xai_oauth
 .config/goose/xai_oauth/**
+
+# Repository metadata and package manifests
+archive
+archive/**
+packages
+packages/**
+system
+system/**
+toolchains
+toolchains/**
