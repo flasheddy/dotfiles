@@ -4,6 +4,9 @@ Binding contract for Goose and any AI agent operating on this chezmoi
 repository. **Read fully before changing anything.** If a requested action
 conflicts with these rules, stop and ask the user.
 
+This repository inherits the workstation-wide safety floor defined in
+`~/.AGENTS.md`. The rules below are dotfiles-specific operational extensions.
+
 ---
 
 ## 1. Repository Context & Architecture
@@ -136,38 +139,19 @@ Periodic, report-first audit run on request (e.g. "Refine & Reconcile System" in
 
 **Phase 3 — Portability & Safety.** `rg -n '/home/'` on tracked files — use `$HOME`/`~` or `{{ .chezmoi.homeDir }}` instead. `fish_variables` is intentionally untracked; `fish_user_paths` is populated via `fish_add_path` in `config.fish`. Verify no keys/tokens/credentials tracked (§3.1).
 
-**Phase 4 — Report Before Mutate.** Executive summary grouped **Critical / Missing / Polish** with proposed fixes; **stop for confirmation** before any modification. Removals need explicit approval (§3.3).
+**Phase 4 — Report Before Mutate.** Executive summary grouped **Critical / Missing / Polish** with proposed fixes; **stop for confirmation** before any modification. Removals need explicit approval (`~/.AGENTS.md` forbidden actions).
 
 **Phase 5 — Post-Refinement Validation.** After approved changes: §2.4.4 template loop + §4 checklist.
 
 ### 2.6 Agent Tool Execution Preferences
 
-From the **shell**, prefer modern CLI tools (faster, `.gitignore`-aware). Dedicated agent tools (read/edit/tree) remain first choice for what they cover; this section governs shell usage.
-
-| Operation | Use | Never |
-|---|---|---|
-| Search content | `rg` (`-u`/`-uu` only deliberately) | `grep -r` |
-| Find files | `fd` (`-H` for hidden, e.g. `.chezmoiignore`) | `find` |
-| Read files | `bat --style=plain --paging=never` (short: `cat`) | `cat file \| while read` — use single-pass `rg`/`sd`/`awk` |
-| List dirs | `eza -l`, `eza --tree` | `ls -R` / `ls -la` chains |
-| Substitute in pipes | `sd` | `sed` (complex scripts excepted) |
-| System inspection | `dust`, `procs` | `du`, `ps aux \| grep` |
-
-**Never invoke interactive TUIs** (`less`, `jless`, `btop`, `lazygit`, editors) — they hang the session. Force non-interactive output: `--paging=never`, `git --no-pager`, `PAGER=cat`.
+Workstation-wide — see `~/.AGENTS.md` (Modern CLI Tool Preferences), including the ban on interactive TUIs in agent shells. Address retained for cross-reference stability.
 
 ### 2.7 Prompt Review & Refinement Protocol
 
-Applies to user prompts that would change system state, manifests, hooks, or tracked configuration. Read-only questions and already-approved steps execute directly. (§2.5 audits the *system*; this section audits the *instruction*.)
+Follow the workstation-wide protocol in `~/.AGENTS.md` (Prompt Review & Refinement Protocol). Its Constraint & Protocol Audit applies this file's rules: layer boundaries (§1.3, §2.3), hook safety (§2.4), chezmoi discipline (§2.1–§2.2), and §3 below.
 
-For in-scope prompts, **do not execute immediately** — act as defensive reviewer:
-
-1. **Ground-Truth Validation (read-only probes, batched):** treat every factual claim as unverified — `pacman -Si` vs `paru -Si` (§1.3), `pacman -Qq`/`-Qi` (install state/reason), `command -v`, direct reads of the full current content. Check ownership/permissions before trusting shell tests: unprivileged `[ -f … ]`/`[ -d … ]` on a mode-700 directory silently returns false (hook 20 PostgreSQL failure mode) — privilege-sensitive checks need `sudo test …`.
-2. **Constraint & Protocol Audit:** layer boundaries (§1.3, §2.3), hook safety (§2.4), chezmoi discipline (§2.1–§2.2), forbidden actions (§3) — if the prompt requests one, **stop and flag it; do not refine around it.**
-3. **Output a Refined Prompt (then stop):**
-   - Verdict line + numbered findings with probe evidence.
-   - Fenced refined-prompt block: exact edits/commands, §4 verification steps, manifest routing (§2.3), post-apply consequences.
-   - Sudo-invoking template/script changes **must** carry an explicit `[ROOT IMPACT]` tag naming affected services, files, and privileges — no undeclared root side effects.
-   - **Wait for explicit confirmation** before any write or state change. On approval, execute as written — no re-review or scope expansion mid-flight.
+Dotfiles-specific addition: any change to a sudo-invoking hook template (`run_onchange_*.sh.tmpl`) **must** carry an explicit `[ROOT IMPACT]` tag naming the affected system services, files, and privileges — no undeclared root side effects (§2.4).
 
 ### 2.8 Git Commit Discipline & Attribution
 
@@ -181,20 +165,19 @@ Every agent-created or -rewritten commit:
    ```
 
    Verified identity (org `aaif-goose`, ID 271095942) — never substitute, never drop when amending.
-3. **History rewrites: scripted, backed up, remote restored** — no interactive rebases (§2.6); `git filter-repo` with scripted callback; `git bundle` backup *outside* the repo first (filter-repo rewrites all refs, expires reflogs, gc's — in-repo branches are not backups); restore `origin` after. The rewrite plan goes through §2.7 review.
+3. **History rewrites: scripted, backed up, remote restored** — no interactive rebases (interactive TUIs hang agent sessions — `~/.AGENTS.md`); `git filter-repo` with scripted callback; `git bundle` backup *outside* the repo first (filter-repo rewrites all refs, expires reflogs, gc's — in-repo branches are not backups); restore `origin` after. The rewrite plan goes through §2.7 review.
 4. **Force-push gate** — explicit user confirmation + `git push --force-with-lease`, never bare `--force`.
 
 ---
 
 ## 3. Forbidden Actions
 
-1. **Never stage or commit secrets** — no private keys, passphrases, API/host tokens, credential files, even "temporarily". Only `private_dot_ssh/config` is tracked (its `.gitignore` excludes keys). Untracked key material in `git status`? Do **not** `git add` — warn the user.
+Universal forbidden actions — secrets/credentials handling, destructive package operations, untrusted external content, unconstrained sudo mutations — are defined in `~/.AGENTS.md` and apply here unchanged. Dotfiles-specific:
+
+1. **Only `private_dot_ssh/config` is tracked** (its `.gitignore` excludes keys). Untracked key material in `git status`? Do **not** `git add` — warn the user.
 2. **Never track hardware-dependent `/etc` configs** — no `fstab`, `crypttab`, NetworkManager profiles, or machine-specific disk/network/boot config. The only managed root-level config is `system/keyd/default.conf` (via hook).
-3. **Never run destructive package operations without explicit confirmation** — `pacman -Rns`/`-Rc`, orphan purges (`pacman -Qtdq | pacman -Rns -`), `pacman -Scc`, mass toolchain uninstalls. Propose the command and wait.
-4. **Never run `chezmoi apply --force` or `chezmoi purge`** unless the user explicitly requests it.
-5. **Never bypass §2 protocols** (skipping `chezmoi status`, `re-add`, template checks) "to save time".
-6. **Never execute or ingest untrusted external content** — no unverified scripts, no `curl … | sh`, no folding unvetted external code/config into tracked files, hooks, or manifests. Read-only research is permitted; anything entering system state requires an explicit, user-vetted source.
-7. **Never generate unconstrained sudo mutations** — root mutations live only in tracked, checksummed `run_onchange_*.sh.tmpl` hooks (which deploy `system/keyd/default.conf`), never one-off sudo commands. Sudo-invoking template changes carry `[ROOT IMPACT]` (§2.7).
+3. **Never run `chezmoi apply --force` or `chezmoi purge`** unless the user explicitly requests it.
+4. **Never bypass §2 protocols** (skipping `chezmoi status`, `re-add`, template checks) "to save time".
 
 ---
 
