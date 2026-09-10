@@ -68,13 +68,14 @@ upstream installers, kept **out of Pacman** to avoid version conflicts:
 
 Before modifying **any** file:
 
-```bash
+```fish
 chezmoi status    # pending source-vs-target differences
-chezmoi diff      # exact content an apply would change
+chezmoi diff      # generated target state vs. live destination; apply preview
 ```
 
 - Report unexpected drift; never "fix" it silently.
-- Gotcha: `chezmoi diff` compares source → disk; it does **not** show your unapplied source-tree edits.
+- `chezmoi diff` compares generated target state with the live destination and
+  includes unapplied source-tree changes that affect managed targets.
 
 ### 2.2 Editing Workflow
 
@@ -115,11 +116,12 @@ The three hooks run with `set -euo pipefail` and execute real system changes (in
 3. **Checksum headers** — keep `{{ include "..." | sha256sum }}` lines accurate; they trigger `run_onchange` re-execution.
 4. **Syntax verification (mandatory before apply/commit)**:
 
-   ```bash
+   ```fish
    cd ~/.local/share/chezmoi
-   for f in run_onchange_*.sh.tmpl; do
-     chezmoi execute-template < "$f" | bash -n || echo "FAIL: $f"
-   done
+   for f in run_onchange_*.sh.tmpl
+       chezmoi execute-template < "$f" | bash -n
+       or echo "FAIL: $f"
+   end
    ```
 
 5. Never let a hook print secrets, tokens, or full `env` output.
@@ -185,7 +187,7 @@ Universal forbidden actions — secrets/credentials handling, destructive packag
 
 After any change an agent makes, run and report:
 
-```bash
+```fish
 chezmoi status                                          # expected drift only
 chezmoi diff                                            # pending apply preview
 chezmoi execute-template < <changed-hook> | bash -n     # if hooks changed

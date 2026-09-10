@@ -101,7 +101,7 @@ Dotfiles managed under `dot_config/` include:
 - **Fish shell**: `config.fish`, completions (`bun.fish`), functions
   (`aup.fish`), and Pure prompt variables (`private_fish_variables`). PATH is
   configured to include standalone toolchain directories (`~/.local/bin`,
-  `~/.cargo/bin`, `~/.bun/bin`, `$(go env GOPATH)/bin`).
+  `~/.cargo/bin`, `~/.bun/bin`, `~/go/bin`).
 - **Helix editor**: `config.toml`, `languages.toml`.
 - **Zed editor**: `private_settings.json`, `keymap.json` (no database/state
   caches tracked).

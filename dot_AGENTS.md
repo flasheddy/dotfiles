@@ -99,6 +99,28 @@ cover; this section governs shell usage.
 editors) — they hang the session. Force non-interactive output:
 `--paging=never`, `git --no-pager`, `PAGER=cat`.
 
+### Shell Dialect & Syntax (Fish Shell)
+
+Direct Shell Commands & Operator Snippets MUST use native Fish syntax:
+
+- Variables: use `set -gx VAR val` for global variables. For scoped variables,
+  use `begin; set -lx VAR val; cmd; end` or `env VAR=val cmd`.
+- Prohibit `export` and inline `VAR=val cmd` assignments.
+- Conditionals: use `if test ...; ...; end`. Prohibit `then` and `fi`.
+- Loops: use `for var in ...; ...; end`. Prohibit `do` and `done`.
+- Exit status: use `$status`. Prohibit `$?`.
+- Subshells: use `(cmd)`. Prohibit `$(cmd)`.
+- Redirection / Heredocs: NEVER emit `<<EOF` or `<<'PY'`. Use `python3 -c
+  "..."` or string pipes such as `printf '%s\n' '...' | python3 -`.
+- Path manipulation: use `fish_add_path /path/to/bin`.
+
+**POSIX / Bash Exceptions:** Bash syntax is permitted only when authoring or
+editing a `*.sh` file that declares a Bash or POSIX `sh` shebang, when editing
+a `*.sh.tmpl` file that renders to such a script, when invoking the declared
+shell interpreter for syntax validation (for example, `bash -n`), or when a
+third-party tool explicitly requires a POSIX string invocation such as
+`bash -c "..."` or `sh -c "..."`.
+
 ### Prompt Review & Refinement Protocol
 
 Applies to user prompts that would change system state, package sets, hooks,
@@ -114,7 +136,8 @@ reviewer:
    full current content of every file being modified. Check
    ownership/permissions before trusting shell tests: unprivileged
    `[ -f … ]`/`[ -d … ]` on a mode-700 directory silently returns false —
-   privilege-sensitive checks need `sudo test …`.
+   privilege-sensitive checks need `sudo -n test …`; if authentication is
+   required, follow the GUI Privilege Escalation Protocol below.
 2. **Constraint & Protocol Audit:** verify the proposal obeys project-local
    `AGENTS.md` rules, the Hard Safety Constraints above, and the forbidden
    actions below — if the prompt requests one, **stop and flag it; do not

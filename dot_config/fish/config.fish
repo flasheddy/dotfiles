@@ -20,6 +20,7 @@ end
 set -gx BAT_THEME "Catppuccin Mocha"
 set -gx GOOSE_CLI_THEME dark
 set -gx GOOSE_CLI_DARK_THEME "Catppuccin Mocha"
+set -gx GOOSE_SHELL /usr/bin/fish
 
 # Input method (fcitx5)
 set -gx GTK_IM_MODULE fcitx
