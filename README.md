@@ -20,6 +20,13 @@ A declarative, reproducible CachyOS workstation managed with [chezmoi](https://w
 | **Package Management** | Pacman + AUR helpers (`paru`/`yay`) |
 | **Dev Toolchains** | Standalone upstream installers: `rustup`, `uv`, `bun`, `ghcup`, `go` |
 
+### Shell / Environment
+
+Fish is the authoritative primary shell for this workstation. Direct shell
+commands and agent tool snippets use native Fish syntax. The Fish configuration
+permanently exports `GOOSE_SHELL=/usr/bin/fish` with `set -gx`, so agent tools
+use Fish as the workstation shell dialect.
+
 ### Decoupling Strategy: System Packages vs. Developer Toolchains
 
 System software comes from the CachyOS/Arch repositories and the AUR via the modular manifests in `packages/`. Language tooling is kept **out of Pacman** and installed via official upstream installers — no version conflicts with distro packages, and each toolchain self-updates on its own schedule:
@@ -68,8 +75,8 @@ Only `private_dot_ssh/config` is tracked; private keys are excluded by `.gitigno
 
 **Option A — copy from backup:**
 
-```bash
-mkdir -p ~/.ssh && chmod 700 ~/.ssh
+```fish
+mkdir -p ~/.ssh; and chmod 700 ~/.ssh
 cp /path/to/backup/id_ed25519 ~/.ssh/
 cp /path/to/backup/id_ed25519.pub ~/.ssh/
 chmod 600 ~/.ssh/id_ed25519
@@ -78,13 +85,13 @@ chmod 644 ~/.ssh/id_ed25519.pub
 
 **Option B — generate a new key** (then add the public key to GitHub/GitLab/servers):
 
-```bash
+```fish
 ssh-keygen -t ed25519 -C "your_email@example.com" -f ~/.ssh/id_ed25519
 ```
 
 ### Master Bootstrap Command
 
-```bash
+```fish
 chezmoi init --apply https://github.com/flasheddy/dotfiles.git   # replace with your repo URL
 ```
 
@@ -94,7 +101,7 @@ This copies all dotfiles to `~/.config/`, `~/.ssh/config`, `~/.gitconfig`, etc.,
 
 ### Post-Install Checks
 
-```bash
+```fish
 sudo reboot                              # reboot into COSMIC
 sudo systemctl status keyd               # verify keyd
 sudo keyd list
@@ -125,7 +132,7 @@ Managed via `dot_local/bin/symlink_*` (tracked in `toolchains/local-bin.txt`): `
 
 **Flow A — via the source directory (safest; chezmoi always knows about the changes):**
 
-```bash
+```fish
 cm
 hx dot_config/fish/config.fish
 cma
@@ -133,7 +140,7 @@ cma
 
 **Flow B — edit the live file directly:**
 
-```bash
+```fish
 hx ~/.config/fish/config.fish
 chezmoi re-add ~/.config/fish/config.fish   # mandatory before applying
 cma
@@ -179,7 +186,7 @@ Manual per-manager equivalents (debugging fallback, or single-manager updates): 
 
 ### Modifying Root Settings
 
-```bash
+```fish
 cm
 hx system/keyd/default.conf
 cma    # hook 20 deploys to /etc/keyd/default.conf and reloads the service
@@ -274,7 +281,7 @@ Before committing to your fork, personalize the machine-specific parts: replace 
 Four boundaries keep routine automation — human or AI — from becoming system compromise:
 
 1. **Isolated blast radius.** Standalone toolchains (`~/.cargo`, `~/.local/bin`, `~/.bun`, `~/go`) live entirely in user space and never touch Pacman or `/etc`: a broken or malicious user-level tool cannot corrupt the system package layer, and a system update cannot silently replace a pinned toolchain.
-2. **Controlled privilege escalation.** Root mutations exist in exactly one place: the tracked, checksummed `run_onchange_*.sh.tmpl` hooks (and the tracked `system/keyd/default.conf` they deploy) — idempotent, graceful, re-run only on content change. No ad-hoc sudo one-liners; any change to a sudo-invoking template must declare a `[ROOT IMPACT]` tag (AGENTS.md §2.7).
+2. **Controlled privilege escalation.** Repository-managed root mutations exist in exactly one place: the tracked, checksummed `run_onchange_*.sh.tmpl` hooks (and the tracked `system/keyd/default.conf` they deploy) — idempotent, graceful, re-run only on content change. No ad-hoc sudo one-liners; any change to a sudo-invoking template must declare a `[ROOT IMPACT]` tag (AGENTS.md §2.7).
 3. **Zero-secret baseline.** No private keys, tokens, or credentials are tracked — ever. Only `private_dot_ssh/config` is managed; `private_dot_ssh/.gitignore` excludes key material, and hooks never print secrets. Untrusted external code is never executed or ingested into tracked state (AGENTS.md §3).
 4. **Human-gated AI mutations.** Agents operate under [`AGENTS.md`](AGENTS.md): they read freely, but every state change passes the §2.7 review protocol (ground-truth probes → constraint audit → refined prompt → explicit approval), destructive operations always require confirmation, and forbidden actions stop the task rather than being refined around.
 
@@ -282,26 +289,33 @@ Four boundaries keep routine automation — human or AI — from becoming system
 
 ## Safety & Troubleshooting
 
-### The `chezmoi diff` Gotcha
+### Understanding `chezmoi diff`
 
-`chezmoi diff` compares the **source tree** to **live files on disk** — it does not show unapplied edits you just made inside the source tree. Use `chezmoi status` and `chezmoi diff` together; the source of truth is `~/.local/share/chezmoi`. If you edited a live file and want to keep it: `chezmoi re-add <file>`.
+`chezmoi diff` compares generated target state with live destination files, so
+it includes source changes that have not yet been applied when they affect
+managed targets. Use it with `chezmoi status`; the source of truth remains
+`~/.local/share/chezmoi`. If you edited a live file and want to keep it, run
+`chezmoi re-add <file>` before applying.
 
 ### Testing Templates Before Push
 
-All `run_onchange_*.sh.tmpl` files use Go templates for checksums. Render-test before committing:
+All `run_onchange_*.sh.tmpl` files use Go templates for checksums. Render-test
+before committing; `bash -n` intentionally invokes the rendered hooks' declared
+shell for syntax validation:
 
-```bash
+```fish
 cd ~/.local/share/chezmoi
-for f in run_onchange_*.sh.tmpl; do
-  chezmoi execute-template < "$f" | bash -n || echo "FAIL: $f"
-done
+for f in run_onchange_*.sh.tmpl
+    chezmoi execute-template < "$f" | bash -n
+    or echo "FAIL: $f"
+end
 ```
 
 ### Re-Running a Single Hook
 
 `run_onchange_` hooks only execute when their rendered content changes. To force one manually:
 
-```bash
+```fish
 chezmoi execute-template < run_onchange_after_20-setup-system.sh.tmpl | bash
 ```
 
