@@ -14,7 +14,7 @@ services.
 Key groups:
 
 - `base` / `base-devel` meta-packages
-- CachyOS-specific packages (`cachyos-*`, `cachy-update`, `chwd`)
+- CachyOS-specific packages (`cachyos-*`, `cachy-update`)
 - Kernels and firmware (`linux-cachyos*`, `linux-firmware`, `amd-ucode`, `sof-firmware`)
 - NVIDIA/AMD/Vulkan graphics drivers and 32-bit counterparts
 - Filesystem tools (`btrfs-progs`, `lvm2`, `cryptsetup`, `mdadm`, etc.)
@@ -33,7 +33,8 @@ Key groups:
 - Display manager (`sddm`) and display utilities
 - Audio stack (PipeWire, ALSA, JACK, Pavucontrol)
 - Input methods (`fcitx5*` + Mozc/Rime, `keyd`)
-- Fonts and cursor/wallpaper themes
+- Fonts (including `ttf-jetbrains-mono-nerd` for terminal glyph rendering)
+  and cursor/wallpaper themes
 - Web browsers (`firefox`, `ungoogled-chromium-bin`)
 - Media players/codecs and document libraries
 - Wayland/desktop integration tools (`grim`, `wl-clipboard`, `xdg-*`)
@@ -52,7 +53,7 @@ Key groups:
 - Python tooling (selected Python libraries)
 - Build/test/linters (`bats*`, `shellcheck`, `shfmt`, `taplo-cli`)
 - Language servers and documentation tools (`bash-language-server`, `lldb`,
-  `marksman`, `pandoc-bin`, `zola`)
+  `marksman`, `zola`)
 - Android tools (`android-tools`, `android-udev`)
 
 **Note:** Rust (`rustup`/`cargo`) and `uv` are intentionally omitted from this
@@ -61,17 +62,18 @@ directory).
 
 ### `30-terminal-utilities.txt`
 
-Terminal emulators, editors, shell enhancements, Git tooling, everyday
-CLI utilities, and the Nerd Font used by Starship/Helix glyphs.
+Terminal emulators, editors, read-only document readers, shell enhancements,
+Git tooling, and everyday CLI utilities.
 
 Key groups:
 
 - Terminal emulators (`alacritty`, `kitty`)
 - Editors (`helix`, `nano`)
+- Readers (`csvlens`, `glow`, `jless`) — read-only terminal document viewers
+  (Markdown / JSON / TSV)
 - Shell enhancements (`bash-completion`, `starship`, `zoxide`)
-- Nerd Font (`ttf-jetbrains-mono-nerd`) for terminal glyph rendering
 - Git tooling (`git`, `github-cli`, `gitleaks`, `git-delta`, `lazygit`)
-- CLI utilities (`ripgrep`, `fd`, `sd`, `dust`, `procs`, `hyperfine`, `tokei`, `jless`, `btop`, `7zip`, `wget`, `xh`, `vivid`, etc.)
+- CLI utilities (`ripgrep`, `fd`, `sd`, `dust`, `procs`, `hyperfine`, `tokei`, `btop`, `7zip`, `wget`, `xh`, `vivid`, etc.)
 
 ### `flatpak.txt`
 
