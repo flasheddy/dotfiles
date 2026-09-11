@@ -40,6 +40,7 @@ schemas, and architecture rules.
   weakening, deleting, or suppressing a project's security checks, scanners,
   or regression tests to make a change pass.
 - **Confidentiality:** treat repository contents and user data as private.
+- **Never evade constraints:** do not invent runtime workarounds (such as ephemeral shims, synthetic mocks, dynamic state patching, or test monkeypatching) to bypass frozen verifiers or simulate missing dependencies.
 
 ## Git & Repository Hygiene
 
@@ -142,6 +143,7 @@ reviewer:
    `AGENTS.md` rules, the Hard Safety Constraints above, and the forbidden
    actions below — if the prompt requests one, **stop and flag it; do not
    refine around it.**
+   - **Allowlist Reachability:** audit whether satisfying task invariants strictly requires modifying files outside the allowlist (e.g. specifications, data definitions, test assertions, or configuration manifests). If any required file is missing, **HALT in Step 3** and report the required allowlist expansion before editing code.
 3. **Output a Refined Prompt (then stop):**
    - Verdict line + numbered findings with probe evidence.
    - Fenced refined-prompt block: exact edits/commands, verification steps,
