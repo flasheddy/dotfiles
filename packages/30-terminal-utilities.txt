@@ -17,6 +17,11 @@ helix
 nano
 nano-syntax-highlighting
 
+# Readers
+csvlens
+glow
+jless
+
 # Shell enhancements
 bash-completion
 starship
@@ -36,7 +41,6 @@ diffutils
 dust
 fd
 hyperfine
-jless
 less
 procs
 ripgrep

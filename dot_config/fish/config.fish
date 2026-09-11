@@ -43,6 +43,11 @@ if status is-interactive
     abbr --add --global cma 'chezmoi apply'
     abbr --add --global cms 'chezmoi status'
 
+    # Add convenient abbreviations for terminal document readers
+    abbr --add --global gm 'glow'
+    abbr --add --global jl 'jless'
+    abbr --add --global tsv 'csvlens -t'
+
     # Prompt
     type -q starship; and starship init fish | source
 
