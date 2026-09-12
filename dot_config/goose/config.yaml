@@ -92,9 +92,15 @@ extensions:
     display_name: Developer
     timeout: null
     bundled: true
-active_provider: moonshot
+active_provider: custom_deepseek
 providers:
   moonshot:
     enabled: true
     model: kimi-k3
     configured: true
+  custom_deepseek:
+    enabled: true
+    model: deepseek-v4-pro
+    configured: true
+GOOSE_THINKING_EFFORT: max
+GOOSE_CONTEXT_LIMIT: 1048576
