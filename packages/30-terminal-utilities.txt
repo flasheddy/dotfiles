@@ -41,6 +41,7 @@ diffutils
 dust
 fd
 hyperfine
+just
 less
 procs
 ripgrep

@@ -73,7 +73,7 @@ Key groups:
   (Markdown / JSON / TSV)
 - Shell enhancements (`bash-completion`, `starship`, `zoxide`)
 - Git tooling (`git`, `github-cli`, `gitleaks`, `git-delta`, `lazygit`)
-- CLI utilities (`ripgrep`, `fd`, `sd`, `dust`, `procs`, `hyperfine`, `tokei`, `btop`, `7zip`, `wget`, `xh`, `vivid`, etc.)
+- CLI utilities (`ripgrep`, `fd`, `sd`, `dust`, `procs`, `hyperfine`, `just`, `tokei`, `btop`, `7zip`, `wget`, `xh`, `vivid`, etc.)
 
 ### `flatpak.txt`
 
