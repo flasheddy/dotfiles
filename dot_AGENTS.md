@@ -70,6 +70,12 @@ schemas, and architecture rules.
   and offline.
 - Report pre-existing failures separately from your change. Do not fix
   unrelated issues unless asked.
+- **Dual-model single-pass review (optional workflow).** When adopting a drafting/reviewing model split:
+  - Keep review passes single-bounded against an explicit invariant checklist; never enter recursive self-review loops.
+  - Enforce the full gate set (pytest, contract validators, frontend, locks, secret scans), never an incomplete shorthand.
+  - Leave pre-existing baseline failures untouched unless authorized by a separate operator task.
+  - Refer strictly to roles ("drafting model" / "reviewing model") rather than vendor names.
+  - Commit authority and branch rules remain strictly operator-controlled at all times.
 
 ---
 
