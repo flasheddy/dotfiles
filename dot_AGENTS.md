@@ -34,7 +34,10 @@ schemas, and architecture rules.
 - **Secrets:** never read, log, or commit credentials, API keys, tokens,
   cookies, private keys, `.env` files, credential stores, or browser profiles.
   Use placeholders and synthetic data in examples, fixtures, and tests;
-  placeholders must not resemble real credentials.
+  placeholders must not resemble real credentials. Synthetic fixture tokens
+  assigned to variables whose names match `*key*`, `*token*`, or `*secret*`
+  MUST use delimiter-broken syntax (e.g. `phaseN:test:key:0001`) or carry an
+  inline `# gitleaks:allow` comment on the same line.
 - **Never edit repository internals:** do not touch files inside `.git/`.
 - **Never bypass protections:** no `--no-verify`, no disabling hooks, and no
   weakening, deleting, or suppressing a project's security checks, scanners,
@@ -116,7 +119,11 @@ Direct Shell Commands & Operator Snippets MUST use native Fish syntax:
 - Conditionals: use `if test ...; ...; end`. Prohibit `then` and `fi`.
 - Loops: use `for var in ...; ...; end`. Prohibit `do` and `done`.
 - Exit status: use `$status`. Prohibit `$?`.
-- Subshells: use `(cmd)`. Prohibit `$(cmd)`.
+- Command substitution: use `(cmd)`. Prohibit `$(cmd)`.
+- Subshells: never use POSIX subshell grouping `(...)` in command position
+  (e.g. `(cd dir && cmd)`). Use a directory-aware CLI flag (e.g.
+  `--project <dir>` or `-C <dir>`) or
+  `begin; pushd <dir>; and <cmd>; and popd; end`.
 - Redirection / Heredocs: NEVER emit `<<EOF` or `<<'PY'`. Use `python3 -c
   "..."` or string pipes such as `printf '%s\n' '...' | python3 -`.
 - Path manipulation: use `fish_add_path /path/to/bin`.
