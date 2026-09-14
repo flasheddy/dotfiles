@@ -227,6 +227,10 @@ This workstation is maintained with AI agents (e.g. [Goose](https://github.com/b
 
 > **Context-loading note:** agents that support context files (goose: `AGENTS.md`/`.goosehints`) auto-load them from the working directory up to the repo root into every session — this repo's `AGENTS.md` qualifies. Rules living *above* the repo root are covered too: global inlining via `~/.config/goose/.goosehints` is active and managed by chezmoi (`dot_config/goose/dot_goosehints.tmpl` renders `dot_AGENTS.md` inline into every goose session), and hook 20 keeps `~/AGENTS.md` symlinked to `~/.AGENTS.md` for tools that read the home path directly.
 
+**Native system prompt.** The goose base prompt is overridden by `dot_config/goose/prompts/system.md` (deployed to `~/.config/goose/prompts/system.md`): it bakes in this machine's identity (CachyOS / COSMIC / Fish), modern-CLI tool preferences (`rg`/`fd`/`bat`/`eza`/`sd`), a ban on interactive TUIs, and `timeout 150 pkexec` privilege escalation — while preserving goose's runtime extension and top-of-mind injection blocks.
+
+**Role wrappers.** `dot_config/fish/functions/g-*.fish` provide single-purpose goose sessions: `g-draft` (DeepSeek Pro, drafting), `g-flash` (DeepSeek Flash, fast), `g-audit` (Kimi, audit/review), `g-audit-run` (Kimi, one-shot `goose run`).
+
 ### Safe Instruction Patterns
 
 **Audit (read-only):**
@@ -273,8 +277,8 @@ Before committing to your fork, personalize the machine-specific parts: replace 
 ├── dot_AGENTS.md                          # global agent rules & safety floor → ~/.AGENTS.md
 ├── dot_config/
 │   ├── alacritty/                         # Alacritty terminal config
-│   ├── fish/                              # config.fish, completions/bun.fish, conf.d/rustup.fish, functions/aup.fish
-│   ├── goose/                             # Goose agent config (config.yaml, dot_goosehints.tmpl → .goosehints)
+│   ├── fish/                              # config.fish, completions/bun.fish, conf.d/rustup.fish, functions/{aup,g-draft,g-audit,g-flash}.fish
+│   ├── goose/                             # Goose agent config (config.yaml, dot_goosehints.tmpl, prompts/system.md)
 │   ├── glow/                              # glow Markdown reader config + Catppuccin Mocha theme
 │   ├── helix/                             # Helix editor config
 │   ├── kitty/                             # Kitty terminal config
