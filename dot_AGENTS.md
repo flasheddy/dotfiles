@@ -1,6 +1,6 @@
 # Global Agent Directives & Safety Guardrails
 
-This file applies to all agent tasks under `/home/chen`. Project-local
+This file applies to all agent tasks under `$HOME`. Project-local
 `AGENTS.md` files define project-specific toolchains, commands, workflows,
 schemas, and architecture rules.
 
