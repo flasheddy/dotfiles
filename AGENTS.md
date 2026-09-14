@@ -160,15 +160,8 @@ Dotfiles-specific addition: any change to a sudo-invoking hook template (`run_on
 Every agent-created or -rewritten commit:
 
 1. **Conventional Commits, scope mandatory** — `type(scope): subject`; unscoped is a defect. Narrowest accurate scope (established: `agents`, `aup`, `fcitx5`, `fish`, `git`, `helix`, `toolchains`); new scopes single-token lowercase only when none fit.
-2. **Goose co-author trailer** — exactly one, blank-line separated:
-
-   ```text
-   Co-authored-by: goose <271095942+aaif-goose@users.noreply.github.com>
-   ```
-
-   Verified identity (org `aaif-goose`, ID 271095942) — never substitute, never drop when amending.
-3. **History rewrites: scripted, backed up, remote restored** — no interactive rebases (interactive TUIs hang agent sessions — `~/.AGENTS.md`); `git filter-repo` with scripted callback; `git bundle` backup *outside* the repo first (filter-repo rewrites all refs, expires reflogs, gc's — in-repo branches are not backups); restore `origin` after. The rewrite plan goes through §2.7 review.
-4. **Force-push gate** — explicit user confirmation + `git push --force-with-lease`, never bare `--force`.
+2. **History rewrites: scripted, backed up, remote restored** — no interactive rebases (interactive TUIs hang agent sessions — `~/.AGENTS.md`); `git filter-repo` with scripted callback; `git bundle` backup *outside* the repo first (filter-repo rewrites all refs, expires reflogs, gc's — in-repo branches are not backups); restore `origin` after. The rewrite plan goes through §2.7 review.
+3. **Force-push gate** — explicit user confirmation + `git push --force-with-lease`, never bare `--force`.
 
 ---
 
