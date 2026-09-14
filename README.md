@@ -197,6 +197,7 @@ The primary update workflow is the `aup` Fish function (`dot_config/fish/functio
 | **go** | `gup update` | all `go install`ed binaries |
 | **ghcup** | `ghcup upgrade` | ghcup itself (GHC/cabal via `ghcup install`) |
 | **tldr** | `tldr --update` | tldr page cache |
+| **goose** | `goose update` | goose CLI self-update (stable channel) |
 
 | Flag | Effect |
 |---|---|
@@ -206,7 +207,7 @@ The primary update workflow is the `aup` Fish function (`dot_config/fish/functio
 | `-f`, `--force` | ignore the success cache and re-run every stage |
 | `-h`, `--help` | show usage |
 
-Manual per-manager equivalents (debugging fallback, or single-manager updates): `rustup update` + `cargo install-update -a` · `uv self update` + `uv tool upgrade --all` · `bun upgrade` + `bun update --global --latest` · `gup update` · `ghcup upgrade` + `ghcup install ghc recommended` + `ghcup install cabal recommended` · `tldr --update`.
+Manual per-manager equivalents (debugging fallback, or single-manager updates): `rustup update` + `cargo install-update -a` · `uv self update` + `uv tool upgrade --all` · `bun upgrade` + `bun update --global --latest` · `gup update` · `ghcup upgrade` + `ghcup install ghc recommended` + `ghcup install cabal recommended` · `tldr --update` · `goose update`.
 
 ### Modifying Root Settings
 
