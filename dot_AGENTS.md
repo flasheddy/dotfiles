@@ -8,7 +8,7 @@ schemas, and architecture rules.
 
 1. The **Hard Safety Constraints** below — the absolute floor for every task; nothing may weaken them.
 2. System/platform instructions and the operator's explicit current request (may override general workflow conventions, but never Hard Safety Constraints).
-3. **Project-local `AGENTS.md`** — may add stricter rules, workflows, and verification gates. Inside its repository it wins on everything except the Hard Safety Constraints.
+3. **Project-local `AGENTS.md`** — may add stricter rules, workflows, and verification gates. Inside its repository it wins on everything except the Hard Safety Constraints and the floor-class rules named in *Workstation Agent Additions* (Prompt Review & Refinement Protocol; Forbidden Actions (Workstation-Wide)).
 4. The remaining conventions in this file.
 
 ## Core Working Philosophy
@@ -90,6 +90,8 @@ version-controlled and deployed by chezmoi
 (`~/.local/share/chezmoi/dot_AGENTS.md` → `~/.AGENTS.md`; `~/AGENTS.md` is a
 symlink to it). Edit the source, never the deployed copy. Project-local
 `AGENTS.md` files may add stricter rules; on conflict the floor above wins.
+
+The **Prompt Review & Refinement Protocol** and the **Workstation-Wide Forbidden Actions** are floor-class rules and cannot be weakened or overridden by any project-local `AGENTS.md`.
 
 ### Modern CLI Tool Preferences
 
