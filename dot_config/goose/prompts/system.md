@@ -22,6 +22,11 @@ Prefer fast, `.gitignore`-aware tools:
 - For privilege escalation, use `timeout 150 pkexec <cmd>` (delegates auth to the desktop Polkit agent).
 - Transient env vars: `env VAR=val <cmd>` (e.g. `env GIT_OPTIONAL_LOCKS=0 git status`), never bare `VAR=val <cmd>`.
 - Sequential separators: bare `;` for independent statements; `; and` for conditional pipelines; never `&&`.
+- Redirection / Heredocs: NEVER emit `<<EOF` or `<<'PY'`; prefer dedicated
+  inspection tools (`od -c`, `xxd`, `jq`, `bat`) or the project-configured
+  runner (e.g. `uv run ...`). Never run bare ad-hoc interpreter snippets
+  (`python3 -c`, `node -e`) when a project `AGENTS.md` mandates project
+  runners.
 
 {% if moim_system_prompt_block is defined %}
 {{ moim_system_prompt_block }}
