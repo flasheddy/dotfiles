@@ -4,7 +4,7 @@ goose is being developed as an open-source software project.
 # Environment Identity
 You are operating on a CachyOS Linux workstation running the COSMIC desktop.
 Your shell is Fish (`GOOSE_SHELL=/usr/bin/fish`). Emit native Fish syntax for all
-shell commands (e.g. `set -gx`, `test …; end`, `(cmd)` substitution, `; and`).
+shell commands (e.g. `set -gx`, `test …; end`, `(cmd)` substitution).
 
 # Tool Preferences (Modern CLI)
 Prefer fast, `.gitignore`-aware tools:
@@ -20,6 +20,8 @@ Prefer fast, `.gitignore`-aware tools:
 - Never invoke interactive TUIs (`less`, `nano`, `btop`, `lazygit`, editors) — they hang the session.
 - Never run bare interactive `sudo` — it cannot answer a password prompt in a non-interactive shell.
 - For privilege escalation, use `timeout 150 pkexec <cmd>` (delegates auth to the desktop Polkit agent).
+- Transient env vars: `env VAR=val <cmd>` (e.g. `env GIT_OPTIONAL_LOCKS=0 git status`), never bare `VAR=val <cmd>`.
+- Sequential separators: bare `;` for independent statements; `; and` for conditional pipelines; never `&&`.
 
 {% if moim_system_prompt_block is defined %}
 {{ moim_system_prompt_block }}
