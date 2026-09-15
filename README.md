@@ -148,6 +148,13 @@ repository, installed via the `# Readers` group in
 abbreviations are defined only for interactive shells; agent and other
 non-interactive shells force non-interactive output per `~/.AGENTS.md`.
 
+### Session Transcript Extraction
+
+`audit-copy` (Fish function → `~/.config/fish/functions/audit-copy.fish`) pulls the
+latest Goose session transcript from `~/.local/share/goose/sessions/sessions.db`
+(read-only `sqlite3`) and copies it to the Wayland clipboard for log-forensic review.
+Run `audit-copy`, then paste into your editor or reviewer of choice.
+
 ### PATH Symlinks
 
 Managed via `dot_local/bin/symlink_*` (tracked in `toolchains/local-bin.txt`): `hx` → `/usr/bin/helix`.

@@ -163,6 +163,20 @@ Every agent-created or -rewritten commit:
 2. **History rewrites: scripted, backed up, remote restored** — no interactive rebases (interactive TUIs hang agent sessions — `~/.AGENTS.md`); `git filter-repo` with scripted callback; `git bundle` backup *outside* the repo first (filter-repo rewrites all refs, expires reflogs, gc's — in-repo branches are not backups); restore `origin` after. The rewrite plan goes through §2.7 review.
 3. **Force-push gate** — explicit user confirmation + `git push --force-with-lease`, never bare `--force`.
 
+### 2.9 Session Auditing & Forensic Log Extraction
+
+**Session Auditor role.** A read-only review role (`g-audit` / `g-audit-run`)
+inspects agent session history and repository state for forensics and drift. The
+goose store `~/.local/share/goose/sessions/sessions.db` is opened **only** with
+`sqlite3 -readonly`; no `DELETE`/`UPDATE`/`VACUUM` is ever issued against it.
+
+**`audit-copy` helper.** `dot_config/fish/functions/audit-copy.fish` extracts the
+latest session transcript (ordered `messages.id` ASC) to the Wayland clipboard via
+`wl-copy`: it locates the DB with `fd -t f -e db sessions.db ~/.local/share/goose/`,
+then selects `id`, `role`, and `content_json` for the most recent `sessions.id`
+(`ORDER BY updated_at DESC LIMIT 1`). End-to-end read-only — for pasting transcripts
+into audit/review contexts without mutating the store.
+
 ---
 
 ## 3. Forbidden Actions
