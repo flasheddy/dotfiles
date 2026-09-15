@@ -155,6 +155,17 @@ latest Goose session transcript from `~/.local/share/goose/sessions/sessions.db`
 (read-only `sqlite3`) and copies it to the Wayland clipboard for log-forensic review.
 Run `audit-copy`, then paste into your editor or reviewer of choice.
 
+### Phase Review Code Packing
+
+`phase-review-copy` (Fish function → `~/.config/fish/functions/phase-review-copy.fish`)
+packs the production code added or modified in the current phase feature branch for a
+DeepSeek Chat architectural/code-quality audit. It resolves the merge base against
+`main` (override with `phase-review-copy <BASE_REF>`), filters backend
+(`backend/src/**.py`), frontend (`src/**.ts`, `src/**.tsx`), and contract
+(`contracts/v1/tools/*.py`) files — excluding tests, fixtures, and deleted files — and
+streams each file's raw content to the clipboard via `wl-copy`. Run `phase-review-copy`,
+then paste into DeepSeek Chat.
+
 ### PATH Symlinks
 
 Managed via `dot_local/bin/symlink_*` (tracked in `toolchains/local-bin.txt`): `hx` → `/usr/bin/helix`.
