@@ -131,8 +131,11 @@ Direct Shell Commands & Operator Snippets MUST use native Fish syntax:
   (e.g. `(cd dir && cmd)`). Use a directory-aware CLI flag (e.g.
   `--project <dir>` or `-C <dir>`) or
   `begin; pushd <dir>; and <cmd>; and popd; end`.
-- Redirection / Heredocs: NEVER emit `<<EOF` or `<<'PY'`. Use `python3 -c
-  "..."` or string pipes such as `printf '%s\n' '...' | python3 -`.
+- Redirection / Heredocs: NEVER emit `<<EOF` or `<<'PY'`. Prefer dedicated
+  inspection tools (`od -c`, `xxd`, `jq`, `bat`) or the project-configured
+  runner (e.g. `uv run ...`) over bare ad-hoc interpreter snippets. Never run
+  bare `python3 -c` or `node -e` snippets when a project `AGENTS.md` mandates
+  a project runner.
 - Path manipulation: use `fish_add_path /path/to/bin`.
 
 **POSIX / Bash Exceptions:** Bash syntax is permitted only when authoring or
