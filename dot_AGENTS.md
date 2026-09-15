@@ -60,7 +60,7 @@ schemas, and architecture rules.
 - **Targeted staging:** stage only explicit named files for the current task.
   Never use `git add .` or `git add -A`.
 - **Read-only inspection:** prefix Git commands used only for inspection with
-  `GIT_OPTIONAL_LOCKS=0`.
+  `env GIT_OPTIONAL_LOCKS=0 git status` (never bare `VAR=val <cmd>`).
 - **No repo bootstrap:** never initialize a Git repository unless asked.
   Outside Git, the Git rules simply do not apply.
 
@@ -117,8 +117,12 @@ editors) — they hang the session. Force non-interactive output:
 Direct Shell Commands & Operator Snippets MUST use native Fish syntax:
 
 - Variables: use `set -gx VAR val` for global variables. For scoped variables,
-  use `begin; set -lx VAR val; cmd; end` or `env VAR=val cmd`.
-- Prohibit `export` and inline `VAR=val cmd` assignments.
+  use `begin; set -lx VAR val; cmd; end`.
+- Transient environment variables: use `env VAR=val <cmd>` (e.g.
+  `env GIT_OPTIONAL_LOCKS=0 git status`). Never bare `VAR=val <cmd>` or `export`.
+- Sequential command separation: bare `;` is valid Fish for independent
+  multi-statement inspection; use `; and` for conditional pipelines that must
+  short-circuit on failure. Never `&&`.
 - Conditionals: use `if test ...; ...; end`. Prohibit `then` and `fi`.
 - Loops: use `for var in ...; ...; end`. Prohibit `do` and `done`.
 - Exit status: use `$status`. Prohibit `$?`.
@@ -146,6 +150,11 @@ CI/build files, dependency changes, and repository file
 creation/modification — in addition to system state, package sets, hooks,
 and tracked configuration. Only purely read-only questions (no mutation
 requested) and already-approved steps execute directly.
+
+**Checkpoint Halt Invariant:** when a prompt contains a `STOP CHECKPOINT`
+directive (e.g. `STOP CHECKPOINT 1`), the agent MUST immediately stop
+execution and yield the turn at that checkpoint. Proceeding into the
+following turn's implementation in the same response is strictly prohibited.
 
 For in-scope prompts, **do not execute immediately** — act as defensive
 reviewer:
