@@ -41,18 +41,6 @@ if command -v clash-verge-service >/dev/null 2>&1; then
   sudo systemctl enable clash-verge-service
 fi
 
-# PostgreSQL: initialize cluster if needed and start service
-if command -v initdb >/dev/null 2>&1; then
-  # Idempotency check runs via sudo: /var/lib/postgres/data is mode 700
-  # owned by postgres, so an unprivileged path test always fails and
-  # would re-run initdb over the existing cluster.
-  if ! sudo test -f /var/lib/postgres/data/PG_VERSION; then
-    echo ":: Initializing PostgreSQL database cluster..."
-    sudo -u postgres initdb -D /var/lib/postgres/data --locale=C.UTF-8 --encoding=UTF8 --data-checksums
-  fi
-  sudo systemctl enable --now postgresql || true
-fi
-
 # -----------------------------------------------------------------------------
 # User-level agent rules symlink
 # -----------------------------------------------------------------------------

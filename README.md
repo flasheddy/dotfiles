@@ -12,14 +12,14 @@ A declarative, reproducible CachyOS workstation managed with [chezmoi](https://w
 |---|---|
 | **OS / Desktop** | CachyOS (Arch-based) + COSMIC desktop environment |
 | **Shell** | Fish (CachyOS defaults overridden by custom config) |
-| **Editors** | Helix (primary), Zed, nano |
+| **Editors** | Helix (primary), Zed |
 | **Document Readers** | glow (Markdown), jless (JSON), csvlens (TSV / Anki datasets) |
 | **Prompt** | Starship |
 | **Terminals** | Alacritty, Kitty |
 | **Theme** | Catppuccin Mocha (shell, Helix, Starship, cursors, Zed, glow) |
 | **Input** | keyd (Caps Lock overload), fcitx5 (Mozc/Rime) |
 | **Package Management** | Pacman + AUR helpers (`paru`/`yay`) |
-| **Dev Toolchains** | Standalone upstream installers: `rustup`, `uv`, `bun`, `ghcup`, `go` |
+| **Dev Toolchains** | Standalone upstream installers: `rustup`, `uv`, `bun`, `go` |
 
 ### Shell / Environment
 
@@ -38,7 +38,6 @@ System software comes from the CachyOS/Arch repositories and the AUR via the mod
 | Python CLI tools | `uv` | `toolchains/uv.txt` | `~/.local/bin` |
 | JS/TS tools | `bun` | `toolchains/bun.txt` | `~/.bun/bin` |
 | Go tools | `go install` | `toolchains/go.txt` | `~/go/bin` |
-| Haskell | `ghcup` | managed by GHCup | `~/.ghcup/bin`, `~/.cabal/bin` |
 | Manual binaries | — | `toolchains/local-bin.txt` | `~/.local/bin` |
 
 ### Automated Lifecycle Hooks
@@ -46,8 +45,8 @@ System software comes from the CachyOS/Arch repositories and the AUR via the mod
 Three `run_onchange_after_*.sh.tmpl` hooks re-run whenever their rendered content changes:
 
 1. **`00-install-packages`** — installs/updates native Pacman packages, AUR packages (`paru`/`yay`), and Flatpaks from the manifests.
-2. **`10-install-toolchains`** — bootstraps `rustup`, `uv`, `bun`, `zed`, `ghcup` if missing, then restores sub-tools from `toolchains/*.txt`.
-3. **`20-setup-system`** — root-level services: deploys `system/keyd/default.conf` → `/etc/keyd/default.conf` and reloads `keyd`; sets UFW defaults (deny incoming, allow outgoing, enable); enables `fstrim.timer` and `paccache.timer`; enables `clash-verge-service` and initializes/starts `postgresql` if installed. Also ensures the user-level symlink `~/AGENTS.md` → `~/.AGENTS.md` exists (no sudo).
+2. **`10-install-toolchains`** — bootstraps `rustup`, `uv`, `bun`, `zed` if missing, then restores sub-tools from `toolchains/*.txt`.
+3. **`20-setup-system`** — root-level services: deploys `system/keyd/default.conf` → `/etc/keyd/default.conf` and reloads `keyd`; sets UFW defaults (deny incoming, allow outgoing, enable); enables `fstrim.timer` and `paccache.timer`; enables `clash-verge-service`. Also ensures the user-level symlink `~/AGENTS.md` → `~/.AGENTS.md` exists (no sudo).
 
 ### Key Remapping
 
@@ -213,7 +212,6 @@ The primary update workflow is the `aup` Fish function (`dot_config/fish/functio
 | **bun-self** | `bun upgrade` | bun itself |
 | **bun-globals** | `bun update --global --latest` | global npm packages, no `cd` needed |
 | **go** | `gup update` | all `go install`ed binaries |
-| **ghcup** | `ghcup upgrade` | ghcup itself (GHC/cabal via `ghcup install`) |
 | **tldr** | `tldr --update` | tldr page cache |
 | **goose** | `goose update` | goose CLI self-update (stable channel) |
 
@@ -225,7 +223,7 @@ The primary update workflow is the `aup` Fish function (`dot_config/fish/functio
 | `-f`, `--force` | ignore the success cache and re-run every stage |
 | `-h`, `--help` | show usage |
 
-Manual per-manager equivalents (debugging fallback, or single-manager updates): `rustup update` + `cargo install-update -a` · `uv self update` + `uv tool upgrade --all` · `bun upgrade` + `bun update --global --latest` · `gup update` · `ghcup upgrade` + `ghcup install ghc recommended` + `ghcup install cabal recommended` · `tldr --update` · `goose update`.
+Manual per-manager equivalents (debugging fallback, or single-manager updates): `rustup update` + `cargo install-update -a` · `uv self update` + `uv tool upgrade --all` · `bun upgrade` + `bun update --global --latest` · `gup update` · `tldr --update` · `goose update`.
 
 ### Modifying Root Settings
 

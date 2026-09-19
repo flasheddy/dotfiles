@@ -14,8 +14,6 @@ kitty
 
 # Editors
 helix
-nano
-nano-syntax-highlighting
 
 # Readers
 csvlens

@@ -52,7 +52,6 @@ upstream installers, kept **out of Pacman** to avoid version conflicts:
 | `toolchains/bun.txt` | `bun install -g` | `~/.bun/bin` |
 | `toolchains/go.txt` | `go install` | `~/go/bin` |
 | `toolchains/local-bin.txt` | manual binaries | `~/.local/bin` |
-| — (self-managed) | `ghcup` | `~/.ghcup/bin` |
 
 ### 1.3 Hard Rule: Never Mix AUR into Native Manifests
 

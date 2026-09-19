@@ -28,10 +28,6 @@ set -gx QT_IM_MODULE fcitx
 set -gx XMODIFIERS @im=fcitx
 set -gx IMMODULE fcitx
 
-# Haskell toolchain paths
-set -q GHCUP_INSTALL_BASE_PREFIX[1]; or set -gx GHCUP_INSTALL_BASE_PREFIX $HOME
-fish_add_path $HOME/.cabal/bin $HOME/.ghcup/bin
-
 # Toolchain and user binary paths (portable: $HOME expands per machine;
 # ~/.cargo/bin is handled by conf.d/rustup.fish)
 fish_add_path $HOME/.local/bin $HOME/.bun/bin $HOME/go/bin

@@ -9,11 +9,9 @@
 
 # Compilers and language runtimes
 go
-jdk17-openjdk
 nodejs-lts-jod
 npm
 perl
-postgresql
 python
 
 # Go toolchain

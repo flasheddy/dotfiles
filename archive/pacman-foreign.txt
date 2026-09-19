@@ -1,5 +1,4 @@
 4kvideodownloaderplus
-android-studio
 catppuccin-cursors-mocha
 catppuccin-whiskers-bin
 clash-verge-rev-bin

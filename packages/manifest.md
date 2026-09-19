@@ -38,7 +38,7 @@ Key groups:
 - Web browsers (`firefox`, `ungoogled-chromium-bin`)
 - Media players/codecs and document libraries
 - Wayland/desktop integration tools (`grim`, `wl-clipboard`, `xdg-*`)
-- GUI applications (`android-studio`, `clash-verge-rev-bin`, `wechat-universal-bwrap`, etc.)
+- GUI applications (`clash-verge-rev-bin`, `wechat-universal-bwrap`, etc.)
 
 ### `20-dev-stacks.txt`
 
@@ -47,8 +47,7 @@ and Android tooling.
 
 Key groups:
 
-- Language runtimes: Go, OpenJDK 17, Node.js LTS (+ `npm`), Perl, PostgreSQL,
-  Python
+- Language runtimes: Go, Node.js LTS (+ `npm`), Perl, Python
 - Go toolchain (`delve`, `golangci-lint`, `gopls`)
 - Python tooling (selected Python libraries)
 - Build/test/linters (`bats*`, `shellcheck`, `shfmt`, `taplo-cli`)
@@ -68,7 +67,7 @@ Git tooling, and everyday CLI utilities.
 Key groups:
 
 - Terminal emulators (`alacritty`, `kitty`)
-- Editors (`helix`, `nano`)
+- Editors (`helix`)
 - Readers (`csvlens`, `glow`, `jless`) — read-only terminal document viewers
   (Markdown / JSON / TSV)
 - Shell enhancements (`bash-completion`, `starship`, `zoxide`)
@@ -147,7 +146,6 @@ They are installed via their official installers and tracked separately in
 | Bun (`bun`, `bunx`) | [bun.sh](https://bun.sh) | `toolchains/bun.txt` |
 | Go tools (`go install`) | Built from module paths | `toolchains/go.txt` |
 | Zed editor | [zed.dev](https://zed.dev) | symlinked into `~/.local/bin` |
-| Haskell (GHCup, `ghc`, `cabal`) | [ghcup.haskell.org](https://www.haskell.org/ghcup/) | managed by `ghcup` |
 | Manual `~/.local/bin` binaries | downloaded manually | `toolchains/local-bin.txt` |
 
 ### `toolchains/cargo.txt`
@@ -209,7 +207,6 @@ managed as standalone toolchains and documented above:
 - `rustup` / `cargo` / `rustc` (referenced by `dot_config/fish/conf.d/rustup.fish`)
 - `uv` / `uvx` (referenced by `dot_config/fish/conf.d/uv.env.fish`)
 - `bun` (completion file in `dot_config/fish/completions/bun.fish`)
-- GHCup (`ghc`, `cabal`) (referenced in `dot_config/fish/config.fish`)
 - `zed` (editor, symlinked into `~/.local/bin`)
 
 Other tools like `fish`, `fastfetch`, `fzf`, `pkgfile`, `bat`, and `eza` are

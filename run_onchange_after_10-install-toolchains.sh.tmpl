@@ -39,15 +39,6 @@ if ! command -v zed >/dev/null 2>&1 && [ ! -x "$HOME/.local/bin/zed" ] && [ ! -x
   curl -f https://zed.dev/install.sh | sh
 fi
 
-# GHCup (Haskell toolchain: ghc, cabal, hls)
-if ! command -v ghcup >/dev/null 2>&1 && [ ! -x "$HOME/.ghcup/bin/ghcup" ]; then
-  BOOTSTRAP_HASKELL_NONINTERACTIVE=1 \
-  BOOTSTRAP_HASKELL_GHC_VERSION=recommended \
-  BOOTSTRAP_HASKELL_CABAL_VERSION=recommended \
-  BOOTSTRAP_HASKELL_INSTALL_HLS=1 \
-    curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
-fi
-
 # Re-export PATH in case any of the above installers added new directories.
 export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$HOME/.bun/bin:$HOME/go/bin:$PATH"
 

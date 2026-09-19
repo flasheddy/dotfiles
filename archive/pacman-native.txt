@@ -6,7 +6,6 @@ alsa-firmware
 alsa-plugins
 alsa-utils
 amd-ucode
-android-studio
 android-tools
 android-udev
 awesome-terminal-fonts
@@ -110,7 +109,6 @@ inetutils
 inter-font
 iptables
 iwd
-jdk17-openjdk
 jfsutils
 keyd
 kitty
@@ -148,8 +146,6 @@ modemmanager
 mpv
 mtools
 mtpfs
-nano
-nano-syntax-highlighting
 netctl
 networkmanager
 networkmanager-openvpn
@@ -181,7 +177,6 @@ plocate
 plymouth
 polkit-kde-agent
 poppler-glib
-postgresql
 power-profiles-daemon
 pv
 python
