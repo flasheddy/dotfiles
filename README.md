@@ -299,7 +299,9 @@ Before committing to your fork, personalize the machine-specific parts: replace 
 │   ├── private_fcitx5/                    # fcitx5 input method (Mozc/Rime) config
 │   └── starship.toml                      # Starship prompt config
 ├── dot_gitconfig                          # Git user config
-├── dot_local/bin/symlink_hx               # hx → /usr/bin/helix symlink
+├── dot_local/
+│   ├── bin/symlink_hx                     # hx → /usr/bin/helix symlink
+│   └── share/applications/                # .desktop launcher overrides (NoDisplay=true)
 ├── packages/
 │   ├── 00-system-base.txt                 # core system packages
 │   ├── 10-desktop-environment.txt         # COSMIC / GUI / fonts
