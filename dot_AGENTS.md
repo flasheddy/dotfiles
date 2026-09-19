@@ -19,9 +19,7 @@ schemas, and architecture rules.
   isolated feature branches, or state-machine ceremony unless the operator or
   a project-local `AGENTS.md` instructs it.
 - When asked to plan, output a direct, actionable Markdown plan proportionate to the task's technical depth. Include exact contracts, interfaces, commands, invariants, and acceptance evidence when required; omit unnecessary ceremony.
-- Proceed with reversible local work and state your assumptions. Stop and ask
-  one targeted question only before destructive, irreversible, external, or
-  genuinely ambiguous actions.
+- Perform read-only inspection first; wait for explicit Operator sign-off at checkpoints before any write or state change.
 - Keep status reports short: what changed, where, how it was verified, and
   what remains.
 
