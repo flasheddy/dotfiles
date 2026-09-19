@@ -82,7 +82,6 @@ Flatpak applications installed outside of pacman:
 - `com.discordapp.Discord`
 - `com.remnote.RemNote`
 - `com.spotify.Client`
-- `com.super_productivity.SuperProductivity`
 
 ### `archive/pacman-native.txt` / `archive/pacman-foreign.txt` (source/legacy)
 
