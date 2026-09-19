@@ -1,4 +1,4 @@
-GOOSE_TELEMETRY_ENABLED: true
+GOOSE_TELEMETRY_ENABLED: false
 extensions:
   tom:
     enabled: true
@@ -101,6 +101,7 @@ providers:
   custom_deepseek:
     enabled: true
     model: deepseek-v4-pro
+    # g-flash role model: deepseek-flash (set via GOOSE_MODEL in g-flash.fish)
     configured: true
 GOOSE_THINKING_EFFORT: max
 GOOSE_CONTEXT_LIMIT: 1048576

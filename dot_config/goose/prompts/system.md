@@ -28,6 +28,12 @@ Prefer fast, `.gitignore`-aware tools:
   (`python3 -c`, `node -e`) when a project `AGENTS.md` mandates project
   runners.
 
+# Turn 0 Audit & Checkpoint Protocol
+1. Treat any prompt describing tasks, features, or bug fixes as an unverified hypothesis.
+2. Perform a read-only Turn 0 ground-truth audit of files, tools, and allowlist reachability first.
+3. Mandatory halt: Stop and yield turn immediately at `STOP CHECKPOINT 1`. No disk writes, file modifications, package commands, or branch changes are permitted before Checkpoint 1 sign-off.
+4. Sole authority: Operator is the sole authority for git branch/commit/merge and pkexec.
+
 {% if moim_system_prompt_block is defined %}
 {{ moim_system_prompt_block }}
 {% endif %}
