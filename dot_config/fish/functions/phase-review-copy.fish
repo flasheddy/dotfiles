@@ -20,10 +20,14 @@ function phase-review-copy --description 'Pack current phase production changes 
 
     # Production files added/modified since the merge base (tests/fixtures excluded).
     set -l files (git diff --name-only "$merge_base"..HEAD -- \
+        'src/**.py' \
+        'packages/**.py' \
         'backend/src/**.py' \
+        'contracts/v1/tools/*.py' \
+        'src/**.rs' \
+        'crates/**.rs' \
         'src/**.ts' \
         'src/**.tsx' \
-        'contracts/v1/tools/*.py' \
         ':!*test*' \
         ':!*fixture*')
 

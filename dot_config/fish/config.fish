@@ -17,6 +17,7 @@ function fish_user_key_bindings
 end
 
 # Environment variables
+set -gx BAT_PAGING never
 set -gx BAT_THEME "Catppuccin Mocha"
 set -gx GOOSE_CLI_THEME dark
 set -gx GOOSE_CLI_DARK_THEME "Catppuccin Mocha"
@@ -39,9 +40,17 @@ if status is-interactive
     abbr --add --global cma 'chezmoi apply'
     abbr --add --global cms 'chezmoi status'
 
+    # Python tooling
+    abbr --add --global uvs 'uv sync'
+    abbr --add --global uvr 'uv run'
+
+    # Git phase-review
+    abbr --add --global gmd 'git diff (git merge-base main HEAD)..HEAD'
+    abbr --add --global gml 'git log (git merge-base main HEAD)..HEAD'
+
     # Add convenient abbreviations for terminal document readers
-    abbr --add --global gm 'glow'
-    abbr --add --global jl 'jless'
+    abbr --add --global gm glow
+    abbr --add --global jl jless
     abbr --add --global tsv 'csvlens -t'
 
     # Prompt
