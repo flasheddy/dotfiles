@@ -40,9 +40,6 @@ lldb
 marksman
 zola
 
-# Database tools
-pgformatter
-
 # Android development
 android-tools
 android-udev

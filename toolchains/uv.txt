@@ -3,6 +3,4 @@
 basedpyright
 git-filter-repo
 litecli
-pgcli
-python-lsp-server
 ruff

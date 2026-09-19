@@ -157,8 +157,6 @@ Rust crates installed with `cargo install`, plus the binaries they provide.
 Python CLI tools installed with `uv tool install`:
 
 - `litecli`
-- `pgcli`
-- `python-lsp-server`
 - `ruff`
 
 ### `toolchains/bun.txt`
@@ -166,7 +164,6 @@ Python CLI tools installed with `uv tool install`:
 Global JavaScript/TypeScript packages installed with `bun install -g`:
 
 - `prettier`
-- `sql-language-server`
 - `typescript`
 - `typescript-language-server`
 - `vscode-langservers-extracted`
@@ -175,7 +172,6 @@ Global JavaScript/TypeScript packages installed with `bun install -g`:
 
 Go modules installed with `go install`:
 
-- `github.com/bootdotdev/bootdev`
 - `github.com/nametake/golangci-lint-langserver`
 - `github.com/nao1215/gup`
 
@@ -184,12 +180,11 @@ Go modules installed with `go install`:
 Standalone binaries placed directly in `~/.local/bin` and not managed by any
 toolchain manager above:
 
-- `exercism`
 - `goose`
 
 Previously this file also contained symlinks for `uv`/`uvx` (standalone
 toolchain), `zed` (standalone editor), `python3.12` (uv-managed Python), and
-`litecli`/`pgcli`/`pylsp`/`ruff` (uv-managed tools). Those entries were removed
+`litecli`/`ruff` (uv-managed tools). Those entries were removed
 because they are covered by the standalone toolchain manifests.
 
 ## Additions Based on Tracked Configs

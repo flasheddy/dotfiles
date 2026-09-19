@@ -168,7 +168,6 @@ paru
 pavucontrol
 perf
 perl
-pgformatter
 pipewire-alsa
 pipewire-pulse
 pkgfile

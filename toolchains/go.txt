@@ -1,3 +1,2 @@
-github.com/bootdotdev/bootdev
 github.com/nametake/golangci-lint-langserver
 github.com/nao1215/gup
