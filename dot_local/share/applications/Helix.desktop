@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Helix
+GenericName=Text Editor
+Comment=Edit text files
+Exec=helix %F
+TryExec=helix
+Terminal=true
+Type=Application
+Icon=helix
+Categories=Utility;TextEditor;ConsoleOnly;
+StartupNotify=false
+MimeType=text/english;text/plain;text/x-makefile;text/x-c++hdr;text/x-c++src;text/x-chdr;text/x-csrc;text/x-java;text/x-moc;text/x-pascal;text/x-tcl;text/x-tex;application/x-shellscript;text/x-c;text/x-c++;text/x-python;text/x-rust;text/markdown;application/json;text/x-toml;application/javascript;text/x-javascript;application/yaml;text/x-yaml;text/x-go;text/x-diff;text/x-patch;
