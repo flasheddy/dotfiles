@@ -6,12 +6,6 @@
 #   - cachyos-fish-config: fastfetch, pkgfile
 #     (also pulls: bat, eza, fish, fish-autopair, fish-pure-prompt, fisher, fzf,
 #      tealdeer, ttf-fantasque-nerd)
-#   - cachyos-micro-settings: micro
-
-# Terminal emulators
-alacritty
-kitty
-
 # Editors
 helix
 

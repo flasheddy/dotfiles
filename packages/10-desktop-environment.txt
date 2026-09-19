@@ -17,7 +17,6 @@ cosmic-player
 cosmic-session
 cosmic-store
 cosmic-terminal
-cosmic-text-editor
 cosmic-wallpapers
 
 # Display manager and display utilities
@@ -96,5 +95,4 @@ gnome-keyring
 seahorse
 
 # GUI applications
-meld
 solaar

@@ -34,11 +34,6 @@ if ! command -v bun >/dev/null 2>&1 && [ ! -x "$HOME/.bun/bin/bun" ]; then
   curl -fsSL https://bun.sh/install | bash
 fi
 
-# Zed editor
-if ! command -v zed >/dev/null 2>&1 && [ ! -x "$HOME/.local/bin/zed" ] && [ ! -x "$HOME/.local/zed.app/bin/zed" ]; then
-  curl -f https://zed.dev/install.sh | sh
-fi
-
 # Re-export PATH in case any of the above installers added new directories.
 export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$HOME/.bun/bin:$HOME/go/bin:$PATH"
 

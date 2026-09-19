@@ -12,11 +12,11 @@ A declarative, reproducible CachyOS workstation managed with [chezmoi](https://w
 |---|---|
 | **OS / Desktop** | CachyOS (Arch-based) + COSMIC desktop environment |
 | **Shell** | Fish (CachyOS defaults overridden by custom config) |
-| **Editors** | Helix (primary), Zed |
+| **Editors** | Helix |
 | **Document Readers** | glow (Markdown), jless (JSON), csvlens (TSV / Anki datasets) |
 | **Prompt** | Starship |
-| **Terminals** | Alacritty, Kitty |
-| **Theme** | Catppuccin Mocha (shell, Helix, Starship, cursors, Zed, glow) |
+| **Terminals** | COSMIC Terminal (`cosmic-term`) |
+| **Theme** | Catppuccin Mocha (shell, Helix, Starship, cursors, glow) |
 | **Input** | keyd (Caps Lock overload), fcitx5 (Mozc/Rime) |
 | **Package Management** | Pacman + AUR helpers (`paru`/`yay`) |
 | **Dev Toolchains** | Standalone upstream installers: `rustup`, `uv`, `bun`, `go` |
@@ -45,7 +45,7 @@ System software comes from the CachyOS/Arch repositories and the AUR via the mod
 Three `run_onchange_after_*.sh.tmpl` hooks re-run whenever their rendered content changes:
 
 1. **`00-install-packages`** — installs/updates native Pacman packages, AUR packages (`paru`/`yay`), and Flatpaks from the manifests.
-2. **`10-install-toolchains`** — bootstraps `rustup`, `uv`, `bun`, `zed` if missing, then restores sub-tools from `toolchains/*.txt`.
+2. **`10-install-toolchains`** — bootstraps `rustup`, `uv`, `bun` if missing, then restores sub-tools from `toolchains/*.txt`.
 3. **`20-setup-system`** — root-level services: deploys `system/keyd/default.conf` → `/etc/keyd/default.conf` and reloads `keyd`; sets UFW defaults (deny incoming, allow outgoing, enable); enables `fstrim.timer` and `paccache.timer`; enables `clash-verge-service`. Also ensures the user-level symlink `~/AGENTS.md` → `~/.AGENTS.md` exists (no sudo).
 
 ### Key Remapping
@@ -292,15 +292,12 @@ Before committing to your fork, personalize the machine-specific parts: replace 
 │   └── pacman-native.txt                  # legacy native package dump
 ├── dot_AGENTS.md                          # global agent rules & safety floor → ~/.AGENTS.md
 ├── dot_config/
-│   ├── alacritty/                         # Alacritty terminal config
 │   ├── fish/                              # config.fish, completions/bun.fish, conf.d/rustup.fish, functions/{aup,g-draft,g-audit,g-flash}.fish
 │   ├── goose/                             # Goose agent config (config.yaml, dot_goosehints.tmpl, prompts/system.md)
 │   ├── glow/                              # glow Markdown reader config + Catppuccin Mocha theme
 │   ├── helix/                             # Helix editor config
-│   ├── kitty/                             # Kitty terminal config
 │   ├── private_fcitx5/                    # fcitx5 input method (Mozc/Rime) config
-│   ├── starship.toml                      # Starship prompt config
-│   └── zed/                               # Zed editor config
+│   └── starship.toml                      # Starship prompt config
 ├── dot_gitconfig                          # Git user config
 ├── dot_local/bin/symlink_hx               # hx → /usr/bin/helix symlink
 ├── packages/

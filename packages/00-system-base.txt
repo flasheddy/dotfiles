@@ -7,7 +7,6 @@
 #   - base-devel: sudo, texinfo, which
 #   - cachyos-fish-config: fastfetch, pkgfile
 #   - cachyos-kernel-manager: chwd
-#   - cachyos-micro-settings: micro
 #   - cachyos-plymouth-*: plymouth
 #   - cosmic-session: noto-fonts, ttf-opensans, xorg-xwayland
 #
@@ -15,7 +14,6 @@
 # do NOT add these components explicitly):
 #   - cachyos-fish-config: bat, eza, fastfetch, fish, fisher, fzf, pkgfile, tealdeer, ...
 #   - cachyos-kernel-manager: chwd, polkit, qt6-base, scx-manager
-#   - cachyos-micro-settings: micro
 #   - cachyos-plymouth-bootanimation / cachyos-plymouth-theme: plymouth
 #   - cachyos-rate-mirrors: rate-mirrors
 
@@ -30,7 +28,6 @@ cachyos-hello
 cachyos-hooks
 cachyos-kernel-manager
 cachyos-keyring
-cachyos-micro-settings
 cachyos-mirrorlist
 cachyos-packageinstaller
 cachyos-plymouth-bootanimation
@@ -147,5 +144,4 @@ pacman-contrib
 paru
 rebuild-detector
 reflector
-shelly
 yay

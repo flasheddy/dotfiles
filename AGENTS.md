@@ -136,7 +136,7 @@ Periodic, report-first audit run on request (e.g. "Refine & Reconcile System" in
 - Native: `pacman -Qqen` vs `packages/00-*.txt`–`30-*.txt` (ignore comments/blanks).
 - Foreign/AUR: `pacman -Qqem` vs `archive/pacman-foreign.txt` — a foreign package in a native manifest is **Critical** (§1.3).
 - Flatpak: `flatpak list --app --columns=application` vs `packages/flatpak.txt`.
-- Toolchains: manager-native listings over directory scans — `uv tool list`, `cargo install --list`, `bun pm ls -g`, `~/go/bin` contents vs the matching `toolchains/*.txt`. `~/.local/bin` is shared (`uv.txt` + `local-bin.txt` + unmanaged like zed/chezmoi): cross-reference report-only; never auto-remove.
+- Toolchains: manager-native listings over directory scans — `uv tool list`, `cargo install --list`, `bun pm ls -g`, `~/go/bin` contents vs the matching `toolchains/*.txt`. `~/.local/bin` is shared (`uv.txt` + `local-bin.txt` + unmanaged like chezmoi): cross-reference report-only; never auto-remove.
 
 **Phase 3 — Portability & Safety.** `rg -n '/home/'` on tracked files — use `$HOME`/`~` or `{{ .chezmoi.homeDir }}` instead. `fish_variables` is intentionally untracked; `fish_user_paths` is populated via `fish_add_path` in `config.fish`. Verify no keys/tokens/credentials tracked (§3.1).
 

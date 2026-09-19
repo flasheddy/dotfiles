@@ -19,7 +19,7 @@ Key groups:
 - NVIDIA/AMD/Vulkan graphics drivers and 32-bit counterparts
 - Filesystem tools (`btrfs-progs`, `lvm2`, `cryptsetup`, `mdadm`, etc.)
 - Networking, Bluetooth, firewall, and remote access
-- Package-management helpers (`paru`, `yay`, `shelly`, `pacman-contrib`)
+- Package-management helpers (`paru`, `yay`, `pacman-contrib`)
 
 ### `10-desktop-environment.txt`
 
@@ -64,7 +64,6 @@ Git tooling, and everyday CLI utilities.
 
 Key groups:
 
-- Terminal emulators (`alacritty`, `kitty`)
 - Editors (`helix`)
 - Readers (`csvlens`, `glow`, `jless`) — read-only terminal document viewers
   (Markdown / JSON / TSV)
@@ -98,10 +97,6 @@ Dotfiles managed under `dot_config/` include:
   configured to include standalone toolchain directories (`~/.local/bin`,
   `~/.cargo/bin`, `~/.bun/bin`, `~/go/bin`).
 - **Helix editor**: `config.toml`, `languages.toml`.
-- **Zed editor**: `private_settings.json`, `keymap.json` (no database/state
-  caches tracked).
-- **Terminal emulators**: `alacritty/`, `kitty/`. (`ghostty/` was removed because
-the package is not currently installed.)
 - **Starship prompt**: `starship.toml`.
 - **Git**: `dot_gitconfig`.
 - **SSH**: `private_dot_ssh/config` only; private keys are ignored via
@@ -119,7 +114,6 @@ lists are shown here:
 | `base-devel` | `sudo`, `texinfo`, `which` |
 | `cachyos-fish-config` | `fastfetch`, `pkgfile` |
 | `cachyos-kernel-manager` | `chwd` |
-| `cachyos-micro-settings` | `micro` |
 | `cachyos-plymouth-bootanimation` / `cachyos-plymouth-theme` | `plymouth` |
 | `cosmic-session` | `noto-fonts`, `ttf-opensans`, `xorg-xwayland` |
 
@@ -140,7 +134,6 @@ They are installed via their official installers and tracked separately in
 | Python tools (`uv`, `uvx`) | [astral.sh/uv](https://docs.astral.sh/uv/getting-started/installation/) | `toolchains/uv.txt` |
 | Bun (`bun`, `bunx`) | [bun.sh](https://bun.sh) | `toolchains/bun.txt` |
 | Go tools (`go install`) | Built from module paths | `toolchains/go.txt` |
-| Zed editor | [zed.dev](https://zed.dev) | symlinked into `~/.local/bin` |
 | Manual `~/.local/bin` binaries | downloaded manually | `toolchains/local-bin.txt` |
 
 ### `toolchains/cargo.txt`
@@ -178,7 +171,7 @@ toolchain manager above:
 - `goose`
 
 Previously this file also contained symlinks for `uv`/`uvx` (standalone
-toolchain), `zed` (standalone editor), `python3.12` (uv-managed Python), and
+toolchain), `python3.12` (uv-managed Python), and
 `litecli`/`ruff` (uv-managed tools). Those entries were removed
 because they are covered by the standalone toolchain manifests.
 
@@ -197,7 +190,6 @@ managed as standalone toolchains and documented above:
 - `rustup` / `cargo` / `rustc` (referenced by `dot_config/fish/conf.d/rustup.fish`)
 - `uv` / `uvx` (referenced by `dot_config/fish/conf.d/uv.env.fish`)
 - `bun` (completion file in `dot_config/fish/completions/bun.fish`)
-- `zed` (editor, symlinked into `~/.local/bin`)
 
 Other tools like `fish`, `fastfetch`, `fzf`, `pkgfile`, `bat`, and `eza` are
 pulled in by `cachyos-fish-config` and do not need to be listed separately.
