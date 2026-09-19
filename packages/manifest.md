@@ -38,7 +38,7 @@ Key groups:
 - Web browsers (`firefox`, `ungoogled-chromium-bin`)
 - Media players/codecs and document libraries
 - Wayland/desktop integration tools (`grim`, `wl-clipboard`, `xdg-*`)
-- GUI applications (`clash-verge-rev-bin`, `wechat-universal-bwrap`, etc.)
+- GUI applications (`clash-verge-rev-bin`, etc.)
 
 ### `20-dev-stacks.txt`
 
@@ -74,11 +74,8 @@ Key groups:
 
 ### `flatpak.txt`
 
-Flatpak applications installed outside of pacman:
-
-- `com.discordapp.Discord`
-- `com.remnote.RemNote`
-- `com.spotify.Client`
+Flatpak applications installed outside of pacman. This manifest is currently
+empty (no Flatpak applications are managed by this repository).
 
 ### `archive/pacman-native.txt` / `archive/pacman-foreign.txt` (source/legacy)
 

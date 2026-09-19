@@ -27,7 +27,7 @@ sddm
 
 # Audio stack
 # pipewire-jack: replaces legacy `jack` (AUR); provides libjack.so for
-# ffmpeg, mpv, fluidsynth, portaudio, wechat-universal-bwrap
+# ffmpeg, mpv, fluidsynth, portaudio
 alsa-firmware
 alsa-plugins
 alsa-utils

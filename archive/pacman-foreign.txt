@@ -1,6 +1,4 @@
-4kvideodownloaderplus
 catppuccin-cursors-mocha
 catppuccin-whiskers-bin
 clash-verge-rev-bin
 pandoc-bin
-wechat-universal-bwrap
