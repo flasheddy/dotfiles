@@ -105,7 +105,7 @@ This copies all dotfiles to `~/.config/`, `~/.ssh/config`, `~/.gitconfig`, etc.,
 sudo reboot                              # reboot into COSMIC
 sudo systemctl status keyd               # verify keyd
 sudo keyd list
-rustup show; uv --version; bun --version; go version; ghc --version
+rustup show; uv --version; bun --version; go version
 printf '%s\n' $PATH                      # toolchain bins on PATH
 chezmoi status                           # no unexpected drift
 ```

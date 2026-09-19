@@ -1,6 +1,6 @@
 # 20-dev-stacks.txt
 # Compilers, language runtimes (Go, Node, Java, Python), language servers,
-# build/test/linters, databases, and Android tooling.
+# build/test/linters, databases.
 # Rust (rustup/cargo) and uv are managed as standalone toolchains; see toolchains/.
 #
 # Stripped packages (direct dependencies of base-devel kept here that were
@@ -39,7 +39,3 @@ gobject-introspection
 lldb
 marksman
 zola
-
-# Android development
-android-tools
-android-udev

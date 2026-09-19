@@ -42,8 +42,7 @@ Key groups:
 
 ### `20-dev-stacks.txt`
 
-Compilers, language runtimes, language servers, build/test/linters, databases,
-and Android tooling.
+Compilers, language runtimes, language servers, build/test/linters, and databases.
 
 Key groups:
 
@@ -53,7 +52,6 @@ Key groups:
 - Build/test/linters (`bats*`, `shellcheck`, `shfmt`, `taplo-cli`)
 - Language servers and documentation tools (`bash-language-server`, `lldb`,
   `marksman`, `zola`)
-- Android tools (`android-tools`, `android-udev`)
 
 **Note:** Rust (`rustup`/`cargo`) and `uv` are intentionally omitted from this
 file. They are managed as standalone toolchains (see the `toolchains/`
