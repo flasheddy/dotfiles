@@ -1,8 +1,8 @@
 # ============================================================================
-# Primary stack: Python / TypeScript / JavaScript / Bash (Web3 backend)
+# 1. Ingress & Extraction Stack (Python)
 # ============================================================================
 
-# --- Python (primary backend) ---
+# --- Python (extraction pipelines) ---
 [[language]]
 name = "python"
 roots = ["pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git"]
@@ -21,43 +21,6 @@ request = "launch"
 completion = [ { name = "entrypoint", completion = "filename", default = "main.py" } ]
 args = { program = "{0}" }
 
-
-# --- TypeScript (Web3 backend: Node/bun services) ---
-[[language]]
-name = "typescript"
-roots = ["package.json", "tsconfig.json", ".git"]
-language-servers = [ "typescript-language-server" ]
-formatter = { command = "prettier", args = ["--parser", "typescript"] }
-
-
-# --- JavaScript (Web3 scripts / SDKs) ---
-[[language]]
-name = "javascript"
-roots = ["package.json", "jsconfig.json", ".git"]
-language-servers = [ "typescript-language-server" ]
-formatter = { command = "prettier", args = ["--parser", "babel"] }
-
-
-# --- Bash (ops / chezmoi hooks) ---
-[[language]]
-name = "bash"
-language-servers = [ "bash-language-server" ]
-formatter = { command = "shfmt", args = ["-i", "2", "-ci"] }
-
-
-# --- Fish (daily shell / dotfiles) ---
-[[language]]
-name = "fish"
-language-servers = [ "fish-lsp" ]
-formatter = { command = "fish_indent" }
-
-[language-server.fish-lsp]
-command = "fish-lsp"
-args = ["start"]
-
-
-# --- Server tuning for the primary stack ---
-
 # basedpyright: fast type checking + auto-imports (prereq: uv tool install basedpyright)
 [language-server.basedpyright]
 command = "basedpyright-langserver"
@@ -73,22 +36,21 @@ disableOrganizeImports = true # ruff owns import sorting
 command = "ruff"
 args = ["server"]
 
-# tsserver inlay hints (applies to both TS and JS buffers)
-[language-server.typescript-language-server.config]
-typescript.inlayHints.parameterNames.enabled = "all"
-typescript.inlayHints.variableTypes.enabled = true
-typescript.inlayHints.functionLikeReturnTypes.enabled = true
-javascript.inlayHints.parameterNames.enabled = "all"
-javascript.inlayHints.variableTypes.enabled = true
 
+# ============================================================================
+# 2. Systems Programming (Rust / Go / C)
+# ============================================================================
 
-# --- C ---
-[[language]]
-name = "c"
-formatter = { command = "clang-format", args = ["--style=file", "--fallback-style=LLVM"] }
+# --- Rust (systems katas) ---
+# (no [[language]] overrides needed — Helix defaults apply; auto-format is global)
 
+# rust-analyzer: clippy on save, all features, lifetime/reborrow/closure inlay hints
+[language-server.rust-analyzer.config]
+check = { command = "clippy" }
+cargo = { allFeatures = true }
+inlayHints = { lifetimeElisionHints = { enable = "skip_trivial" }, reborrowHints = { enable = "always" }, closureReturnTypeHints = { enable = "always" } }
 
-# --- Go (Backend) ---
+# --- Go ---
 [[language]]
 name = "go"
 language-servers = [ "gopls", "golangci-lint-lsp" ]
@@ -100,20 +62,60 @@ hints = { assignVariableTypes = true, compositeLiteralFields = true, constantVal
 [language-server.golangci-lint-lsp]
 command = "golangci-lint-langserver"
 
-
-# --- Rust (Backend) ---
-# (no [[language]] overrides needed — Helix defaults apply; auto-format is global)
-
-# rust-analyzer: run clippy instead of cargo check on save
-[language-server.rust-analyzer.config.check]
-command = "clippy"
+# --- C ---
+[[language]]
+name = "c"
+formatter = { command = "clang-format", args = ["--style=file", "--fallback-style=LLVM"] }
 
 
 # ============================================================================
-# Document & configuration formats: Markdown / HTML / TOML / JSON / JSONC / YAML
+# 3. Shell & Automation (Fish / Bash)
 # ============================================================================
 
-# --- Markdown (YouTube Scripts / Docs / Notes) ---
+# --- Fish (daily shell / dotfiles) ---
+[[language]]
+name = "fish"
+language-servers = [ "fish-lsp" ]
+formatter = { command = "fish_indent" }
+
+[language-server.fish-lsp]
+command = "fish-lsp"
+args = ["start"]
+
+# --- Bash (ops / chezmoi hooks) ---
+[[language]]
+name = "bash"
+language-servers = [ "bash-language-server" ]
+formatter = { command = "shfmt", args = ["-i", "2", "-ci"] }
+
+
+# ============================================================================
+# 4. Frontend, APIs & Data Feeds
+# ============================================================================
+
+# --- TypeScript (Node/bun services) ---
+[[language]]
+name = "typescript"
+roots = ["package.json", "tsconfig.json", ".git"]
+language-servers = [ "typescript-language-server" ]
+formatter = { command = "prettier", args = ["--parser", "typescript"] }
+
+# --- JavaScript (scripts / SDKs) ---
+[[language]]
+name = "javascript"
+roots = ["package.json", "jsconfig.json", ".git"]
+language-servers = [ "typescript-language-server" ]
+formatter = { command = "prettier", args = ["--parser", "babel"] }
+
+# tsserver inlay hints (applies to both TS and JS buffers)
+[language-server.typescript-language-server.config]
+typescript.inlayHints.parameterNames.enabled = "all"
+typescript.inlayHints.variableTypes.enabled = true
+typescript.inlayHints.functionLikeReturnTypes.enabled = true
+javascript.inlayHints.parameterNames.enabled = "all"
+javascript.inlayHints.variableTypes.enabled = true
+
+# --- Markdown (docs / notes) ---
 [[language]]
 name = "markdown"
 # Only list Marksman here to keep the health check clean
@@ -124,7 +126,6 @@ formatter = { command = "prettier", args = ["--parser", "markdown"] }
 command = "marksman"
 args = ["server"]
 
-
 # --- HTML ---
 [[language]]
 name = "html"
@@ -132,8 +133,7 @@ name = "html"
 language-servers = [ "vscode-html-language-server" ]
 formatter = { command = "prettier", args = ["--parser", "html"] }
 
-
-# --- TOML (Configs) ---
+# --- TOML (configs) ---
 [[language]]
 name = "toml"
 language-servers = [ "taplo" ]
@@ -142,7 +142,6 @@ formatter = { command = "taplo", args = ["format", "-"] }
 [language-server.taplo]
 command = "taplo"
 args = ["lsp", "stdio"]
-
 
 # --- JSON / JSONC (configs, tsconfig, package manifests) ---
 [[language]]
@@ -155,8 +154,7 @@ name = "jsonc"
 language-servers = [ "vscode-json-language-server" ]
 formatter = { command = "prettier", args = ["--parser", "jsonc"] }
 
-
-# --- YAML (CI pipelines / Compose / K8s manifests) ---
+# --- YAML (CI pipelines / Compose) ---
 [[language]]
 name = "yaml"
 # Only list yaml-language-server to keep the health check clean
