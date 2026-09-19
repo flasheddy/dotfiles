@@ -36,6 +36,7 @@ lazygit
 7zip
 btop
 diffutils
+duckdb
 dust
 fd
 hyperfine
