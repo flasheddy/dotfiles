@@ -144,4 +144,3 @@ pacman-contrib
 paru
 rebuild-detector
 reflector
-yay

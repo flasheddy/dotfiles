@@ -19,7 +19,7 @@ Key groups:
 - NVIDIA/AMD/Vulkan graphics drivers and 32-bit counterparts
 - Filesystem tools (`btrfs-progs`, `lvm2`, `cryptsetup`, `mdadm`, etc.)
 - Networking, Bluetooth, firewall, and remote access
-- Package-management helpers (`paru`, `yay`, `pacman-contrib`)
+- Package-management helpers (`paru`, `pacman-contrib`)
 
 ### `10-desktop-environment.txt`
 
@@ -67,7 +67,7 @@ Key groups:
 - Editors (`helix`)
 - Readers (`csvlens`, `glow`, `jless`) — read-only terminal document viewers
   (Markdown / JSON / TSV)
-- Shell enhancements (`bash-completion`, `starship`, `zoxide`)
+- Shell enhancements (`starship`, `zoxide`)
 - Git tooling (`git`, `github-cli`, `gitleaks`, `git-delta`, `lazygit`)
 - CLI utilities (`ripgrep`, `fd`, `sd`, `dust`, `duckdb`, `procs`, `hyperfine`, `just`, `tokei`, `btop`, `7zip`, `wget`, `xh`, `vivid`, etc.)
 
@@ -92,10 +92,9 @@ The active package lists in `packages/` are the modular manifests only.
 
 Dotfiles managed under `dot_config/` include:
 
-- **Fish shell**: `config.fish`, completions (`bun.fish`), functions
-  (`aup.fish`), and Pure prompt variables (`private_fish_variables`). PATH is
-  configured to include standalone toolchain directories (`~/.local/bin`,
-  `~/.cargo/bin`, `~/.bun/bin`, `~/go/bin`).
+- **Fish shell**: `config.fish`, completions (`bun.fish`), and functions
+  (`aup.fish`). PATH is configured to include standalone toolchain directories
+  (`~/.local/bin`, `~/.cargo/bin`, `~/.bun/bin`, `~/go/bin`).
 - **Helix editor**: `config.toml`, `languages.toml`.
 - **Starship prompt**: `starship.toml`.
 - **Git**: `dot_gitconfig`.
