@@ -46,7 +46,7 @@ Three `run_onchange_after_*.sh.tmpl` hooks re-run whenever their rendered conten
 
 1. **`00-install-packages`** — installs/updates native Pacman packages, AUR packages (`paru`/`yay`), and Flatpaks from the manifests.
 2. **`10-install-toolchains`** — bootstraps `rustup`, `uv`, `bun` if missing, then restores sub-tools from `toolchains/*.txt`.
-3. **`20-setup-system`** — root-level services: deploys `system/keyd/default.conf` → `/etc/keyd/default.conf` and reloads `keyd`; sets UFW defaults (deny incoming, allow outgoing, enable); enables `fstrim.timer` and `paccache.timer`; enables `clash-verge-service`. Also ensures the user-level symlink `~/AGENTS.md` → `~/.AGENTS.md` exists (no sudo).
+3. **`20-setup-system`** — root-level services: deploys `system/keyd/default.conf` → `/etc/keyd/default.conf` and restarts `keyd.service` via `systemctl restart keyd`; sets UFW defaults (deny incoming, allow outgoing, enable); enables `fstrim.timer` and `paccache.timer`; enables `clash-verge-service`. Also ensures the user-level symlink `~/AGENTS.md` → `~/.AGENTS.md` exists (no sudo).
 
 ### Key Remapping
 
@@ -104,7 +104,7 @@ This copies all dotfiles to `~/.config/`, `~/.ssh/config`, `~/.gitconfig`, etc.,
 ```fish
 sudo reboot                              # reboot into COSMIC
 sudo systemctl status keyd               # verify keyd
-sudo keyd list
+sudo keyd list-keys
 rustup show; uv --version; bun --version; go version
 printf '%s\n' $PATH                      # toolchain bins on PATH
 chezmoi status                           # no unexpected drift
@@ -230,7 +230,7 @@ Manual per-manager equivalents (debugging fallback, or single-manager updates): 
 ```fish
 cm
 hx system/keyd/default.conf
-cma    # hook 20 deploys to /etc/keyd/default.conf and reloads the service
+cma    # hook 20 deploys to /etc/keyd/default.conf and restarts keyd.service
 ```
 
 ---

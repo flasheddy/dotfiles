@@ -111,7 +111,7 @@ Append one entry per line, `#` comments. Keep `packages/manifest.md` in sync if 
 The three hooks run with `set -euo pipefail` and execute real system changes (including `sudo`). Any modification must satisfy **all** of the following:
 
 1. **Strictly idempotent** — N runs ≡ 1 run. Guard every mutation with a presence check (`command -v`, `systemctl is-enabled`, file-existence tests).
-2. **Graceful degradation** — optional steps must not abort the run: append `|| true` (e.g. `sudo keyd reload || true`), prefer `2>/dev/null || true` for optional systemd units.
+2. **Graceful degradation** — optional steps must not abort the run: append `|| true` (e.g. `uv tool install "$tool" || true`), prefer `2>/dev/null || true` for optional systemd units.
 3. **Checksum headers** — keep `{{ include "..." | sha256sum }}` lines accurate; they trigger `run_onchange` re-execution.
 4. **Syntax verification (mandatory before apply/commit)**:
 

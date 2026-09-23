@@ -14,7 +14,7 @@ fi
 sudo mkdir -p /etc/keyd
 sudo cp "{{ joinPath .chezmoi.sourceDir "system/keyd/default.conf" }}" /etc/keyd/default.conf
 sudo systemctl enable --now keyd
-sudo keyd reload || true
+sudo systemctl restart keyd
 
 # -----------------------------------------------------------------------------
 # UFW firewall defaults
