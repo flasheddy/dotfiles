@@ -176,6 +176,16 @@ then selects `id`, `role`, and `content_json` for the most recent `sessions.id`
 (`ORDER BY updated_at DESC LIMIT 1`). End-to-end read-only — for pasting transcripts
 into audit/review contexts without mutating the store.
 
+**`handoff-copy` helper.** `dot_config/fish/functions/handoff-copy.fish`
+snapshots state for a turn handoff. It opens
+`~/.local/share/goose/sessions/sessions.db` strictly with `sqlite3 -readonly`
+(no mutations), streams the latest assistant text block via
+`json_each`/`json_extract` (no newline-splitting truncation), and captures git
+context (branch, commit, working-tree status) plus the latest plan path into a
+Markdown buffer copied to the clipboard via `wl-copy`. End-to-end read-only —
+used to preserve prompt defense and invariant continuity when handing a turn to
+a fresh session or Gemini Chat.
+
 ---
 
 ## 3. Forbidden Actions

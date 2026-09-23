@@ -165,6 +165,14 @@ DeepSeek Chat architectural/code-quality audit. It resolves the merge base again
 streams each file's raw content to the clipboard via `wl-copy`. Run `phase-review-copy`,
 then paste into DeepSeek Chat.
 
+### Agent Turn Checkpoint Handoff
+
+`handoff-copy` (Fish function → `~/.config/fish/functions/handoff-copy.fish`)
+snapshots the latest Goose session for a turn handoff: it streams the latest
+assistant text block, session ID, git context (branch, commit, working-tree
+status), and plan path into a Markdown buffer, then copies it to the Wayland
+clipboard via `wl-copy` for pasting into Gemini Chat.
+
 ### PATH Symlinks
 
 Managed via `dot_local/bin/symlink_*` (tracked in `toolchains/local-bin.txt`): `hx` → `/usr/bin/helix`.
