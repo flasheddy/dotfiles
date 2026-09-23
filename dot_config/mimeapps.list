@@ -244,6 +244,10 @@ application/xhtml+xml=firefox.desktop
 application/x-extension-xhtml=firefox.desktop
 application/x-extension-xht=firefox.desktop
 x-scheme-handler/ccswitch=cc-switch-handler.desktop
+x-scheme-handler/mailto=userapp-Thunderbird-F86EW3.desktop
+x-scheme-handler/mid=userapp-Thunderbird-F86EW3.desktop
+message/rfc822=userapp-Thunderbird-F86EW3.desktop
+x-scheme-handler/net.thunderbird=userapp-Thunderbird-BR5CW3.desktop
 
 [Added Associations]
 x-scheme-handler/http=firefox.desktop;
@@ -258,3 +262,7 @@ application/x-extension-xhtml=firefox.desktop;
 application/x-extension-xht=firefox.desktop;
 x-scheme-handler/clash=clash-verge.desktop;
 x-scheme-handler/clash-verge=clash-verge.desktop;
+x-scheme-handler/mailto=userapp-Thunderbird-F86EW3.desktop;
+x-scheme-handler/mid=userapp-Thunderbird-F86EW3.desktop;
+message/rfc822=userapp-Thunderbird-F86EW3.desktop;
+x-scheme-handler/net.thunderbird=userapp-Thunderbird-BR5CW3.desktop;
