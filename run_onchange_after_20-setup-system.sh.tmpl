@@ -36,9 +36,13 @@ sudo systemctl enable --now fstrim.timer paccache.timer 2>/dev/null || true
 # Background daemons
 # -----------------------------------------------------------------------------
 
-# Clash Verge proxy service
-if command -v clash-verge-service >/dev/null 2>&1; then
-  sudo systemctl enable clash-verge-service
+# Clash Verge proxy service (idempotent install + enable/start)
+if [ -x /usr/bin/clash-verge-service-install ]; then
+  if [ ! -f /etc/systemd/system/clash-verge-service.service ]; then
+    sudo /usr/bin/clash-verge-service-install
+  fi
+  systemctl is-active --quiet clash-verge-service \
+    || sudo systemctl enable --now clash-verge-service
 fi
 
 # -----------------------------------------------------------------------------

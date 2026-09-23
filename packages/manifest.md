@@ -40,6 +40,10 @@ Key groups:
 - Wayland/desktop integration tools (`grim`, `wl-clipboard`, `xdg-*`)
 - GUI applications (`clash-verge-rev-bin`, etc.)
 
+> **Note:** `clash-verge-rev-bin` requires the companion `clash-verge-service`
+> system service for TUN mode. The service is installed and enabled by the
+> `run_onchange_after_20-setup-system.sh.tmpl` hook.
+
 ### `20-dev-stacks.txt`
 
 Compilers, language runtimes, language servers, build/test/linters, and databases.
