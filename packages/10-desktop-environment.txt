@@ -96,3 +96,5 @@ seahorse
 
 # GUI applications
 solaar
+# Standalone mail and news client (Mozilla)
+thunderbird

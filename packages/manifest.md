@@ -36,6 +36,7 @@ Key groups:
 - Fonts (including `ttf-jetbrains-mono-nerd` for terminal glyph rendering)
   and cursor/wallpaper themes
 - Web browsers (`firefox`, `ungoogled-chromium-bin`)
+- Email client (`thunderbird`)
 - Media players/codecs and document libraries
 - Wayland/desktop integration tools (`grim`, `wl-clipboard`, `xdg-*`)
 - GUI applications (`clash-verge-rev-bin`, etc.)
