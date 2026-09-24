@@ -63,7 +63,7 @@
     "bold": true
   },
   "code": {
-    "color": "#fab387",
+    "color": "#cba6f7",
     "background_color": "#313244"
   },
   "code_block": {
@@ -148,8 +148,8 @@
   },
   "table": {
     "color": "#cdd6f4",
-    "center_separator": "┼",
-    "column_separator": "│",
+    "center_separator": " ",
+    "column_separator": "   ",
     "row_separator": "─"
   },
   "table_header": {
