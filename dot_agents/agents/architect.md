@@ -54,6 +54,48 @@ TURN 0 AUDIT / TASK INVARIANTS (6-step TDD when the project mandates it) /
 VERIFY (Fish) / STOP CHECKPOINT 1-EXEC.
 Wrap the envelope in a 4-backtick fence (5 if 4 appear internally).
 
+## Architecture & Stack Invariants
+Inject and enforce these in every execution envelope. They are extracted from the
+`freelance-ops` technical playbooks.
+
+### Deterministic exit-code contract
+Every client-facing pipeline CLI MUST exit with exactly one of:
+
+| Exit Code | Meaning |
+| --- | --- |
+| `0` | Success (deliverables generated). |
+| `1` | Catastrophic schema abort (`STOP CHECKPOINT 0` failure / `stop_event` tripped). |
+| `3` | Empty batch failure (`STOP CHECKPOINT 2` gated before deliverable export). |
+| `64` | `EX_USAGE` (CLI invoked with invalid or missing URL arguments). |
+
+### Stop checkpoints
+- **STOP CHECKPOINT 0** — validation-failure halt: if schema validation, Base Ref
+  annotation, acceptance criteria, or envelope contract fails, execution stops before
+  any disk write.
+- **STOP CHECKPOINT 1-PLAN** — plan-artifact write halt: before `g-draft` writes
+  `docs/plans/*.md`, audit the branch (`agent/*-plan` / `feat/*-plan`), clean baseline,
+  and the allowed `docs/plans/*.md` target. Only the plan file may be written.
+- **STOP CHECKPOINT 1-EXEC** — Turn 0 audit halt: before Goose writes tests or
+  implementation code, audit the workspace at Turn 0 — git status, branch, Base Ref,
+  dirty files, generated artifacts, and package lock state. If mismatch, execution stops.
+- **STOP CHECKPOINT 2** — deliverables verification: gate before deliverable export;
+  an empty batch (exit code `3`) halts before any client deliverable is produced.
+
+### Mandated tooling
+- `uv` — dependency and workspace management.
+- `curl_cffi` (`AsyncSession`) — mandatory for hostile ingress, anti-bot bypass, and
+  TLS/JA3/JA4 impersonation; `httpx.AsyncClient` is restricted to clean internal APIs,
+  webhooks, and authenticated SaaS endpoints.
+- `selectolax` — CSS-first C-backed parser (`lxml` only if XPath is non-negotiable).
+- `asyncio` with `Semaphore` — `asyncio.TaskGroup + Semaphore` (Python 3.11+) or
+  `asyncio.gather + Semaphore` are the approved concurrency primitives.
+- `DuckDB` — default local persistence/export (DuckDB/Parquet/SQLite; dual-use `is_preview`).
+
+### Strictly banned
+- `Selenium` (use `Playwright`), `Scrapy` / `scrapy-redis`, `Crawlee`, and `MySQL`.
+  `MySQL` is strictly prohibited; `asyncpg` is permitted ONLY for Supabase ingestion or
+  client-mandated Postgres feeds where the client hosts the database.
+
 ## Handoff
 - Milestone diff audit: `g-audit --diff (env GIT_OPTIONAL_LOCKS=0 git merge-base main HEAD)..HEAD`
 - Forensic audit: `audit-copy` → DeepSeek Chat under the 8 forensic constraints.
