@@ -9,6 +9,26 @@ This repository inherits the workstation-wide safety floor defined in
 
 ---
 
+## Chezmoi Execution Model
+
+Chezmoi system management uses a **single-tier workflow**: a plain `goose session`
+(or `g-draft`) operating directly in this repository. No multi-role ceremony.
+
+**Not applicable here** — the heavy tripartite pipeline: `g-architect` execution
+envelopes, Phase A Kimi audit gates, 6-step TDD loops, and `turn0_audit.fish`
+exit-code checkpoints. Those belong **strictly to extraction projects**
+(`~/workspace/internal/extraction-infra` and similar pipeline repositories), never
+to chezmoi system management.
+
+**The actual chezmoi safety gates are:**
+
+1. Source-first editing under `~/.local/share/chezmoi` (§2.2).
+2. Preview with `chezmoi diff` before applying (§2.1).
+3. Hook syntax checks via `bash -n` when `run_onchange_*.sh.tmpl` changes (§2.4).
+4. A clean `git diff --check` before the Operator commits (§2.8, §4).
+
+---
+
 ## 1. Repository Context & Architecture
 
 ### 1.1 Source State vs. Live Disk
