@@ -16,10 +16,15 @@ function envelope-copy --description 'Extract latest 4-backtick execution envelo
         return 1
     end
 
-    # Latest session (mirrors audit-copy.fish).
-    set -l session_id (sqlite3 -readonly $db "SELECT id FROM sessions ORDER BY updated_at DESC LIMIT 1;")
+    # Latest architect session, preferring the current working directory.
+    set -l pwd_esc (string replace -a "'" "''" "$PWD")
+    set -l session_id ""
+    set session_id (sqlite3 -readonly $db "SELECT id FROM sessions WHERE name LIKE 'architect-%' AND working_dir = '$pwd_esc' ORDER BY updated_at DESC LIMIT 1;")
     if test -z "$session_id"
-        echo "envelope-copy: no sessions found in database." >&2
+        set session_id (sqlite3 -readonly $db "SELECT id FROM sessions WHERE name LIKE 'architect-%' ORDER BY updated_at DESC LIMIT 1;")
+    end
+    if test -z "$session_id"
+        echo "envelope-copy: no g-architect session found." >&2
         return 1
     end
 
