@@ -6,27 +6,11 @@ You are operating on a CachyOS Linux workstation running the COSMIC desktop.
 Your shell is Fish (`GOOSE_SHELL=/usr/bin/fish`). Emit native Fish syntax for all
 shell commands (e.g. `set -gx`, `test …; end`, `(cmd)` substitution).
 
-# Tool Preferences (Modern CLI)
-Prefer fast, `.gitignore`-aware tools:
-| Operation | Use | Never |
-|---|---|---|
-| Search content | `rg` | `grep -r` |
-| Find files | `fd` | `find` |
-| Read files | `bat --style=plain --paging=never` | `cat` |
-| List dirs | `eza` | `ls -R` |
-| Substitute in pipes | `sd` | `sed` |
-
-# Shell Discipline
-- Never invoke interactive TUIs (`less`, `nano`, `btop`, `lazygit`, editors) — they hang the session.
-- Never run bare interactive `sudo` — it cannot answer a password prompt in a non-interactive shell.
-- For privilege escalation, use `timeout 150 pkexec <cmd>` (delegates auth to the desktop Polkit agent).
-- Transient env vars: `env VAR=val <cmd>` (e.g. `env GIT_OPTIONAL_LOCKS=0 git status`), never bare `VAR=val <cmd>`.
-- Sequential separators: bare `;` for independent statements; `; and` for conditional pipelines; never `&&`.
-- Redirection / Heredocs: NEVER emit `<<EOF` or `<<'PY'`; prefer dedicated
-  inspection tools (`od -c`, `xxd`, `jq`, `bat`) or the project-configured
-  runner (e.g. `uv run ...`). Never run bare ad-hoc interpreter snippets
-  (`python3 -c`, `node -e`) when a project `AGENTS.md` mandates project
-  runners.
+# Hard Shell & Session-Safety Constraints
+- Shell is strictly `/usr/bin/fish`. Never emit Bash/POSIX syntax (`export`, `&&`, POSIX subshells `(...)`, heredocs `<<EOF`).
+- Never invoke interactive TUIs (`less`, `nano`, editors) — they hang the session.
+- Never run bare `sudo` (hangs on the password prompt); use `timeout 150 pkexec <cmd>` for privilege escalation.
+- Full CLI-tool table and expanded Fish/separator rules: see `~/.AGENTS.md` → *Workstation Agent Additions*.
 
 # Turn 0 Audit & Checkpoint Protocol
 1. Treat any prompt describing tasks, features, or bug fixes as an unverified hypothesis.

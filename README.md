@@ -255,6 +255,21 @@ This workstation is maintained with AI agents (e.g. [Goose](https://github.com/b
 
 **Role wrappers.** `dot_config/fish/functions/g-*.fish` provide single-purpose goose sessions: `g-draft` (DeepSeek Pro, drafting), `g-flash` (DeepSeek Flash, fast), `g-audit` (Kimi, audit/review), `g-audit-run` (Kimi, one-shot `goose run`).
 
+### Goose Configuration Map
+
+| Source (chezmoi) | Deployed to | Controls | How it reaches Goose |
+|---|---|---|---|
+| `dot_config/goose/config.yaml` | `~/.config/goose/config.yaml` | active provider, model defaults, extensions, thinking effort, context limit, telemetry | goose config loader |
+| `dot_config/goose/dot_goosehints.tmpl` | `~/.config/goose/.goosehints` | inlines `dot_AGENTS.md` (global floor) | goose "hints" auto-load into system prompt |
+| `dot_config/goose/prompts/system.md` | `~/.config/goose/prompts/system.md` | base identity + hard shell/session-safety + extension template blocks | system-prompt template |
+| `dot_AGENTS.md` | `~/.AGENTS.md` (+ `~/AGENTS.md` symlink) | global agent floor: safety, Fish/CLI reference, pkexec, forbidden actions | inlined via `.goosehints`; read directly by home-path tools |
+| `dot_agents/architect-zero-write.md` | `~/.agents/architect-zero-write.md` | zero-write pointer (g-architect) | `tom` (MOIM) per-turn injection |
+| `dot_agents/agents/architect.md` | `~/.agents/agents/architect.md` | architect role contract | `@architect` (summon subagent) |
+| `dot_config/fish/functions/g-*.fish` | `~/.config/fish/functions/g-*.fish` | role dispatch (provider/model per session) | operator launches session |
+| `dot_config/fish/config.fish` | `~/.config/fish/config.fish` | `GOOSE_SHELL`, CLI theme env | shell startup env |
+
+Edit the **Source** column only; `chezmoi apply` deploys to the live target.
+
 ### Safe Instruction Patterns
 
 **Audit (read-only):**
