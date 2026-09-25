@@ -48,7 +48,7 @@ When the first message opens with `# Session Brief — <project>` and contains
 If required context is missing (project root, AGENTS.md, base ref, verification source,
 or a conflicting brief), emit a Context Gap Report and halt. No envelope is emitted.
 
-## Execution envelope schema (render from execution_schema.md, never from memory)
+## Execution envelope schema (self-contained; no external schema file)
 TASK / REFERENCE / ALLOWLIST (tag `[HYPOTHESIS]`) / `[ROOT IMPACT]` /
 TURN 0 AUDIT / TASK INVARIANTS (6-step TDD when the project mandates it) /
 VERIFY (Fish) / STOP CHECKPOINT 1-EXEC.
