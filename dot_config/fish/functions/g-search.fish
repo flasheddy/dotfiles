@@ -4,12 +4,9 @@ function g-search --description 'Search Goose session history by keyword'
         return 1
     end
 
-    # Locate the Goose sessions database (read-only), matching audit-copy/handoff-copy.
-    set -l db (fd -t f -e db sessions.db ~/.local/share/goose/ 2>/dev/null | head -n 1)
-    if test -z "$db"
-        echo "g-search: Goose database not found." >&2
-        return 1
-    end
+    # Locate the Goose sessions database (read-only).
+    set -l db (__goose_db)
+    or return 1
     if not command -v sqlite3 >/dev/null 2>&1
         echo "g-search: sqlite3 not found." >&2
         return 1

@@ -1,10 +1,7 @@
 function handoff-copy --description "Copy a Goose session handoff summary to the Wayland clipboard"
     # Locate the Goose sessions database (read-only).
-    set -l db (fd -t f -e db sessions.db ~/.local/share/goose/ 2>/dev/null | head -n 1)
-    if test -z "$db"
-        echo "handoff-copy: Goose database not found." >&2
-        return 1
-    end
+    set -l db (__goose_db)
+    or return 1
 
     # Require tooling.
     if not command -v sqlite3 >/dev/null 2>&1

@@ -1,9 +1,6 @@
 function audit-copy --description "Extract latest Goose session transcript to Wayland clipboard"
-    set -l db (fd -t f -e db sessions.db ~/.local/share/goose/ 2>/dev/null | head -n 1)
-    if test -z "$db"
-        echo "Goose database not found." >&2
-        return 1
-    end
+    set -l db (__goose_db)
+    or return 1
 
     sqlite3 -readonly $db "
         SELECT id || ' | ' || role || ': ' || content_json
