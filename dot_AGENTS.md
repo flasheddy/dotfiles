@@ -79,6 +79,66 @@ schemas, and architecture rules.
   - Refer strictly to roles ("drafting model" / "reviewing model") rather than vendor names.
   - Commit authority and branch rules remain strictly operator-controlled at all times.
 
+## SDD Invariant & Anti-Loop Harness
+
+Workflow discipline for every agent task under `$HOME`. Floor-class: a
+project-local `AGENTS.md` may add stricter workflow, but never weaken or skip
+these four rules.
+
+### Spec-Driven Development (SDD) Invariant Sync Order
+
+When a requirement, contract, or design decision changes mid-task, apply the
+sync order — never patch ad hoc:
+
+1. `Spec` — update requirements + acceptance criteria first.
+2. `Plan` — check impact; adjust the technical plan.
+3. `Tasks` — re-derive affected tasks.
+4. `Implement` — only then touch code.
+
+- Requirements live in the Spec, never in chat history. New features go into a
+  "to-do later" section, not silently into the current scope.
+- Every requirement carries a machine-checkable acceptance criterion
+  (PASS/FAIL assertion). "Works well" or "improve X" is not an acceptance
+  criterion.
+
+### 5-Step Anti-Loop Debugging Protocol
+
+On the first sign of a fix → retry loop (same failure reappears), stop and
+apply in order:
+
+1. **Write Freeze** — stop editing; switch to read-only symptom analysis.
+2. **Minimal Diff / Symptom Isolation** — one failing test + `git diff -U3`
+   only; reproduce the smallest possible failure and discard unrelated changes.
+3. **Spec/Docs Injection** — re-read the authoritative contract/signature
+   (`AGENTS.md`, spec, schema, function signature) before hypothesizing.
+4. **Context Kill on ≥3 loops** — after 3 failed attempts on the same symptom,
+   write a concise audit summary, end the session, and start fresh (no inherited
+   stale context).
+5. **Role Escalation** — if the symptom survives a clean restart, escalate
+   `g-draft` → `g-architect` re-specification (or Operator). Do not keep
+   patching the same hypothesis.
+
+### Context Hygiene & Boundary Rules
+
+- `/context` — inspect what occupies context before acting.
+- `/compact` (with retention priorities) — task incomplete; compress and
+  explicitly name what to keep (completed work, open problems, next task).
+- `/clear` / new session — task complete; wipe context, never carry stale state.
+- One session = one objective. Tangential ideas go to a fork or separate
+  thread, never the main session.
+
+### Task Execution Contract (Goose Task Schema)
+
+Every execution envelope (`g-draft`) MUST declare all four fields before any
+write or state change:
+
+| Field | Required content |
+|---|---|
+| **Task Objective** | One sentence: the single deliverable. |
+| **Target Modules / Files** | Exact file paths in scope. |
+| **Prerequisites** | Docs/state that must already exist. |
+| **Machine-Verifiable Verification** | A PASS/FAIL assertion (`test -s`, `rg -q`, exit code) proving completion. |
+
 ---
 
 ## Workstation Agent Additions
