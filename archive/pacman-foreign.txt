@@ -2,3 +2,4 @@ catppuccin-cursors-mocha
 catppuccin-whiskers-bin
 clash-verge-rev-bin
 pandoc-bin
+shellcheck-bin

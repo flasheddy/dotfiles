@@ -29,7 +29,6 @@ bats
 bats-assert
 bats-file
 bats-support
-shellcheck
 shfmt
 taplo-cli
 
