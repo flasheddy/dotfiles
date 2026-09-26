@@ -110,32 +110,27 @@ sysfsutils
 upower
 
 # Networking, Bluetooth, firewall, and remote access
-bind
 bluez
 bluez-hid2hci
 bluez-libs
 bluez-obex
 bluez-utils
 bpftune-git
-dnsmasq
 ethtool
 glances
 inetutils
 iptables
 iwd
 modemmanager
-netctl
 networkmanager
 networkmanager-openvpn
 nss-mdns
 openssh
 rsync
-s-nail
 ufw
 ufw-extras
 usb_modeswitch
 wpa_supplicant
-xl2tpd
 
 # Dotfiles and package-management helpers
 chezmoi

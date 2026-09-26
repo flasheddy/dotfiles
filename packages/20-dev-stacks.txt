@@ -19,11 +19,6 @@ delve
 golangci-lint
 gopls
 
-# Python tooling
-python-adblock
-python-defusedxml
-python-packaging
-
 # Build, test, and lint tools
 bats
 bats-assert
