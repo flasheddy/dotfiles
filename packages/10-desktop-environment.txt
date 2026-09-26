@@ -17,6 +17,7 @@ cosmic-player
 cosmic-session
 cosmic-store
 cosmic-terminal
+cosmic-viewer
 cosmic-wallpapers
 
 # Display manager and display utilities
