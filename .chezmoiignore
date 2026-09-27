@@ -23,6 +23,9 @@ README.md
 # Prevent GUI rewrite drift
 .config/goose/config.yaml
 
+# Private instructions for Gemini
+web_chat_rules.md
+
 # Repository metadata and package manifests
 archive
 archive/**
