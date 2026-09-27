@@ -18,7 +18,7 @@ function g-architect --description 'Goose session — Prompt Architect (zero-wri
     if test $named -eq 0
         set -a args -n "architect-"(date +%Y%m%d_%H%M%S)
     end
-    env GOOSE_PROVIDER=custom_deepseek GOOSE_MODEL=deepseek-v4-pro GOOSE_MOIM_MESSAGE_FILE=$HOME/.agents/architect-zero-write.md goose session $args
-    # Strict variant (operator approves every tool call; uncomment to enable):
-    # env GOOSE_PROVIDER=custom_deepseek GOOSE_MODEL=deepseek-v4-pro GOOSE_MODE=approve GOOSE_MOIM_MESSAGE_FILE=$HOME/.agents/architect-zero-write.md goose session $args
+    env GOOSE_PROVIDER=custom_deepseek GOOSE_MODEL=deepseek-v4-pro GOOSE_MODE=approve GOOSE_MOIM_MESSAGE_FILE=$HOME/.agents/architect-zero-write.md goose session $args
+    # Non-strict variant (no per-tool approval) kept for reference:
+    # env GOOSE_PROVIDER=custom_deepseek GOOSE_MODEL=deepseek-v4-pro GOOSE_MOIM_MESSAGE_FILE=$HOME/.agents/architect-zero-write.md goose session $args
 end
