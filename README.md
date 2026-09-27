@@ -221,7 +221,6 @@ The primary update workflow is the `aup` Fish function (`dot_config/fish/functio
 | **bun-globals** | `bun update --global --latest` | global npm packages, no `cd` needed |
 | **go** | `gup update` | all `go install`ed binaries |
 | **tldr** | `tldr --update` | tldr page cache |
-| **goose** | `goose update` | goose CLI self-update (stable channel) |
 
 | Flag | Effect |
 |---|---|
@@ -231,7 +230,7 @@ The primary update workflow is the `aup` Fish function (`dot_config/fish/functio
 | `-f`, `--force` | ignore the success cache and re-run every stage |
 | `-h`, `--help` | show usage |
 
-Manual per-manager equivalents (debugging fallback, or single-manager updates): `rustup update` + `cargo install-update -a` · `uv self update` + `uv tool upgrade --all` · `bun upgrade` + `bun update --global --latest` · `gup update` · `tldr --update` · `goose update`.
+Manual per-manager equivalents (debugging fallback, or single-manager updates): `rustup update` + `cargo install-update -a` · `uv self update` + `uv tool upgrade --all` · `bun upgrade` + `bun update --global --latest` · `gup update` · `tldr --update`.
 
 ### Modifying Root Settings
 

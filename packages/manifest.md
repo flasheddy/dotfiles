@@ -171,7 +171,7 @@ Go modules installed with `go install`:
 Standalone binaries placed directly in `~/.local/bin` and not managed by any
 toolchain manager above:
 
-- `goose`
+- (none; goose moved to AUR goose-desktop-bin)
 
 Previously this file also contained symlinks for `uv`/`uvx` (standalone
 toolchain), `python3.12` (uv-managed Python), and
