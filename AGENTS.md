@@ -184,7 +184,7 @@ Every agent-created or -rewritten commit:
 
 ### 2.9 Session Auditing
 
-**Session Auditor role.** A read-only review role (`g-audit` / `g-audit-run`)
+**Session Auditor role.** A read-only review role (`g-audit`)
 inspects agent session history and repository state for drift. The
 goose store `~/.local/share/goose/sessions/sessions.db` is opened **only** with
 `sqlite3 -readonly`; no `DELETE`/`UPDATE`/`VACUUM` is ever issued against it.

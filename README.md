@@ -245,7 +245,7 @@ This workstation is maintained with AI agents (e.g. [Goose](https://github.com/b
 
 **Native system prompt.** The goose base prompt is overridden by `dot_config/goose/prompts/system.md` (deployed to `~/.config/goose/prompts/system.md`): it bakes in this machine's identity (CachyOS / COSMIC / Fish), modern-CLI tool preferences (`rg`/`fd`/`bat`/`eza`/`sd`), a ban on interactive TUIs, and `timeout 150 pkexec` privilege escalation — while preserving goose's runtime extension and top-of-mind injection blocks.
 
-**Role wrappers.** `dot_config/fish/functions/g-*.fish` provide single-purpose goose sessions: `g-draft` (DeepSeek Pro, drafting), `g-flash` (DeepSeek Flash, fast), `g-audit` (Kimi, audit/review), `g-audit-run` (Kimi, one-shot `goose run`).
+**Role wrappers.** `dot_config/fish/functions/g-*.fish` provide single-purpose goose sessions: `g-draft` (DeepSeek Pro, drafting), `g-flash` (DeepSeek Flash, fast), `g-audit` (Kimi, audit/review).
 
 ### Goose Configuration Map
 
