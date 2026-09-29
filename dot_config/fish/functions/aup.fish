@@ -70,6 +70,7 @@ function aup --description 'Update system packages and developer toolchains'
         __aup_run bun-globals __aup_bun_globals
         __aup_run go gup update
         __aup_run tldr tldr --update
+        __aup_run goose goose update
     else
         set -a __aup_skipped "toolchains (disabled)"
     end

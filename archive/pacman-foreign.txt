@@ -3,4 +3,3 @@ catppuccin-whiskers-bin
 clash-verge-rev-bin
 pandoc-bin
 shellcheck-bin
-goose-desktop-bin
