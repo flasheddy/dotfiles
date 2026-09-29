@@ -20,9 +20,6 @@ README.md
 .config/goose/xai_oauth
 .config/goose/xai_oauth/**
 
-# Prevent GUI rewrite drift
-.config/goose/config.yaml
-
 # Private instructions for Gemini
 web_chat_rules.md
 

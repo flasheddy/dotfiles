@@ -92,6 +92,38 @@ extensions:
     display_name: Developer
     timeout: null
     bundled: true
+  computercontroller:
+    enabled: false
+    type: builtin
+    name: computercontroller
+    description: General computer control tools that don't require you to be a developer or engineer.
+    display_name: Computer Controller
+    timeout: 300
+    bundled: true
+  autovisualiser:
+    enabled: false
+    type: builtin
+    name: autovisualiser
+    description: Data visualization and UI generation tools
+    display_name: Auto Visualiser
+    timeout: 300
+    bundled: true
+  memory:
+    enabled: false
+    type: builtin
+    name: memory
+    description: Teach goose your preferences as you go.
+    display_name: Memory
+    timeout: 300
+    bundled: true
+  tutorial:
+    enabled: false
+    type: builtin
+    name: tutorial
+    description: Access interactive tutorials and guides
+    display_name: Tutorial
+    timeout: 300
+    bundled: true
 active_provider: custom_deepseek
 providers:
   moonshot:
@@ -100,8 +132,7 @@ providers:
     configured: true
   custom_deepseek:
     enabled: true
-    model: deepseek-v4-pro
-    # g-flash role model: deepseek-flash (set via GOOSE_MODEL in g-flash.fish)
+    model: deepseek-v4-flash
     configured: true
-GOOSE_THINKING_EFFORT: max
+GOOSE_THINKING_EFFORT: medium
 GOOSE_CONTEXT_LIMIT: 1048576
