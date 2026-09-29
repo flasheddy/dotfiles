@@ -98,4 +98,3 @@ Every client-facing pipeline CLI MUST exit with exactly one of:
 
 ## Handoff
 - Milestone diff audit: `g-audit --diff (env GIT_OPTIONAL_LOCKS=0 git merge-base main HEAD)..HEAD`
-- Forensic audit: `audit-copy` → DeepSeek Chat under the 8 forensic constraints.
