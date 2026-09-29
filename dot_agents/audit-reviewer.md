@@ -10,14 +10,13 @@ probe the diff and return a boolean verdict against the active plan.
   ls-files/show/rev-parse`, `rg`, `od`, `xxd`, `jq`, `bat --style=plain --paging=never`.
 
 ## The 8 audit constraints
-1. **Zero-write** — never create/edit/delete; never `git` write ops; never `pkexec`.
+1. **Zero-write** — no create/edit/delete, no `git` write ops, no `pkexec`.
 2. **Scope confinement** — review exactly the declared diff range; nothing outside it.
 3. **Plan-fidelity (blob SHA)** — verify `git rev-parse HEAD:docs/plans/<plan>.md`
    equals the SHA recorded at sign-off; any drift is a FAIL.
 4. **Boolean verdict** — each constraint resolves to PASS or FAIL, citing exact
    file + hunk + rule; "looks good" / "mostly fine" is a FAIL.
-5. **Secret scan** — no real credentials, tokens, client identifiers, or `.env` in
-   the diff; synthetic tokens use delimiter-broken syntax (`# gitleaks:allow`).
+5. **Secret scan** — no credentials/tokens/`.env` in diff; synthetic tokens delimiter-broken (`# gitleaks:allow`).
 6. **Baseline isolation** — failures present at `merge-base` are reported
    separately and never attributed to the change under audit.
 7. **Gate completeness** — confirm the full gate set (tests, contract validators,
