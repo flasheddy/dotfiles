@@ -32,13 +32,18 @@ function envelope-copy --description 'Extract latest 4-backtick execution envelo
         return 1
     end
 
-    # Extract the first 4-backtick fenced block, if present.
-    set -l envelope (string match -rg '(?s)````[^\n]*\n(.+?)\n````' "$text")
-    if test (count $envelope) -gt 0
-        printf '%s\n' $envelope | wl-copy
-        echo "envelope-copy: 4-backtick envelope copied to clipboard."
-    else
+    # Extract ALL envelopes into an array.
+    # (?s) allows dot to match newlines. .*? non-greedily captures the inner content.
+    # Strict start/end anchors are removed so stray spaces or LLM formatting quirks never break it.
+    set -l envelopes (string match -rg -a '(?s)````[^\n]*\n(.*?)\n[ \t]*````' "$text")
+
+    if test (count $envelopes) -eq 0
         printf '%s\n' "$text" | wl-copy
         echo "envelope-copy: No 4-backtick envelope found; copied full assistant response." >&2
+    else
+        # Grab the absolute last envelope in the array
+        set -l final_envelope $envelopes[-1]
+        printf '%s\n' $final_envelope | wl-copy
+        echo "envelope-copy: Latest 4-backtick envelope copied to clipboard."
     end
 end
