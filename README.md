@@ -235,7 +235,7 @@ This workstation is maintained with AI agents (e.g. [Goose](https://github.com/b
 
 **Native system prompt.** The goose base prompt is overridden by `dot_config/goose/prompts/system.md` (deployed to `~/.config/goose/prompts/system.md`): it bakes in this machine's identity (CachyOS / COSMIC / Fish), modern-CLI tool preferences (`rg`/`fd`/`bat`/`eza`/`sd`), a ban on interactive TUIs, and `timeout 150 pkexec` privilege escalation — while preserving goose's runtime extension and top-of-mind injection blocks.
 
-**Role wrappers.** `dot_config/fish/functions/g-*.fish` provide single-purpose goose sessions: `g-draft` (DeepSeek Pro, drafting), `g-flash` (DeepSeek Flash, fast), `g-audit` (Kimi Phase A (plan review, default) / DeepSeek Phase B (diff verify, -b)).
+**Summon agents.** Native goose subagents (`~/.agents/agents/*.md`) form a four-role quadrant: `g-draft` (DeepSeek Pro, full-TDD executor), `g-flash` (DeepSeek Flash, fast/simple tasks), `g-audit-a` (Kimi, Phase A plan review), and `g-audit-b` (DeepSeek Flash, Phase B milestone diff audit). Invoke via `delegate`/`load`.
 
 ### Goose Configuration Map
 
@@ -245,8 +245,7 @@ This workstation is maintained with AI agents (e.g. [Goose](https://github.com/b
 | `dot_config/goose/dot_goosehints.tmpl` | `~/.config/goose/.goosehints` | inlines `dot_AGENTS.md` (global floor) | goose "hints" auto-load into system prompt |
 | `dot_config/goose/prompts/system.md` | `~/.config/goose/prompts/system.md` | base identity + hard shell/session-safety + extension template blocks | system-prompt template |
 | `dot_AGENTS.md` | `~/.AGENTS.md` (+ `~/AGENTS.md` symlink) | global agent floor: safety, Fish/CLI reference, pkexec, forbidden actions | inlined via `.goosehints`; read directly by home-path tools |
-| `dot_agents/architect-zero-write.md` | `~/.agents/architect-zero-write.md` | zero-write pointer (g-architect) | `tom` (MOIM) per-turn injection |
-| `dot_agents/agents/architect.md` | `~/.agents/agents/architect.md` | architect role contract | `@architect` (summon subagent) |
+| `dot_agents/agents/*.md` | `~/.agents/agents/*.md` | native summon subagents: `architect`, `g-draft`, `g-flash`, `g-audit-a`, `g-audit-b` | `delegate` / `load` (summon) |
 | `dot_config/fish/functions/g-*.fish` | `~/.config/fish/functions/g-*.fish` | role dispatch (provider/model per session) | operator launches session |
 | `dot_config/fish/config.fish` | `~/.config/fish/config.fish` | `GOOSE_SHELL`, CLI theme env | shell startup env |
 
@@ -297,7 +296,7 @@ Before committing to your fork, personalize the machine-specific parts: replace 
 │   └── pacman-native.txt                  # legacy native package dump
 ├── dot_AGENTS.md                          # global agent rules & safety floor → ~/.AGENTS.md
 ├── dot_config/
-│   ├── fish/                              # config.fish, completions/bun.fish, conf.d/rustup.fish, functions/{aup,g-draft,g-audit,g-flash}.fish
+│   ├── fish/                              # config.fish, completions/bun.fish, conf.d/rustup.fish, functions/{aup,g-clean,handoff-copy,focus-timer,pkg-verify}.fish
 │   ├── goose/                             # Goose agent config (config.yaml, dot_goosehints.tmpl, prompts/system.md)
 │   ├── glow/                              # glow Markdown reader config + Catppuccin Mocha theme
 │   ├── helix/                             # Helix editor config

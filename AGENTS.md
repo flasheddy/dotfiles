@@ -12,13 +12,17 @@ This repository inherits the workstation-wide safety floor defined in
 ## Chezmoi Execution Model
 
 Chezmoi system management uses a **single-tier workflow**: a plain `goose session`
-(or `g-draft`) operating directly in this repository. No multi-role ceremony.
+operating directly in this repository. No multi-role ceremony.
 
-**Not applicable here** — the heavy tripartite pipeline: `g-architect` execution
-envelopes, Phase A Kimi audit gates, 6-step TDD loops, and `turn0_audit.fish`
-exit-code checkpoints. Those belong **strictly to extraction projects**
-(`~/workspace/internal/extraction-infra` and similar pipeline repositories), never
-to chezmoi system management.
+Native summon subagents are available via `delegate`/`load` for scoped work:
+`architect` (zero-write prompt compiler), `g-draft` (full-TDD executor),
+`g-flash` (fast/simple executor), `g-audit-a` (Phase A plan review), and
+`g-audit-b` (Phase B milestone diff audit).
+
+**Not applicable here** — the heavy tripartite pipeline (execution-envelope
+ceremony, phase-gated audit gates, and exit-code checkpoints). Those belong
+**strictly to extraction projects** (`~/workspace/internal/extraction-infra` and
+similar pipeline repositories), never to chezmoi system management.
 
 **The actual chezmoi safety gates are:**
 
@@ -184,8 +188,8 @@ Every agent-created or -rewritten commit:
 
 ### 2.9 Session Auditing
 
-**Session Auditor role.** A read-only review role (`g-audit`)
-inspects agent session history and repository state for drift. The
+**Session Auditor role.** A read-only review role inspects agent session
+history and repository state for drift. The
 goose store `~/.local/share/goose/sessions/sessions.db` is opened **only** with
 `sqlite3 -readonly`; no `DELETE`/`UPDATE`/`VACUUM` is ever issued against it.
 

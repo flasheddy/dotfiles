@@ -115,7 +115,7 @@ apply in order:
    write a concise audit summary, end the session, and start fresh (no inherited
    stale context).
 5. **Role Escalation** — if the symptom survives a clean restart, escalate
-   `g-draft` → `g-architect` re-specification (or Operator). Do not keep
+   `g-draft` → `architect` re-specification (or Operator). Do not keep
    patching the same hypothesis.
 
 ### Context Hygiene & Boundary Rules
