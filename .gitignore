@@ -1,0 +1,37 @@
+# Repo-enforcement ignore rules for the chezmoi SOURCE repository.
+# Tracked here and kept in the source repo only. This is NOT a chezmoi-managed
+# dotfile and MUST stay listed in .chezmoiignore so `chezmoi apply` never
+# deploys it to ~/.gitignore (these rules describe ~/.local/share/chezmoi,
+# not $HOME).
+
+# Private web-chat instructions. The live copy is $HOME/web_chat_rules.md;
+# this rule guards against a stray copy reappearing at the source root, which
+# was previously masked only by the LOCAL, untracked .git/info/exclude.
+web_chat_rules.md
+
+# Editor / OS cruft.
+.DS_Store
+*~
+*.swp
+*.swo
+.idea/
+.vscode/
+.nova/
+
+# Defense-in-depth: private-key material and credential-shaped files.
+# Do NOT add *.pub here — private_dot_ssh/.gitignore deliberately allowlists
+# *.pub (public keys) and config within that directory.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.ppk
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+id_ecdsa
+id_dsa
+credentials.json
+service-account*.json

@@ -1,0 +1,27 @@
+user:
+  always_allow:
+  - shell
+  - edit
+  - write
+  - tree
+  - read_image
+  - analyze
+  - load
+  - load_skill
+  - delegate
+  - todo__todo_write
+  - extensionmanager__list_resources
+  - extensionmanager__read_resource
+  - extensionmanager__search_available_extensions
+  - orchestrator__list_sessions
+  - orchestrator__view_session
+  - orchestrator__send_message
+  - orchestrator__interrupt_agent
+  - orchestrator__start_agent
+  - apps__list_apps
+  - apps__create_app
+  - apps__iterate_app
+  ask_before:
+  - extensionmanager__manage_extensions
+  never_allow:
+  - apps__delete_app

@@ -32,3 +32,9 @@ system
 system/**
 toolchains
 toolchains/**
+
+# Repo-enforcement artifacts: tracked in git for the source repo only and
+# never deployed into $HOME by chezmoi apply.
+.gitignore
+git-hooks
+git-hooks/**
