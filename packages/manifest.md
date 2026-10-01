@@ -77,8 +77,19 @@ Key groups:
 
 ### `flatpak.txt`
 
-Flatpak applications installed outside of pacman. This manifest is currently
-empty (no Flatpak applications are managed by this repository).
+Flatpak applications installed outside of pacman, from the `flathub` remote
+(user installation). The `run_onchange_after_00-install-packages.sh.tmpl` hook
+installs any app listed here that is not already present — it skips apps that
+are already installed, so the step is idempotent.
+
+Currently managed:
+
+- `com.remnote.RemNote`
+
+> **Note:** the hook installs into the **user** installation (`--user flathub`).
+> `com.remnote.RemNote` is currently present as a **system** installation.
+> `flatpak info` matches either, so the hook skips it today, but a fresh machine
+> would receive it as a per-user install.
 
 ### `archive/pacman-native.txt` / `archive/pacman-foreign.txt` (source/legacy)
 

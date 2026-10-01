@@ -1,0 +1,5 @@
+# Flatpak applications
+# Installed via: flatpak install -y --noninteractive --user flathub <app-id>
+# Parsed by run_onchange_after_00-install-packages.sh.tmpl; '#' comments and
+# blank lines are stripped, and already-installed apps are skipped.
+com.remnote.RemNote
