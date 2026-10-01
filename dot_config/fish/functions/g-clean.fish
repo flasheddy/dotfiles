@@ -1,9 +1,9 @@
-function goose_clean --description 'Pre-flight workspace hygiene check before starting Goose session'
+function g-clean --description 'Pre-flight workspace hygiene check before starting Goose session'
     # 1. Git repository cleanliness check
     if git rev-parse --is-inside-work-tree >/dev/null 2>&1
         set -l dirty (git status --porcelain 2>/dev/null)
         if test -n "$dirty"
-            echo (set_color yellow)"goose_clean: workspace has uncommitted changes — commit or stash before launching Goose."(set_color normal) >&2
+            echo (set_color yellow)"g-clean: workspace has uncommitted changes — commit or stash before launching Goose."(set_color normal) >&2
             git status --porcelain >&2
             return 1
         end
@@ -16,6 +16,6 @@ function goose_clean --description 'Pre-flight workspace hygiene check before st
     end
 
     # 3. Clean status
-    echo (set_color green)"goose_clean: workspace clean — ready for Goose."(set_color normal)
+    echo (set_color green)"g-clean: workspace clean — ready for Goose."(set_color normal)
     return 0
 end
