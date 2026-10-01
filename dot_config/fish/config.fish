@@ -41,6 +41,8 @@ if status is-interactive
     abbr --add --global cma 'chezmoi apply'
     abbr --add --global cmd 'chezmoi diff'
     abbr --add --global cms 'chezmoi status'
+    # Copy chezmoi diff and git diff to clipboard with labels
+    abbr --add --global ddc '{ echo "=== chezmoi diff ==="; chezmoi diff; echo; echo "=== git diff ==="; chezmoi git -- diff; } | wl-copy'
 
     # Goose session management
     abbr --add --global gsl 'goose session list'
@@ -50,9 +52,8 @@ if status is-interactive
     abbr --add --global uvs 'uv sync'
     abbr --add --global uvr 'uv run'
 
-    # Git phase-review
-    abbr --add --global gmd 'git diff (git merge-base main HEAD)..HEAD'
-    abbr --add --global gml 'git log (git merge-base main HEAD)..HEAD'
+    # Copy raw git diff to clipboard
+    abbr --add --global gdc 'git --no-pager diff | wl-copy'
 
     # Add convenient abbreviations for terminal document readers
     abbr --add --global gm glow
