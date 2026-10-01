@@ -1,3 +1,5 @@
+# GREEN fixture for `just check-permissions` (accept mode): byte-equivalent to the
+# real dot_config/goose/private_permission.yaml so the accepted posture is pinned.
 user:
   always_allow:
   - tree

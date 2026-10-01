@@ -1,0 +1,8 @@
+# expect-fail: permissions-schema
+# Regression: the scope key is renamed, so goose ignores the entire file.
+root:
+  always_allow:
+  - tree
+  ask_before:
+  - shell
+  never_allow: []

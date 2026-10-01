@@ -1,0 +1,7 @@
+# expect-fail: permissions-ask-before
+# Regression: ask_before emptied -> nothing is gated any more.
+user:
+  always_allow:
+  - tree
+  ask_before: []
+  never_allow: []

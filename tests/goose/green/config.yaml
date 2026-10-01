@@ -1,0 +1,23 @@
+# GREEN fixture for `just check-config` (accept mode): mirrors the invariants the
+# real dot_config/goose/config.yaml must satisfy.
+#
+# GOOSE_DOCS_ROOT points at the machine's offline docs seal. The gate already
+# fails closed on that path (the real config depends on it too), so the fixture
+# carries the same absolute root rather than inventing a hermetic one.
+GOOSE_MODE: smart_approve
+GOOSE_TELEMETRY_ENABLED: false
+GOOSE_DOCS_ROOT: "/opt/goose-docs"
+extensions:
+  memory:
+    enabled: false
+  chatrecall:
+    enabled: false
+  tom:
+    enabled: false
+  scheduler:
+    enabled: false
+  developer:
+    enabled: true
+    type: builtin
+    name: developer
+slash_commands: []

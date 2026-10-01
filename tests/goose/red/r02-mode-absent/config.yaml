@@ -1,0 +1,12 @@
+# expect-fail: mode
+# Regression: GOOSE_MODE silently removed -> goose defaults to Autonomous.
+GOOSE_DOCS_ROOT: "/opt/goose-docs"
+extensions:
+  memory:
+    enabled: false
+  chatrecall:
+    enabled: false
+  tom:
+    enabled: false
+  scheduler:
+    enabled: false

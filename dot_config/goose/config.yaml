@@ -1,3 +1,4 @@
+GOOSE_MODE: smart_approve
 GOOSE_TELEMETRY_ENABLED: false
 extensions:
   tom:

@@ -1,0 +1,9 @@
+# expect-fail: permissions-no-auto-allow
+# Regression: a state-changing tool is pre-approved in always_allow.
+user:
+  always_allow:
+  - tree
+  - shell
+  ask_before:
+  - write
+  never_allow: []
