@@ -32,18 +32,15 @@ function envelope-copy --description 'Extract latest 4-backtick execution envelo
         return 1
     end
 
-    # Extract ALL envelopes into an array.
-    # (?s) allows dot to match newlines. .*? non-greedily captures the inner content.
-    # Strict start/end anchors are removed so stray spaces or LLM formatting quirks never break it.
-    set -l envelopes (string match -rg -a '(?s)````[^\n]*\n(.*?)\n[ \t]*````' "$text")
+    # Use greedy .* to find the absolute LAST 4-backtick fence in the single response.
+    # Pipe to 'string collect -a' so Fish does not shatter the multi-line capture into an array of lines.
+    set -l envelope (string match -rg '(?s).*````[^\n]*\n(.*?)\n[ \t]*````' "$text" | string collect -a)
 
-    if test (count $envelopes) -eq 0
+    if test -z "$envelope"
         printf '%s\n' "$text" | wl-copy
         echo "envelope-copy: No 4-backtick envelope found; copied full assistant response." >&2
     else
-        # Grab the absolute last envelope in the array
-        set -l final_envelope $envelopes[-1]
-        printf '%s\n' $final_envelope | wl-copy
+        printf '%s\n' "$envelope" | wl-copy
         echo "envelope-copy: Latest 4-backtick envelope copied to clipboard."
     end
 end
