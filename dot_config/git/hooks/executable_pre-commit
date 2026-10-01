@@ -96,11 +96,13 @@ fi
 #   <!-- floor-contract: sha256:<64 hex> -->
 #
 # The marker records which revision of the global floor (~/.AGENTS.md) this
-# repository's inheritance was last reviewed against. If the live floor no
-# longer hashes to the declared value the repository's assumptions may be
-# stale, so the commit is blocked until the operator re-affirms them and
-# refreshes the marker with `floor-stamp`. Without a marker the gate is inert,
-# so repositories that do not inherit the floor are unaffected.
+# repository's inheritance was last reviewed against. Calibrated semantics:
+#   * marker matches, or is absent  -> silent, pass (absent = opt-out);
+#   * marker stale + AGENTS.md staged -> blocking (this is the commit that must
+#     re-affirm the repository's inheritance);
+#   * marker stale + AGENTS.md not staged -> advisory warning only, pass.
+# Without a marker the gate is inert, so repositories that do not inherit the
+# floor are unaffected.
 floor_freshness() {
   local file="$1" declared actual
   [ -f "$file" ] || return 0
@@ -114,13 +116,20 @@ floor_freshness() {
     return 0
   fi
 
-  if [ "${declared,,}" != "${actual,,}" ]; then
+  if [ "${declared,,}" = "${actual,,}" ]; then
+    return 0
+  fi
+
+  if git diff --cached --name-only | rg -q '^(AGENTS|dot_AGENTS)\.md$'; then
     printf 'floor-freshness: %s: declared floor %s, live ~/.AGENTS.md is %s\n' \
       "$file" "$(printf '%.12s' "$declared")" "$(printf '%.12s' "$actual")" >&2
-    printf '%s\n' "floor-freshness: re-affirm this repository's inheritance against the floor, then run 'floor-stamp' and commit the refreshed marker." >&2
+    printf '%s\n' "floor-freshness: AGENTS.md is part of this commit — re-affirm this repository's inheritance, then run 'floor-stamp'." >&2
     return 1
   fi
 
+  printf 'floor-freshness: advisory: %s declares floor %s, live ~/.AGENTS.md is %s\n' \
+    "$file" "$(printf '%.12s' "$declared")" "$(printf '%.12s' "$actual")" >&2
+  printf '%s\n' "floor-freshness: not blocking (AGENTS.md is not staged); run 'floor-stamp' when convenient." >&2
   return 0
 }
 
