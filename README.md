@@ -219,7 +219,7 @@ cma
 
 ### Updating Standalone Toolchains
 
-The primary update workflow is the `aup` Fish function (`dot_config/fish/functions/aup.fish`): per-stage isolation (one failure never aborts the rest), missing tools reported as `SKIP (not installed)`, a 2-hour per-stage success cache in `~/.cache/aup/` (user-local, unmanaged; `--force` bypasses), and an OK/SKIP/FAIL summary. Exits 1 if any stage failed.
+The primary update workflow is the `aup` Fish function (`dot_config/fish/functions/aup.fish`): per-stage isolation (one failure never aborts the rest), missing tools reported as `SKIP (not installed)`, a 2-hour per-stage success cache in `~/.cache/aup/` (user-local, unmanaged; `--force` bypasses), and an OK/SKIP/FAIL summary. Exits 1 if any stage failed. The **goose** stage additionally HEAD-probes the upstream `stable` release asset and skips the re-download while its ETag/Last-Modified fingerprint is unchanged (`~/.cache/aup/goose.asset`).
 
 | Stage | Command | Notes |
 |---|---|---|
@@ -232,7 +232,7 @@ The primary update workflow is the `aup` Fish function (`dot_config/fish/functio
 | **bun-globals** | `bun update --global --latest` | global npm packages, no `cd` needed |
 | **go** | `gup update` | all `go install`ed binaries |
 | **tldr** | `tldr --update` | tldr page cache |
-| **goose** | `goose update` | goose CLI self-update (stable channel) |
+| **goose** | `goose update` | goose CLI self-update (stable channel); skipped while the upstream `stable` asset is unchanged (HEAD probe, no download) |
 
 | Flag | Effect |
 |---|---|
