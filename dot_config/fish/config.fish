@@ -23,6 +23,11 @@ set -gx GOOSE_CLI_THEME dark
 set -gx GOOSE_CLI_DARK_THEME "Catppuccin Mocha"
 set -gx GOOSE_SHELL /usr/bin/fish
 
+# Editor (hx is the strict default)
+set -gx EDITOR hx
+set -gx VISUAL hx
+set -gx SUDO_EDITOR /usr/bin/helix
+
 # Input method (fcitx5)
 set -gx GTK_IM_MODULE fcitx
 set -gx QT_IM_MODULE fcitx

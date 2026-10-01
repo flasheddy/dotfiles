@@ -24,9 +24,6 @@ justfile
 .config/goose/xai_oauth
 .config/goose/xai_oauth/**
 
-# Private instructions for Gemini
-web_chat_rules.md
-
 # Repository metadata and package manifests
 archive
 archive/**
