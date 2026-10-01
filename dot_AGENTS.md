@@ -271,6 +271,12 @@ In addition to the Hard Safety Constraints above:
    scripts, no `curl … | sh`, no folding unvetted external code/config into
    tracked files, hooks, or manifests. Read-only research is permitted;
    anything entering system state requires an explicit, user-vetted source.
+   *Operator-vetted source allowlist:* the official toolchain installers
+   `https://sh.rustup.rs`, `https://astral.sh/uv/install.sh`, and
+   `https://bun.sh/install`, as invoked by
+   `run_onchange_after_10-install-toolchains.sh.tmpl`. These three endpoints
+   are the only sanctioned `curl … | sh` targets on this workstation; adding
+   another is an operator decision recorded in this file.
 3. **Never generate unconstrained sudo mutations** — root mutations must
    live in tracked, reviewable mechanisms (e.g. chezmoi `run_onchange`
    hooks), never one-off sudo commands; sudo-invoking changes carry
