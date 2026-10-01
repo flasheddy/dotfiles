@@ -2,8 +2,11 @@
 # deployed into $HOME by chezmoi apply.
 # - AGENTS.md would overwrite the pre-existing global ~/AGENTS.md (Codex).
 # - README.md would create an unwanted ~/README.md.
+# - justfile is this repository's own verification entry point; the global
+#   pre-push hook runs it here in the source tree, not from $HOME.
 AGENTS.md
 README.md
+justfile
 
 # Local-only SSH host definitions (cloud servers/VPS): never manage or deploy.
 .ssh/config.local

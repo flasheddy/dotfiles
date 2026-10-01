@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+#
+# Global pre-push gate — dispatches to a repository's own full verification.
+#
+# Source (chezmoi): dot_config/git/hooks/executable_pre-push
+# Deployed target:  ~/.config/git/hooks/pre-push
+# Wired by:         ~/.gitconfig -> [core] hooksPath = ~/.config/git/hooks
+#
+# OPT-IN
+#   A repository opts in by carrying a justfile that defines a `check` recipe.
+#   `check` is contractually the repository's FULL gate (lint + types + tests);
+#   partial checks must use other recipe names so they can never be mistaken for
+#   it. Repositories without a `check` recipe exit 0 untouched.
+#
+# THE DISPATCHER NEVER COMPOSES ITS OWN COMMANDS. It runs the repository's
+# declared entry point, so the toolchain stays defined by the repository's own
+# documentation rather than by this hook. Fail-closed: if the entry point exists
+# but cannot be run, the push is blocked rather than silently allowed.
+set -euo pipefail
+
+# --- Opt-in guard -----------------------------------------------------------
+justfile=""
+for candidate in justfile Justfile .justfile; do
+  if [ -f "$candidate" ]; then
+    justfile="$candidate"
+    break
+  fi
+done
+[ -n "$justfile" ] || exit 0
+
+if ! command -v just >/dev/null 2>&1; then
+  printf '%s\n' "pre-push: $justfile present but 'just' is not installed; cannot run the repository gate." >&2
+  exit 1
+fi
+
+# A justfile that cannot be parsed is a broken contract, not an opt-out.
+if ! just --list >/dev/null 2>&1; then
+  printf '%s\n' "pre-push: $justfile could not be parsed by 'just'; cannot run the repository gate." >&2
+  exit 1
+fi
+
+# No `check` recipe -> the repository has not opted in.
+if ! just --list | rg -q '^[[:space:]]*check([[:space:]]|$)'; then
+  exit 0
+fi
+
+printf '%s\n' "pre-push: running 'just check' (this repository's full verification gate)..." >&2
+if ! just check; then
+  printf '%s\n' "pre-push: 'just check' FAILED; push blocked." >&2
+  exit 1
+fi
+
+exit 0

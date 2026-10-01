@@ -77,6 +77,16 @@ never touches third-party clones or scratch repositories.
 
 No per-clone setup is required — `core.hooksPath` travels with `~/.gitconfig`.
 
+A second hook in the same directory, `pre-push`, runs a repository's **full**
+verification before anything leaves the machine. A repository opts in with a
+`justfile` that defines a `check` recipe — contractually its complete gate
+(lint + types + tests). Partial checks must use other recipe names so they can
+never be mistaken for the full gate. The dispatcher never composes commands of
+its own: it runs the repository's declared entry point, and fails closed when
+the entry point is present but unrunnable. Repositories without a `check` recipe
+are untouched. The dotfiles repository's own `justfile` is the reference
+adapter.
+
 ### Key Remapping
 
 `system/keyd/default.conf` makes **Caps Lock** dual-function — tap → `Esc`, hold → `Control`:
