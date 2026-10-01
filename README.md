@@ -50,22 +50,25 @@ Three `run_onchange_after_*.sh.tmpl` hooks re-run whenever their rendered conten
 
 ### Repository Enforcement
 
-The source repository enforces its own commit gates with a **tracked** pre-commit
-hook (`git-hooks/pre-commit`). It is never deployed — it lives only in the
-source tree and is listed in `.chezmoiignore` alongside `.gitignore`, so
-`chezmoi apply` never writes `~/.gitignore` or `~/git-hooks/`.
+Commit gates are enforced by a single **global** pre-commit hook, deployed by
+chezmoi from `dot_config/git/hooks/pre-commit` to `~/.config/git/hooks/pre-commit`
+and wired machine-wide through the tracked `~/.gitconfig`:
+
+```ini
+[core]
+	hooksPath = ~/.config/git/hooks
+```
+
+The hook is **opt-in per repository**: it runs only when the repository carries
+an `AGENTS.md` or a local `git-hooks/` directory, and exits 0 otherwise, so it
+never touches third-party clones or scratch repositories.
 
 1. `git diff --cached --check` — whitespace errors and conflict markers.
 2. Secret scan — `gitleaks git --staged --no-banner --redact`, with a
    fail-closed `rg` fallback (private-key headers, credential-shaped strings,
    private-key filenames) when `gitleaks` is absent.
 
-Enable it once per clone. The hooks directory is tracked, but `core.hooksPath`
-is *local* git config and therefore not versioned:
-
-```fish
-git config core.hooksPath git-hooks
-```
+No per-clone setup is required — `core.hooksPath` travels with `~/.gitconfig`.
 
 ### Key Remapping
 
@@ -112,7 +115,6 @@ ssh-keygen -t ed25519 -C "your_email@example.com" -f ~/.ssh/id_ed25519
 
 ```fish
 chezmoi init --apply https://github.com/flasheddy/dotfiles.git   # replace with your repo URL
-cd ~/.local/share/chezmoi; git config core.hooksPath git-hooks    # enable the tracked pre-commit gates
 ```
 
 This copies all dotfiles to `~/.config/`, `~/.ssh/config`, `~/.gitconfig`, etc., then runs the three lifecycle hooks described above in order: packages → toolchains → system services.

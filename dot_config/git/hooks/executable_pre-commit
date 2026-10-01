@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+#
+# Global pre-commit gate — shared across every opted-in repository.
+#
+# Source (chezmoi): dot_config/git/hooks/executable_pre-commit
+# Deployed target:  ~/.config/git/hooks/pre-commit
+# Wired by:         ~/.gitconfig -> [core] hooksPath = ~/.config/git/hooks
+#
+# OPT-IN GUARD
+#   This hook is installed machine-wide. It runs its gates ONLY in repositories
+#   that opt in by carrying an `AGENTS.md` or a local `git-hooks/` directory.
+#   Every other repository (third-party clones, scratch trees) exits 0 untouched,
+#   so the operator's personal gate never leaks into unrelated repositories.
+#
+# GATES (opted-in repositories only)
+#   1. git diff --cached --check  -> whitespace errors / conflict markers
+#   2. secret scan                -> gitleaks, with a fail-closed rg fallback
+#
+# Idempotent, degrades gracefully, never prints secret material, and never
+# weakens or bypasses existing checks (no --no-verify anywhere).
+set -euo pipefail
+
+# --- Opt-in guard -----------------------------------------------------------
+# git runs hooks with the working directory set to the repository root for
+# non-bare repositories (and $GIT_DIR for bare repositories).
+if [ ! -f AGENTS.md ] && [ ! -d git-hooks ]; then
+  exit 0
+fi
+
+# --- Gate 1 — whitespace / conflict markers in the staged diff --------------
+# This is the hook-context equivalent of the documented `git diff --check`
+# gate, applied to the index that will actually be committed.
+if ! git diff --cached --check; then
+  printf '%s\n' "pre-commit: git diff --cached --check FAILED (whitespace errors or conflict markers)." >&2
+  exit 1
+fi
+
+# Nothing staged -> nothing to scan.
+if git diff --cached --quiet; then
+  exit 0
+fi
+
+# --- Gate 2 — secret scan on staged content ---------------------------------
+if command -v gitleaks >/dev/null 2>&1; then
+  # Primary scanner (native pkg; tracked in packages/30-terminal-utilities.txt).
+  # `git --staged` is the documented form (replaces legacy `protect --staged`).
+  # Honors `# gitleaks:allow`; default rules cover private-key + credential
+  # shapes. --redact prevents findings from leaking into the terminal.
+  # --log-level warn keeps the hook quiet on success.
+  if ! gitleaks git --staged --no-banner --redact --log-level warn; then
+    printf '%s\n' "pre-commit: gitleaks detected staged secret material; commit blocked." >&2
+    exit 1
+  fi
+else
+  # Fallback (gitleaks absent): dependency-light, fail-closed scan. Never a
+  # silent downgrade — a hit still blocks the commit.
+  if git diff --cached --no-color -U0 | rg -n -- '-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----'; then
+    printf '%s\n' "pre-commit: private-key material found in staged diff; commit blocked." >&2
+    exit 1
+  fi
+  if git diff --cached --no-color -U0 | rg -n -i -E '(password|passwd|secret|api[-_]?key|access[-_]?key|client[-_]?secret|auth[-_]?token)[[:space:]]*[:=][[:space:]]*[^[:space:]]{8,}'; then
+    printf '%s\n' "pre-commit: credential-shaped string found in staged diff; commit blocked." >&2
+    exit 1
+  fi
+  if git diff --cached --name-only | rg -i '(^|/)(id_(rsa|ed25519|ecdsa|dsa)|[^/]*\.(pem|key|ppk|p12|pfx))$'; then
+    printf '%s\n' "pre-commit: private-key filename staged; commit blocked." >&2
+    exit 1
+  fi
+fi
+
+exit 0
