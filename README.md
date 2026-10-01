@@ -147,17 +147,6 @@ repository, installed via the `# Readers` group in
 abbreviations are defined only for interactive shells; agent and other
 non-interactive shells force non-interactive output per `~/.AGENTS.md`.
 
-### Phase Review Code Packing
-
-`phase-review-copy` (Fish function → `~/.config/fish/functions/phase-review-copy.fish`)
-packs the production code added or modified in the current phase feature branch for a
-DeepSeek Chat architectural/code-quality audit. It resolves the merge base against
-`main` (override with `phase-review-copy <BASE_REF>`), filters backend
-(`backend/src/**.py`), frontend (`src/**.ts`, `src/**.tsx`), and contract
-(`contracts/v1/tools/*.py`) files — excluding tests, fixtures, and deleted files — and
-streams each file's raw content to the clipboard via `wl-copy`. Run `phase-review-copy`,
-then paste into DeepSeek Chat.
-
 ### Agent Turn Checkpoint Handoff
 
 `handoff-copy` (Fish function → `~/.config/fish/functions/handoff-copy.fish`)
@@ -246,7 +235,7 @@ This workstation is maintained with AI agents (e.g. [Goose](https://github.com/b
 
 **Native system prompt.** The goose base prompt is overridden by `dot_config/goose/prompts/system.md` (deployed to `~/.config/goose/prompts/system.md`): it bakes in this machine's identity (CachyOS / COSMIC / Fish), modern-CLI tool preferences (`rg`/`fd`/`bat`/`eza`/`sd`), a ban on interactive TUIs, and `timeout 150 pkexec` privilege escalation — while preserving goose's runtime extension and top-of-mind injection blocks.
 
-**Role wrappers.** `dot_config/fish/functions/g-*.fish` provide single-purpose goose sessions: `g-draft` (DeepSeek Pro, drafting), `g-flash` (DeepSeek Flash, fast), `g-audit` (Kimi, audit/review).
+**Role wrappers.** `dot_config/fish/functions/g-*.fish` provide single-purpose goose sessions: `g-draft` (DeepSeek Pro, drafting), `g-flash` (DeepSeek Flash, fast), `g-audit` (Kimi Phase A (plan review, default) / DeepSeek Phase B (diff verify, -b)).
 
 ### Goose Configuration Map
 
