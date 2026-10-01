@@ -1,0 +1,4 @@
+version: "1.0.0"
+title: "Verify"
+description: "Run the global verification gate (just check) and report the result"
+prompt: "Run `just check` in the current repository and report the result."

@@ -124,6 +124,10 @@ extensions:
     display_name: Tutorial
     timeout: 300
     bundled: true
+slash_commands:
+  - command: "verify"
+    recipe_path: "~/.config/goose/recipes/verify.yaml"
+
 active_provider: custom_deepseek
 providers:
   moonshot:
