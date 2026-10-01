@@ -66,8 +66,12 @@ never touches third-party clones or scratch repositories.
 1. Documentation drift — every cross-repo `*.md` path and `## heading` cited in
    the repository's `AGENTS.md` must resolve (globs and `<placeholders>` are
    skipped). Detection only — it never rewrites a document.
-2. `git diff --cached --check` — whitespace errors and conflict markers.
-3. Secret scan — `gitleaks git --staged --no-banner --redact`, with a
+2. Floor freshness — a repository that opts in with a
+   `<!-- floor-contract: sha256:... -->` marker must match the live `~/.AGENTS.md`.
+   A mismatch means its inheritance may be stale: re-affirm it, then run
+   `floor-stamp`.
+3. `git diff --cached --check` — whitespace errors and conflict markers.
+4. Secret scan — `gitleaks git --staged --no-banner --redact`, with a
    fail-closed `rg` fallback (private-key headers, credential-shaped strings,
    private-key filenames) when `gitleaks` is absent.
 

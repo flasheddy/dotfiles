@@ -15,6 +15,8 @@
 # GATES (opted-in repositories only)
 #   B. documentation drift -> cross-repo `*.md` paths and `## headings` cited in
 #                             AGENTS.md must resolve (detect-only, never rewrites)
+#   C. floor freshness     -> the `floor-contract` marker in AGENTS.md must match
+#                             the live global floor ~/.AGENTS.md (opt-in per repo)
 #   1. git diff --cached --check  -> whitespace errors / conflict markers
 #   2. secret scan                -> gitleaks, with a fail-closed rg fallback
 #
@@ -85,6 +87,45 @@ docs_drift() {
 
 if ! docs_drift AGENTS.md; then
   printf '%s\n' "pre-commit: documentation drift detected; commit blocked (repair the references listed above)." >&2
+  exit 1
+fi
+
+# --- Gate C — global floor contract freshness -------------------------------
+# A repository opts in by carrying a marker line in its AGENTS.md:
+#
+#   <!-- floor-contract: sha256:<64 hex> -->
+#
+# The marker records which revision of the global floor (~/.AGENTS.md) this
+# repository's inheritance was last reviewed against. If the live floor no
+# longer hashes to the declared value the repository's assumptions may be
+# stale, so the commit is blocked until the operator re-affirms them and
+# refreshes the marker with `floor-stamp`. Without a marker the gate is inert,
+# so repositories that do not inherit the floor are unaffected.
+floor_freshness() {
+  local file="$1" declared actual
+  [ -f "$file" ] || return 0
+
+  declared="$(rg -o -r '$1' --no-filename '<!--[[:space:]]*floor-contract:[[:space:]]*sha256:([0-9a-fA-F]{64})[[:space:]]*-->' "$file" 2>/dev/null | head -n1 || true)"
+  [ -n "$declared" ] || return 0
+
+  actual="$(sha256sum "$HOME/.AGENTS.md" 2>/dev/null | cut -d' ' -f1 || true)"
+  if [ -z "$actual" ]; then
+    printf '%s\n' "floor-freshness: global floor unreadable; skipping check." >&2
+    return 0
+  fi
+
+  if [ "${declared,,}" != "${actual,,}" ]; then
+    printf 'floor-freshness: %s: declared floor %s, live ~/.AGENTS.md is %s\n' \
+      "$file" "$(printf '%.12s' "$declared")" "$(printf '%.12s' "$actual")" >&2
+    printf '%s\n' "floor-freshness: re-affirm this repository's inheritance against the floor, then run 'floor-stamp' and commit the refreshed marker." >&2
+    return 1
+  fi
+
+  return 0
+}
+
+if ! floor_freshness AGENTS.md; then
+  printf '%s\n' "pre-commit: stale global floor contract; commit blocked (re-affirm and re-stamp)." >&2
   exit 1
 fi
 
