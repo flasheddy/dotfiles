@@ -158,6 +158,7 @@ Periodic, report-first audit run on request (e.g. "Refine & Reconcile System" in
 **Phase 2 — Package & Manifest Reconciliation.** Bidirectional: flag "installed but not in any manifest" **and** "in manifest but not installed".
 
 - Native: `pacman -Qqen` vs `packages/00-*.txt`–`30-*.txt` (ignore comments/blanks).
+  - **Meta-package dependencies:** ignore direct dependencies stripped by design — packages documented in `packages/manifest.md` → **Stripping Rules** are deliberately absent from `packages/*.txt` and will *always* appear as false positives in the `pacman -Qqen` comparison. Likewise, a package that is listed in a manifest but was installed as a dependency never appears in `pacman -Qqen`; check `pacman -Qi <pkg>` → *Install Reason* before flagging in either direction.
 - Foreign/AUR: `pacman -Qqem` vs `archive/pacman-foreign.txt` — a foreign package in a native manifest is **Critical** (§1.3).
 - Flatpak: `flatpak list --app --columns=application` vs `packages/flatpak.txt`.
 - Toolchains: manager-native listings over directory scans — `uv tool list`, `cargo install --list`, `bun pm ls -g`, `~/go/bin` contents vs the matching `toolchains/*.txt`. `~/.local/bin` is shared (`uv.txt` + `local-bin.txt` + unmanaged like chezmoi): cross-reference report-only; never auto-remove.
