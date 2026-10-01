@@ -155,6 +155,15 @@ assistant text block, session ID, git context (branch, commit, working-tree
 status), and plan path into a Markdown buffer, then copies it to the Wayland
 clipboard via `wl-copy` for pasting into Gemini Chat.
 
+`handoff-extract` (companion → `~/.config/fish/functions/handoff-extract.fish`)
+reads that same handoff and lifts only the fenced `fish` code block out of
+it. It is scoped strictly to the **newest** session and to the **last** fence
+inside it, so a block belonging to an earlier handoff is never reused. The block
+is printed to stdout and copied to the clipboard (`-n`/`--no-copy` prints only);
+`-s`/`--session <id>` targets an explicit session. When no handoff, no assistant
+text, or no fish block is available, nothing is copied and a reminder is printed
+to stderr with exit status 1.
+
 ### PATH Symlinks
 
 Managed via `dot_local/bin/symlink_*` (tracked in `toolchains/local-bin.txt`): `hx` → `/usr/bin/helix`.
@@ -296,7 +305,7 @@ Before committing to your fork, personalize the machine-specific parts: replace 
 │   └── pacman-native.txt                  # legacy native package dump
 ├── dot_AGENTS.md                          # global agent rules & safety floor → ~/.AGENTS.md
 ├── dot_config/
-│   ├── fish/                              # config.fish, completions/bun.fish, conf.d/rustup.fish, functions/{aup,g-clean,handoff-copy,focus-timer,pkg-verify}.fish
+│   ├── fish/                              # config.fish, completions/bun.fish, conf.d/rustup.fish, functions/{aup,g-clean,handoff-copy,handoff-extract,focus-timer,pkg-verify}.fish
 │   ├── goose/                             # Goose agent config (config.yaml, dot_goosehints.tmpl, prompts/system.md)
 │   ├── glow/                              # glow Markdown reader config + Catppuccin Mocha theme
 │   ├── helix/                             # Helix editor config

@@ -203,6 +203,15 @@ Markdown buffer copied to the clipboard via `wl-copy`. End-to-end read-only —
 used to preserve prompt defense and invariant continuity when handing a turn to
 a fresh session or Gemini Chat.
 
+**`handoff-extract` helper.** `dot_config/fish/functions/handoff-extract.fish`
+reads that same handoff and extracts only its last `fish`-fenced block, scoped
+strictly to the newest session so a block from an earlier handoff is never
+reused. It reads `~/.local/share/goose/sessions/sessions.db` strictly with
+`sqlite3 -readonly` (no mutations), prints the block and copies it via
+`wl-copy` (`-n` prints only, `-s <id>` targets an explicit session). With no
+handoff, no assistant text, or no fish block it copies nothing and prints a
+reminder with exit status 1. End-to-end read-only.
+
 ### 2.10 Git Handoff Protocol (Operator-Executed)
 
 The agent is the sole **provider** of conventional git commands; the Operator is
