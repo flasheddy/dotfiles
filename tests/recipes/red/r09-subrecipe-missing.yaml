@@ -1,0 +1,8 @@
+# expect-fail: subrecipe-path
+version: "1.0.0"
+title: "R09 dangling subrecipe"
+description: "subrecipe path that does not exist"
+prompt: "hi"
+sub_recipes:
+  - name: ghost
+    path: "./does-not-exist.yaml"

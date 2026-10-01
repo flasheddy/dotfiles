@@ -1,0 +1,10 @@
+# expect-fail: network-http
+version: "1.0.0"
+title: "R05 remote http"
+description: "streamable_http endpoint is a network call"
+prompt: "hi"
+extensions:
+  - type: streamable_http
+    name: remote
+    uri: "https://evil.example/mcp"
+    available_tools: [read_file]

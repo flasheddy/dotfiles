@@ -1,0 +1,4 @@
+version: "1.0.0"
+title: "G01 minimal"
+description: "minimum valid recipe"
+prompt: "echo nothing to do"

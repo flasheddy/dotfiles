@@ -1,0 +1,8 @@
+# expect-fail: no-nested-subrecipes
+version: "1.0.0"
+title: "R11 nested"
+description: "references a subrecipe that itself declares sub_recipes"
+prompt: "hi"
+sub_recipes:
+  - name: child
+    path: "./support-nested-child.yaml"

@@ -87,6 +87,26 @@ the entry point is present but unrunnable. Repositories without a `check` recipe
 are untouched. The dotfiles repository's own `justfile` is the reference
 adapter.
 
+### Verification Gates
+
+`just check` is the repository's **full** gate — the name the global
+`pre-push` hook dispatches to. Partial checks must use other recipe names.
+
+| Command | Purpose |
+|---|---|
+| `just check` | Full sequential gate: config invariants, recipe gate, gate self-test, lint, secret scan |
+| `just check-fast` | Same set plus the advisory drift report, **in parallel**, pinned to 3 workers |
+| `just check-commands [accept\|reject] [root]` | Structural recipe gate; `reject` runs the RED fixture self-test |
+| `just check-config` / `just lint` / `just secrets` / `just drift` | The individual stages |
+
+`check-fast` pins concurrency to three workers for reproducible output
+interleaving — `--jobs` is an invocation flag, not a justfile setting:
+
+```fish
+just check-fast                  # pinned to --jobs 3
+just --jobs 4 _check-fast        # escape hatch (underscore recipe is unlisted)
+```
+
 ### Key Remapping
 
 `system/keyd/default.conf` makes **Caps Lock** dual-function — tap → `Esc`, hold → `Control`:
@@ -298,6 +318,23 @@ This workstation is maintained with AI agents (e.g. [Goose](https://github.com/b
 | `dot_config/fish/config.fish` | `~/.config/fish/config.fish` | `GOOSE_SHELL`, CLI theme env | shell startup env |
 
 Edit the **Source** column only; `chezmoi apply` deploys to the live target.
+
+### Offline Goose Docs Root (`/opt/goose-docs`)
+
+`goose-doc-guide` reads documentation from `GOOSE_DOCS_ROOT`; this machine
+pins it to a local tree so documentation lookups never hit the network.
+Provision it **once, online** (the only step that needs a network):
+
+```fish
+git clone --depth 1 --branch vX.Y.Z https://github.com/aaif-goose/goose /tmp/goose-src
+cd /tmp/goose-src/documentation; and npm ci; and npm run build
+mkdir -p ~/.cache/goose-docs-build
+cp -r /tmp/goose-src/documentation/build/. ~/.cache/goose-docs-build/
+```
+
+Match `vX.Y.Z` to `goose --version`. `chezmoi apply` then installs it to
+`/opt/goose-docs` via the idempotent `run_onchange_after_30` hook, which
+never fetches by itself. `just check` fails closed until the tree exists.
 
 ### Safe Instruction Patterns
 

@@ -1,0 +1,8 @@
+# expect-fail: schema-extension-type
+version: "1.0.0"
+title: "R02 extension type"
+description: "invalid extension type"
+prompt: "hi"
+extensions:
+  - type: grpc
+    name: bogus

@@ -1,0 +1,14 @@
+version: "1.0.0"
+title: "G02 guarded path parameter"
+description: "path-like parameter guarded by a shell success check"
+prompt: "inspect {{ target_dir }}"
+parameters:
+  - key: target_dir
+    input_type: string
+    requirement: required
+    description: "directory to inspect"
+retry:
+  max_retries: 1
+  checks:
+    - type: shell
+      command: 'just guard-dir "{{ target_dir }}"'

@@ -1,0 +1,10 @@
+# expect-fail: least-privilege
+version: "1.0.0"
+title: "R08 least privilege"
+description: "server extension without an available_tools whitelist"
+prompt: "hi"
+extensions:
+  - type: stdio
+    name: fs-ro
+    cmd: /usr/bin/mcp-filesystem-ro
+    args: ["--read-only"]

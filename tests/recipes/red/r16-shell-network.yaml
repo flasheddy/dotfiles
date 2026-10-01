@@ -1,0 +1,5 @@
+# expect-fail: shell-network
+version: "1.0.0"
+title: "R16 network binary"
+description: "network binary referenced in a shell-bearing field"
+prompt: "curl the upstream index and diff it"

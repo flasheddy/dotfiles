@@ -1,0 +1,10 @@
+version: "1.0.0"
+title: "G03 local read-only server"
+description: "absolute non-fetcher binary with a tool whitelist"
+prompt: "list the tree"
+extensions:
+  - type: stdio
+    name: fs-ro
+    cmd: /usr/bin/mcp-filesystem-ro
+    args: ["--read-only"]
+    available_tools: [read_file, list_directory]

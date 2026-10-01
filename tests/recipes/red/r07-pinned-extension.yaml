@@ -1,0 +1,8 @@
+# expect-fail: pinned-extension
+version: "1.0.0"
+title: "R07 pinned extension"
+description: "memory family is invariant-pinned to disabled"
+prompt: "hi"
+extensions:
+  - type: builtin
+    name: memory

@@ -1,0 +1,11 @@
+# expect-fail: offline-args
+version: "1.0.0"
+title: "R04 unpinned arg"
+description: "unpinned / URL-shaped argument"
+prompt: "hi"
+extensions:
+  - type: stdio
+    name: fs-ro
+    cmd: /usr/bin/mcp-filesystem-ro
+    args: ["--pkg@latest"]
+    available_tools: [read_file]

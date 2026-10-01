@@ -1,0 +1,7 @@
+version: "1.0.0"
+title: "G04 parent with a subrecipe"
+description: "valid subrecipe reference"
+prompt: "delegate to the child once"
+sub_recipes:
+  - name: child
+    path: "./g05-child.yaml"

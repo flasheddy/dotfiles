@@ -1,0 +1,12 @@
+# expect-fail: env-keys
+version: "1.0.0"
+title: "R06 env keys"
+description: "env_keys are not allowlisted"
+prompt: "hi"
+extensions:
+  - type: stdio
+    name: fs-ro
+    cmd: /usr/bin/mcp-filesystem-ro
+    args: ["--read-only"]
+    env_keys: ["GITHUB_PERSONAL_ACCESS_TOKEN"]
+    available_tools: [read_file]

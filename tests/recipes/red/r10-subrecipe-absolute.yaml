@@ -1,0 +1,8 @@
+# expect-fail: subrecipe-path
+version: "1.0.0"
+title: "R10 absolute subrecipe"
+description: "absolute subrecipe path"
+prompt: "hi"
+sub_recipes:
+  - name: outside
+    path: "/etc/passwd"

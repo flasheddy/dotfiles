@@ -1,0 +1,4 @@
+# expect-fail: metadata goose-schema
+version: "1.0.0"
+title: "R01 metadata"
+prompt: "no description field"

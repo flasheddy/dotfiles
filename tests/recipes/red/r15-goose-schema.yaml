@@ -1,0 +1,10 @@
+# expect-fail: goose-schema
+version: "1.0.0"
+title: "R15 unused parameter"
+description: "unused parameter definition (goose-level validation only)"
+prompt: "hi"
+parameters:
+  - key: unused
+    input_type: string
+    requirement: required
+    description: "never referenced by any template"

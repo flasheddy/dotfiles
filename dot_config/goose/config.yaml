@@ -140,3 +140,4 @@ providers:
     configured: true
 GOOSE_THINKING_EFFORT: medium
 GOOSE_CONTEXT_LIMIT: 1048576
+GOOSE_DOCS_ROOT: "/opt/goose-docs"

@@ -1,0 +1,5 @@
+# expect-fail: shell-posix
+version: "1.0.0"
+title: "R13 posix shell"
+description: "POSIX shell syntax in a shell-bearing field"
+prompt: "run just check && echo done"

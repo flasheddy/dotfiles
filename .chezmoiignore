@@ -37,3 +37,8 @@ toolchains/**
 # Repo-enforcement artifacts: tracked in git for the source repo only and
 # never deployed into $HOME by chezmoi apply.
 .gitignore
+
+# Gate self-test fixtures: tracked in git for red/green coverage of the
+# recipe gate; never deployed into $HOME by chezmoi apply.
+tests
+tests/**

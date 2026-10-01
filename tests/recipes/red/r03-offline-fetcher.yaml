@@ -1,0 +1,11 @@
+# expect-fail: offline-fetcher
+version: "1.0.0"
+title: "R03 fetcher"
+description: "stdio cmd installs from a registry"
+prompt: "hi"
+extensions:
+  - type: stdio
+    name: weather
+    cmd: uvx
+    args: ["mcp_weather"]
+    available_tools: [get_forecast]

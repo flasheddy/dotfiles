@@ -1,0 +1,4 @@
+version: "1.0.0"
+title: "G05 child"
+description: "valid subrecipe target that declares no sub_recipes"
+prompt: "echo child"

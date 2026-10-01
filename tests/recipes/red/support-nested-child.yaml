@@ -1,0 +1,7 @@
+version: "1.0.0"
+title: "Support: illegal nested child"
+description: "declares sub_recipes while being referenced as a subrecipe"
+prompt: "hi"
+sub_recipes:
+  - name: grandchild
+    path: "./r01-metadata.yaml"

@@ -1,0 +1,5 @@
+# expect-fail: shell-tui
+version: "1.0.0"
+title: "R14 interactive tui"
+description: "interactive TUI binary referenced"
+prompt: "pipe the log into less and summarise"

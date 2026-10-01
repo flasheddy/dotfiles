@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# goose-docs: provision the local documentation root for the offline docs skill.
+#
+# [ROOT IMPACT] creates/refreshes the root-owned /opt/goose-docs tree, which the
+#   goose-doc-guide skill reads as authoritative documentation (i.e. it becomes
+#   model context). Requires interactive sudo at `chezmoi apply` time.
+# OFFLINE: this hook never fetches. It installs a tree the Operator has already
+#   built online into the staging directory below (see README).
+# IDEMPOTENT: a populated /opt/goose-docs is left untouched.
+# No `include | sha256sum` header by design: the artifact is produced at runtime
+#   outside the source tree, so idempotency is enforced by the presence guard.
+
+set -euo pipefail
+
+DEST="/opt/goose-docs"
+STAGE="${HOME}/.cache/goose-docs-build"
+MARKER="goose-docs-map.md"
+
+if [ -f "${DEST}/${MARKER}" ]; then
+  echo "goose-docs: ${DEST} already populated; nothing to do."
+  exit 0
+fi
+
+if [ ! -f "${STAGE}/${MARKER}" ]; then
+  echo "goose-docs: staged docs tree not found at ${STAGE}." >&2
+  echo "goose-docs: build it once, online, per README -> 'Offline Goose Docs Root'." >&2
+  echo "goose-docs: skipping provisioning (graceful degradation)." >&2
+  exit 0
+fi
+
+sudo mkdir -p "${DEST}"
+sudo cp -r "${STAGE}/." "${DEST}/"
+sudo chmod -R a+rX "${DEST}"
+echo "goose-docs: provisioned ${DEST} from ${STAGE}."
