@@ -15,7 +15,7 @@ extensions:
     display_name: Chat Recall
     bundled: true
   orchestrator:
-    enabled: false
+    enabled: true
     type: platform
     name: orchestrator
     description: 'Manage agent sessions: list, view, start, send messages, interrupt, and stop agents'

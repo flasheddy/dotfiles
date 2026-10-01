@@ -199,6 +199,24 @@ Markdown buffer copied to the clipboard via `wl-copy`. End-to-end read-only —
 used to preserve prompt defense and invariant continuity when handing a turn to
 a fresh session or Gemini Chat.
 
+### 2.10 Git Handoff Protocol (Operator-Executed)
+
+The agent is the sole **provider** of conventional git commands; the Operator is
+the sole **executor**. At every Operator-gated checkpoint:
+
+1. Read local git state read-only:
+   env GIT_OPTIONAL_LOCKS=0 git status --short
+   env GIT_OPTIONAL_LOCKS=0 git branch --show-current
+   env GIT_OPTIONAL_LOCKS=0 git log --oneline -1
+
+2. Emit exact, copy-pasteable commands (never execute them):
+   - Branch:  git checkout -b feat/<scope>
+   - Commit:  git commit -m "type(scope): subject" -m "body"
+
+3. Never run git write operations (add/commit/merge/switch/branch/tag/reset/
+   checkout -b/push). Operator is sole execution authority for
+   branch/commit/merge/push (inherited from ~/.AGENTS.md).
+
 ---
 
 ## 3. Forbidden Actions
