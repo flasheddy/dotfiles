@@ -10,7 +10,8 @@ README.md
 
 # Goose: OAuth token caches, secret stores, and lockfiles hold credentials and
 # must never be tracked in the source state or deployed (§3.1 secrets rule).
-# Only dot_config/goose/config.yaml and dot_goosehints are managed.
+# Only dot_config/goose/config.yaml, dot_goosehints, prompts/system.md, and
+# permission.yaml are managed.
 .config/goose/secrets.yaml
 .config/goose/secrets.yaml.lock
 .config/goose/chatgpt_codex

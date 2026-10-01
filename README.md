@@ -48,6 +48,25 @@ Three `run_onchange_after_*.sh.tmpl` hooks re-run whenever their rendered conten
 2. **`10-install-toolchains`** — bootstraps `rustup`, `uv`, `bun` if missing, then restores sub-tools from `toolchains/*.txt`.
 3. **`20-setup-system`** — root-level services: deploys `system/keyd/default.conf` → `/etc/keyd/default.conf` and restarts `keyd.service` via `systemctl restart keyd`; sets UFW defaults (deny incoming, allow outgoing, enable); enables `fstrim.timer` and `paccache.timer`; enables `clash-verge-service`. Also ensures the user-level symlink `~/AGENTS.md` → `~/.AGENTS.md` exists (no sudo).
 
+### Repository Enforcement
+
+The source repository enforces its own commit gates with a **tracked** pre-commit
+hook (`git-hooks/pre-commit`). It is never deployed — it lives only in the
+source tree and is listed in `.chezmoiignore` alongside `.gitignore`, so
+`chezmoi apply` never writes `~/.gitignore` or `~/git-hooks/`.
+
+1. `git diff --cached --check` — whitespace errors and conflict markers.
+2. Secret scan — `gitleaks git --staged --no-banner --redact`, with a
+   fail-closed `rg` fallback (private-key headers, credential-shaped strings,
+   private-key filenames) when `gitleaks` is absent.
+
+Enable it once per clone. The hooks directory is tracked, but `core.hooksPath`
+is *local* git config and therefore not versioned:
+
+```fish
+git config core.hooksPath git-hooks
+```
+
 ### Key Remapping
 
 `system/keyd/default.conf` makes **Caps Lock** dual-function — tap → `Esc`, hold → `Control`:
@@ -93,6 +112,7 @@ ssh-keygen -t ed25519 -C "your_email@example.com" -f ~/.ssh/id_ed25519
 
 ```fish
 chezmoi init --apply https://github.com/flasheddy/dotfiles.git   # replace with your repo URL
+cd ~/.local/share/chezmoi; git config core.hooksPath git-hooks    # enable the tracked pre-commit gates
 ```
 
 This copies all dotfiles to `~/.config/`, `~/.ssh/config`, `~/.gitconfig`, etc., then runs the three lifecycle hooks described above in order: packages → toolchains → system services.
