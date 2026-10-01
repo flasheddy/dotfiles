@@ -1,5 +1,11 @@
 # expect-fail: permissions-partition
 # Regression: one tool name appears in two lists -> its level is ambiguous.
+smart_approve:
+  always_allow:
+  - tree
+  ask_before:
+  - shell
+  never_allow: []
 user:
   always_allow:
   - tree

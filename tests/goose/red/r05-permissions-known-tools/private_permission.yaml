@@ -1,5 +1,11 @@
 # expect-fail: permissions-known-tools
 # Regression: a typo'd tool name silently matches nothing (rule never fires).
+smart_approve:
+  always_allow:
+  - tree
+  ask_before:
+  - shell
+  never_allow: []
 user:
   always_allow:
   - tree

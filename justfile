@@ -419,7 +419,7 @@ check-permissions expect="accept" root="dot_config/goose":
 	  reject            the tree must FAIL, and every declared rule id must be emitted
 
 	Rule ids
-	  permissions-schema        exactly one `user` scope holding the three list keys
+	  permissions-schema        the known scope key(s) hold the three list keys
 	  permissions-partition     no tool name appears in more than one list
 	  permissions-known-tools   every tool name is in the bundled-tool registry
 	  permissions-no-auto-allow state-changing tools must not be pre-approved
@@ -441,7 +441,12 @@ check-permissions expect="accept" root="dot_config/goose":
 	TARGET = os.path.realpath(os.path.join(REPO, ROOT_ARG))
 
 	PERMISSION_FILE = "private_permission.yaml"
-	SCOPE = "user"
+	# goose 1.52 rewrites permission.yaml itself and emits the scope key named after
+	# the active mode; older files use `user`. The schema is undocumented in the
+	# 1.52 docs, so every known scope is validated: whichever scope the runtime
+	# consults must carry the same least-privilege posture.
+	SCOPES = ("smart_approve", "user")
+	ACTIVE_SCOPE = "smart_approve"
 	LEVELS = ("always_allow", "ask_before", "never_allow")
 
 	# Bundled-tool registry for goose 1.52.0. Names are the model-visible names:
@@ -492,47 +497,61 @@ check-permissions expect="accept" root="dot_config/goose":
 	    def add(rule, msg):
 	        out.append((rule, rel, msg))
 
-	    if set(cfg.keys()) != {SCOPE}:
+	    unknown = sorted(set(cfg.keys()) - set(SCOPES))
+	    if unknown:
 	        add("permissions-schema",
-	            f"expected exactly one top-level scope {SCOPE!r}, got {sorted(cfg.keys())}")
-	        return out
+	            f"unknown top-level scope(s) {unknown}; expected only {sorted(SCOPES)}")
+	    if ACTIVE_SCOPE not in cfg:
+	        add("permissions-schema",
+	            f"active-mode scope {ACTIVE_SCOPE!r} is absent (goose mode is smart_approve)")
 
-	    scope = cfg.get(SCOPE)
-	    if not isinstance(scope, dict):
-	        add("permissions-schema", f"scope {SCOPE!r} must be a mapping")
-	        return out
+	    for scope_name in SCOPES:
+	        scope = cfg.get(scope_name)
+	        if scope is None:
+	            continue
+	        if not isinstance(scope, dict):
+	            add("permissions-schema", f"scope {scope_name!r} must be a mapping")
+	            continue
+	        for level in LEVELS:
+	            val = scope.get(level)
+	            if not (isinstance(val, list) and all(isinstance(x, str) for x in val)):
+	                add("permissions-schema",
+	                    f"{scope_name}.{level} must be a list of tool names")
 
-	    for level in LEVELS:
-	        val = scope.get(level)
-	        if not (isinstance(val, list) and all(isinstance(x, str) for x in val)):
-	            add("permissions-schema", f"{level!r} must be a list of tool names")
 	    if {rule for rule, _, _ in out}:
 	        return out
 
-	    lists = {level: list(scope[level]) for level in LEVELS}
+	    for scope_name in SCOPES:
+	        scope = cfg.get(scope_name)
+	        if not isinstance(scope, dict):
+	            continue
+	        lists = {level: list(scope[level]) for level in LEVELS}
 
-	    owner = {}
-	    for level in LEVELS:
-	        for tool in lists[level]:
-	            if tool in owner:
-	                add("permissions-partition",
-	                    f"{tool!r} listed in both {owner[tool]!r} and {level!r}")
-	            else:
-	                owner[tool] = level
+	        owner = {}
+	        for level in LEVELS:
+	            for tool in lists[level]:
+	                if tool in owner:
+	                    add("permissions-partition",
+	                        f"[{scope_name}] {tool!r} listed in both "
+	                        f"{owner[tool]!r} and {level!r}")
+	                else:
+	                    owner[tool] = level
 
-	    for level in LEVELS:
-	        for tool in lists[level]:
-	            if tool not in KNOWN_TOOLS:
-	                add("permissions-known-tools",
-	                    f"{tool!r} in {level!r} is not a bundled goose tool")
+	        for level in LEVELS:
+	            for tool in lists[level]:
+	                if tool not in KNOWN_TOOLS:
+	                    add("permissions-known-tools",
+	                        f"[{scope_name}] {tool!r} in {level!r} is not a bundled goose tool")
 
-	    for tool in lists["always_allow"]:
-	        if tool in SIDE_EFFECT:
-	            add("permissions-no-auto-allow",
-	                f"state-changing tool {tool!r} must not be in always_allow")
+	        for tool in lists["always_allow"]:
+	            if tool in SIDE_EFFECT:
+	                add("permissions-no-auto-allow",
+	                    f"[{scope_name}] state-changing tool {tool!r} "
+	                    f"must not be in always_allow")
 
-	    if not lists["ask_before"]:
-	        add("permissions-ask-before", "ask_before must not be empty")
+	        if not lists["ask_before"]:
+	            add("permissions-ask-before",
+	                f"[{scope_name}] ask_before must not be empty")
 
 	    return out
 
@@ -632,18 +651,38 @@ lint:
 # is not a reliable drift predicate (verified 0 on a clean tree; dirty case
 # unverified). Fails closed only when chezmoi itself is unavailable.
 
-# Drift report (advisory; never fails on drift content).
+# Drift gate (HARD): any externally-modified or unapplied managed file fails the
+# build; pending `run_` scripts are warned about, not failed on.
 drift:
 	#!/usr/bin/env fish
 	if not command -v chezmoi >/dev/null
 		echo "drift: chezmoi not found" >&2
 		exit 1
 	end
-	echo "--- chezmoi status ---"
-	chezmoi status
-	echo "--- chezmoi diff (first 200 lines) ---"
-	env PAGER=cat chezmoi diff | head -n 200
-	echo "(drift is advisory: it never fails this recipe)"
+	set -l status_out (env PAGER=cat chezmoi status 2>&1)
+	set -l st $status
+	if test $st -ne 0
+		echo "drift: 'chezmoi status' failed" >&2
+		echo "$status_out" >&2
+		exit 1
+	end
+	set -l failed 0
+	for line in $status_out
+		test -z "$line"; and continue
+		set -l c1 (string sub -s 1 -l 1 -- "$line")
+		set -l c2 (string sub -s 2 -l 1 -- "$line")
+		if string match -qr '[MDA]' -- "$c1"; or string match -qr '[MDA]' -- "$c2"
+			echo "drift: $line" >&2
+			set failed 1
+		else if test "$c2" = R
+			echo "drift (warn): pending script run - $line" >&2
+		end
+	end
+	if test $failed -eq 1
+		echo "drift: deployed state diverges from the chezmoi source; reconcile before pushing." >&2
+		exit 1
+	end
+	echo "drift: clean (no unapplied or externally-modified managed files)"
 	exit 0
 
 # Secret scan: mirrors the pre-commit gate's tooling (gitleaks, with a fail-closed
@@ -687,4 +726,4 @@ check-fast:
 # Body-less by design; the work lives in its prerequisites.
 
 # Full gate (contract entry point for the global pre-push hook).
-check: check-config check-permissions check-commands check-commands-redteam check-config-redteam lint secrets
+check: check-config check-permissions check-commands check-commands-redteam check-config-redteam lint secrets drift

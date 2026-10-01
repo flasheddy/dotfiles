@@ -1,3 +1,31 @@
+# Canonical least-privilege posture for goose tool permissions.
+#
+# goose 1.52 rewrites permission.yaml itself and, in smart-approve mode, emits the
+# scope key named after the active mode; historic files use `user`. The schema is
+# undocumented in the 1.52 docs, so BOTH scopes carry the identical partition:
+# whichever scope the runtime consults enforces the same posture.
+smart_approve:
+  always_allow:
+  - tree
+  - analyze
+  - load
+  - load_skill
+  - delegate
+  - todo__todo_write
+  - extensionmanager__list_resources
+  - extensionmanager__read_resource
+  - extensionmanager__search_available_extensions
+  ask_before:
+  - shell
+  - write
+  - edit
+  - read_image
+  never_allow:
+  - extensionmanager__manage_extensions
+  - apps__create_app
+  - apps__delete_app
+  - orchestrator__send_message
+  - orchestrator__start_agent
 user:
   always_allow:
   - tree
