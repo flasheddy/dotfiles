@@ -72,6 +72,28 @@ schemas, and architecture rules.
   and offline.
 - Report pre-existing failures separately from your change. Do not fix
   unrelated issues unless asked.
+
+### Red-Green Verification (floor-class)
+
+No mechanical gate, check, hook, assertion, or query is trusted until the
+operator has been shown its **failure state**.
+
+- Before a check is accepted, demonstrate it **rejecting a deliberately broken
+  input** (the RED), then demonstrate it **passing the real input** (the GREEN).
+- A check that has only ever been observed passing is an untested check. Report
+  it as such — never present it as evidence.
+- **Exit code 0 is not evidence on its own.** Where the artifact is what matters,
+  assert on the artifact: byte identity, content hashes, and idempotency across
+  repeated runs.
+- **When a probe returns an empty or implausible result, suspect the probe before
+  concluding anything about the system.** Rerun it, or verify it a second way.
+- **Classify every failure** as induced, pre-existing, or environmental before
+  drawing any conclusion from it.
+- A gotcha may only be recorded in documentation after its failure has been
+  reproduced.
+
+This rule is floor-class: a project-local `AGENTS.md` may make it stricter, never
+weaker.
 - **Dual-model single-pass review (optional workflow).** When adopting a drafting/reviewing model split:
   - Keep review passes single-bounded against an explicit invariant checklist; never enter recursive self-review loops.
   - Enforce the full gate set (pytest, contract validators, frontend, locks, secret scans), never an incomplete shorthand.

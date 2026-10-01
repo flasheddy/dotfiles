@@ -7,7 +7,7 @@
 
 set shell := ["fish", "-c"]
 
-# Full gate: hook templates render, hooks parse, working tree is whitespace-clean.
+# Full gate: hook templates, git hooks, tool cards, whitespace.
 check:
 	#!/usr/bin/env fish
 	set -l failed 0
@@ -23,9 +23,10 @@ check:
 			set failed 1
 		end
 	end
+	toolcard --validate; or set failed 1
 	git diff --check; or set failed 1
 	if test $failed -ne 0
 		echo "VERIFY FAILED" >&2
 		exit 1
 	end
-	echo "VERIFY PASSED: hook templates, git hooks, whitespace"
+	echo "VERIFY PASSED: hook templates, git hooks, tool cards, whitespace"
