@@ -57,7 +57,7 @@ extensions:
     display_name: Summarize
     bundled: true
   scheduler:
-    enabled: true
+    enabled: false
     type: platform
     name: scheduler
     description: Create and manage scheduled recipe execution

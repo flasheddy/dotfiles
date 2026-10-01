@@ -7,8 +7,14 @@
 
 set shell := ["fish", "-c"]
 
-# Full gate: hook templates, git hooks, tool cards, whitespace.
-check:
+# Invariant gate: the stateful memory-family extensions must stay disabled.
+# Fails the build if memory/chatrecall/tom/scheduler are flipped on.
+check-config:
+	#!/usr/bin/env fish
+	python3 -c 'import yaml,sys; c=yaml.safe_load(open(sys.argv[1]))["extensions"]; bad=[k for k in ["memory","chatrecall","tom","scheduler"] if c.get(k,{}).get("enabled") is not False]; (print("config-gate: must stay disabled: "+", ".join(bad), file=sys.stderr) or sys.exit(1)) if bad else print("config-gate: memory/chatrecall/tom/scheduler all disabled")' dot_config/goose/config.yaml
+
+# Full gate: hook templates, git hooks, tool cards, config gate, whitespace.
+check: check-config
 	#!/usr/bin/env fish
 	set -l failed 0
 	for f in run_onchange_*.sh.tmpl
@@ -29,4 +35,4 @@ check:
 		echo "VERIFY FAILED" >&2
 		exit 1
 	end
-	echo "VERIFY PASSED: hook templates, git hooks, tool cards, whitespace"
+	echo "VERIFY PASSED: hook templates, git hooks, tool cards, config gate, whitespace"
