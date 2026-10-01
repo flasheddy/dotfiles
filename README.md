@@ -63,8 +63,11 @@ The hook is **opt-in per repository**: it runs only when the repository carries
 an `AGENTS.md` or a local `git-hooks/` directory, and exits 0 otherwise, so it
 never touches third-party clones or scratch repositories.
 
-1. `git diff --cached --check` — whitespace errors and conflict markers.
-2. Secret scan — `gitleaks git --staged --no-banner --redact`, with a
+1. Documentation drift — every cross-repo `*.md` path and `## heading` cited in
+   the repository's `AGENTS.md` must resolve (globs and `<placeholders>` are
+   skipped). Detection only — it never rewrites a document.
+2. `git diff --cached --check` — whitespace errors and conflict markers.
+3. Secret scan — `gitleaks git --staged --no-banner --redact`, with a
    fail-closed `rg` fallback (private-key headers, credential-shaped strings,
    private-key filenames) when `gitleaks` is absent.
 

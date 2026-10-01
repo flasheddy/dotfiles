@@ -13,6 +13,8 @@
 #   so the operator's personal gate never leaks into unrelated repositories.
 #
 # GATES (opted-in repositories only)
+#   B. documentation drift -> cross-repo `*.md` paths and `## headings` cited in
+#                             AGENTS.md must resolve (detect-only, never rewrites)
 #   1. git diff --cached --check  -> whitespace errors / conflict markers
 #   2. secret scan                -> gitleaks, with a fail-closed rg fallback
 #
@@ -25,6 +27,65 @@ set -euo pipefail
 # non-bare repositories (and $GIT_DIR for bare repositories).
 if [ ! -f AGENTS.md ] && [ ! -d git-hooks ]; then
   exit 0
+fi
+
+# --- Gate B — cross-repository documentation drift --------------------------
+# Deterministic, offline, PASS/FAIL validation of the references a repository's
+# AGENTS.md makes to other Markdown documents:
+#   1. every cited `*.md` path must exist;
+#   2. every cited `## heading` must exist verbatim in the document it follows.
+# Globs (`*`) and placeholders (`<...>`) are patterns, not paths, so they are
+# skipped. A heading counts as a citation only when it directly follows a cited
+# path (up to two consecutive headings), which keeps prose mentions of a heading
+# from being mistaken for pointers. Detection only: this gate reports and blocks,
+# it never rewrites a document — repair stays an operator-gated source edit.
+docs_drift() {
+  local file="$1"
+  local status=0 prev="" chain=0 token resolved
+
+  [ -f "$file" ] || return 0
+
+  while IFS= read -r token; do
+    # Heading citation: `## Something` (two or more hashes).
+    if [[ "$token" =~ ^#{2,6}[[:space:]] ]]; then
+      if [[ -n "$prev" && "$chain" -lt 2 ]]; then
+        if ! rg -q -x -F -- "$token" "$prev"; then
+          printf 'docs-drift: %s: heading "%s" not found in %s\n' "$file" "$token" "$prev" >&2
+          status=1
+        fi
+        chain=$((chain + 1))
+      fi
+      continue
+    fi
+
+    case "$token" in
+      *.md)
+        # Globs and <placeholders> are patterns, not resolvable paths.
+        case "$token" in
+          *'*'*|*'<'*|*'>'*) prev=""; chain=0; continue ;;
+        esac
+        resolved="${token/#\~/$HOME}"
+        if [[ -e "$resolved" ]]; then
+          prev="$resolved"; chain=0
+        else
+          printf 'docs-drift: %s: cited path does not exist: %s\n' "$file" "$token" >&2
+          status=1
+          prev=""; chain=0
+        fi
+        ;;
+      *)
+        # Any other token breaks a path -> heading chain.
+        prev=""; chain=0
+        ;;
+    esac
+  done < <(rg -o --no-filename '`[^`]+`' "$file" 2>/dev/null | tr -d '`' || true)
+
+  return "$status"
+}
+
+if ! docs_drift AGENTS.md; then
+  printf '%s\n' "pre-commit: documentation drift detected; commit blocked (repair the references listed above)." >&2
+  exit 1
 fi
 
 # --- Gate 1 — whitespace / conflict markers in the staged diff --------------
