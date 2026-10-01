@@ -15,7 +15,7 @@ extensions:
     display_name: Chat Recall
     bundled: true
   orchestrator:
-    enabled: true
+    enabled: false
     type: platform
     name: orchestrator
     description: 'Manage agent sessions: list, view, start, send messages, interrupt, and stop agents'
@@ -71,7 +71,7 @@ extensions:
     display_name: Analyze
     bundled: true
   apps:
-    enabled: true
+    enabled: false
     type: platform
     name: apps
     description: Create and manage custom Goose apps through chat. Apps are HTML/CSS/JavaScript and run in sandboxed windows.

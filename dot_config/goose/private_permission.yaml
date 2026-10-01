@@ -21,7 +21,7 @@ user:
   - apps__list_apps
   - apps__create_app
   - apps__iterate_app
-  ask_before:
   - extensionmanager__manage_extensions
+  ask_before: []
   never_allow:
   - apps__delete_app
