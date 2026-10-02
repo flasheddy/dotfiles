@@ -1,15 +1,15 @@
 # expect-fail: permissions-no-auto-allow
-# Regression: a state-changing tool is pre-approved in always_allow.
+# Regression: a capability-changing tool is pre-approved in always_allow.
 smart_approve:
   always_allow:
-  - tree
-  ask_before:
   - shell
+  - extensionmanager__manage_extensions
+  ask_before:
+  - edit
   never_allow: []
 user:
   always_allow:
   - tree
-  - shell
   ask_before:
-  - write
+  - shell
   never_allow: []

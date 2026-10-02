@@ -407,12 +407,12 @@ check-commands-redteam:
 	just --justfile "{{justfile()}}" check-commands accept tests/recipes/green
 	or exit 1
 
-# Permission gate: least-privilege posture of goose permission.yaml. Fail-closed.
+# Permission gate: pre-approval posture of goose permission.yaml. Fail-closed.
 # Usage: just check-permissions [accept|reject] [root]
 
 check-permissions expect="accept" root="dot_config/goose":
 	#!/usr/bin/env python3
-	"""Tool-permission gate for goose permission.yaml (least-privilege invariant).
+	"""Tool-permission gate for goose permission.yaml (pre-approval invariant).
 
 	Modes (mirrors check-config / check-commands):
 	  accept (default)  every permission file under ROOT must trip no rule
@@ -422,7 +422,7 @@ check-permissions expect="accept" root="dot_config/goose":
 	  permissions-schema        the known scope key(s) hold the three list keys
 	  permissions-partition     no tool name appears in more than one list
 	  permissions-known-tools   every tool name is in the bundled-tool registry
-	  permissions-no-auto-allow state-changing tools must not be pre-approved
+	  permissions-no-auto-allow capability-changing tools must not be pre-approved
 	  permissions-ask-before    `ask_before` must not be empty
 
 	The permission file is read from its chezmoi SOURCE name (`private_permission.yaml`),
@@ -444,7 +444,7 @@ check-permissions expect="accept" root="dot_config/goose":
 	# goose 1.52 rewrites permission.yaml itself and emits the scope key named after
 	# the active mode; older files use `user`. The schema is undocumented in the
 	# 1.52 docs, so every known scope is validated: whichever scope the runtime
-	# consults must carry the same least-privilege posture.
+	# consults must carry the same pre-approval posture.
 	SCOPES = ("smart_approve", "user")
 	ACTIVE_SCOPE = "smart_approve"
 	LEVELS = ("always_allow", "ask_before", "never_allow")
@@ -477,11 +477,13 @@ check-permissions expect="accept" root="dot_config/goose":
 	    "orchestrator__start_agent",
 	}
 
-	# Tools that change state or egress. These must never be pre-approved: they belong in
-	# `ask_before` or `never_allow`. `delegate` is deliberately NOT here — the operator
-	# keeps subagent handoff frictionless, as it grants no capability the parent lacks.
+	# Tools that change the agent's own capability surface. These must never be
+	# pre-approved: they belong in `ask_before` or `never_allow`. Local execution
+	# tools (`shell`, `edit`, `write`, `read_image`) are deliberately NOT here — the
+	# operator pre-approves them so routine local work does not interrupt for
+	# approval (operator decision 2026-10-02). `delegate` is likewise absent:
+	# subagent handoff grants no capability the parent lacks.
 	SIDE_EFFECT = {
-	    "shell", "write", "edit", "read_image",
 	    "extensionmanager__manage_extensions",
 	}
 
@@ -546,7 +548,7 @@ check-permissions expect="accept" root="dot_config/goose":
 	        for tool in lists["always_allow"]:
 	            if tool in SIDE_EFFECT:
 	                add("permissions-no-auto-allow",
-	                    f"[{scope_name}] state-changing tool {tool!r} "
+	                    f"[{scope_name}] capability-changing tool {tool!r} "
 	                    f"must not be in always_allow")
 
 	        if not lists["ask_before"]:
@@ -593,7 +595,7 @@ check-permissions expect="accept" root="dot_config/goose":
 	                print(f"FAIL [{rule}] {rel}: {msg}", file=sys.stderr)
 	            return fail(f"{len(problems)} violation(s)")
 	        print(f"permission-gate: {len(files)} permission file(s) valid; "
-	              f"no state-changing tool pre-approved")
+	              f"no capability-changing tool pre-approved")
 	        return 0
 
 	    missing = declared - seen
