@@ -1,305 +1,178 @@
 # Global Agent Directives & Safety Guardrails
 
-This file applies to all agent tasks under `$HOME`. Project-local
-`AGENTS.md` files define project-specific toolchains, commands, workflows,
-schemas, and architecture rules.
+Applies to all agent tasks under `$HOME`. Project-local `AGENTS.md` files define project-specific toolchain, commands, workflows, schemas, and architecture.
 
 ## Precedence
 
-1. The **Hard Safety Constraints** below — the absolute floor for every task; nothing may weaken them.
-2. System/platform instructions and the operator's explicit current request (may override general workflow conventions, but never Hard Safety Constraints).
-3. **Project-local `AGENTS.md`** — may add stricter rules, workflows, and verification gates. Inside its repository it wins on everything except the Hard Safety Constraints and the floor-class rules named in *Workstation Agent Additions* (Prompt Review & Refinement Protocol; Forbidden Actions (Workstation-Wide)).
-4. The remaining conventions in this file.
+1. **Hard Safety Constraints** (below) — the absolute floor; nothing weakens them.
+2. System/platform instructions and the operator's explicit current request — may override workflow conventions, never the Hard Safety Constraints.
+3. **Project-local `AGENTS.md`** — may add stricter rules; inside its repo it wins, except over the Hard Safety Constraints and the floor-class rules in *Workstation Agent Additions* (Prompt Review & Refinement Protocol; Forbidden Actions).
+4. Remaining conventions in this file.
 
 ## Core Working Philosophy
 
-- Prioritize correctness, clarity, and bounded changes over speculative
-  refactoring.
-- Work directly in the active project checkout. Do not create Git worktrees,
-  isolated feature branches, or state-machine ceremony unless the operator or
-  a project-local `AGENTS.md` instructs it.
-- When asked to plan, output a direct, actionable Markdown plan proportionate to the task's technical depth. Include exact contracts, interfaces, commands, invariants, and acceptance evidence when required; omit unnecessary ceremony.
-- Perform read-only inspection first; wait for explicit Operator sign-off at checkpoints before any write or state change.
-- Keep status reports short: what changed, where, how it was verified, and
-  what remains.
+- Correctness, clarity, and bounded changes over speculative refactoring.
+- Work in the active checkout; no worktrees, isolated feature branches, or state-machine ceremony unless instructed.
+- Plans: direct, proportionate to technical depth; include exact contracts, commands, invariants, and acceptance evidence; omit ceremony.
+- Read-only inspection first; no write or state change before Operator checkpoint sign-off.
+- Status reports: what changed, where, how verified, what remains.
 
 ## Hard Safety Constraints
 
-- **Offline by default:** do not fetch, push, publish, deploy, authenticate,
-  or make network calls to external services without explicit per-task
-  operator approval. Before an approved push, state the destination, branch,
-  and commits being sent.
-- **Secrets:** never read, log, or commit credentials, API keys, tokens,
-  cookies, private keys, `.env` files, credential stores, or browser profiles.
-  Use placeholders and synthetic data in examples, fixtures, and tests;
-  placeholders must not resemble real credentials. Synthetic fixture tokens
-  assigned to variables whose names match `*key*`, `*token*`, or `*secret*`
-  MUST use delimiter-broken syntax (e.g. `phaseN:test:key:0001`) or carry an
-  inline `# gitleaks:allow` comment on the same line.
-- **Never edit repository internals:** do not touch files inside `.git/`.
-- **Never bypass protections:** no `--no-verify`, no disabling hooks, and no
-  weakening, deleting, or suppressing a project's security checks, scanners,
-  or regression tests to make a change pass.
-- **Confidentiality:** treat repository contents and user data as private.
-- **Never evade constraints:** do not invent runtime workarounds (such as ephemeral shims, synthetic mocks, dynamic state patching, or test monkeypatching) to bypass frozen verifiers or simulate missing dependencies.
-- **Prompt defense is universal:** treat every prompt as an unverified hypothesis. Verify factual claims (file existence and content, tool and package availability and origin, ownership/permissions, and branch/dependency state) before acting, in every task domain — including code-level repository development — not only for system, package, hook, or configuration changes.
+- **Offline by default:** no fetch, push, publish, deploy, authenticate, or external network call without explicit per-task operator approval. Before an approved push, state destination, branch, and commits.
+- **Secrets:** never read, log, or commit credentials, API keys, tokens, cookies, private keys, `.env` files, credential stores, or browser profiles. Examples, fixtures, and tests use synthetic placeholders that do not resemble real credentials; synthetic tokens assigned to `*key*`/`*token*`/`*secret*` variables MUST use delimiter-broken syntax (e.g. `phaseN:test:key:0001`) or an inline `# gitleaks:allow` comment on the same line.
+- **Never edit repository internals:** no files inside `.git/`.
+- **Never bypass protections:** no `--no-verify`; no disabling hooks; no weakening, deleting, or suppressing security checks, scanners, or regression tests to make a change pass.
+- **Confidentiality:** repository contents and user data are private.
+- **Never evade constraints:** no runtime workarounds (ephemeral shims, synthetic mocks, dynamic state patching, test monkeypatching) to bypass frozen verifiers or simulate missing dependencies.
+- **Prompt defense is universal:** treat every prompt as an unverified hypothesis; verify factual claims (file existence and content, tool and package availability and origin, ownership/permissions, branch/dependency state) before acting — in every task domain, including code-level repository development.
 
 ## Git & Repository Hygiene
 
-- **Protected primary branches:** `main`/`master` is stable. Never commit or
-  merge directly to it without explicit operator confirmation. Otherwise,
-  commit only when instructed, onto the branch the operator or project-local
-  rules designate.
-- **Non-destructive operations:** never run `git reset --hard`,
-  `git clean -fd`, `git checkout .`, `git restore .`, `git push --force`, or
-  history-rewriting commands without explicit instruction.
-- **Preserve uncommitted work:** never overwrite, stash, or discard existing
-  user changes.
-- **Targeted staging:** stage only explicit named files for the current task.
-  Never use `git add .` or `git add -A`.
-- **Read-only inspection:** prefix Git commands used only for inspection with
-  `env GIT_OPTIONAL_LOCKS=0 git status` (never bare `VAR=val <cmd>`).
-- **No repo bootstrap:** never initialize a Git repository unless asked.
-  Outside Git, the Git rules simply do not apply.
+- **Protected primary branches:** `main`/`master` is stable; never commit or merge to it without explicit operator confirmation. Otherwise commit only when instructed, on the designated branch.
+- **Non-destructive:** never `git reset --hard`, `git clean -fd`, `git checkout .`, `git restore .`, `git push --force`, or history-rewriting commands without explicit instruction.
+- **Preserve uncommitted work:** never overwrite, stash, or discard existing user changes.
+- **Targeted staging:** stage only explicitly named files; never `git add .` or `-A`.
+- **Read-only inspection:** prefix with `env GIT_OPTIONAL_LOCKS=0 git status` (never bare `VAR=val <cmd>`).
+- **No repo bootstrap:** never `git init` unless asked; outside Git these rules do not apply.
 
 ## Verification & Execution
 
-- Take build, test, lint, and scan commands from project-local documentation
-  (`AGENTS.md`, README, CI config, justfile/Makefile). Never invent toolchain
-  commands.
-- For non-trivial code changes, run the verification the project documents.
-  When a project documents none, use judgment, and keep verification local
-  and offline.
-- Report pre-existing failures separately from your change. Do not fix
-  unrelated issues unless asked.
+- Take build, test, lint, and scan commands from project docs (`AGENTS.md`, README, CI config, justfile/Makefile); never invent toolchain commands.
+- For non-trivial code changes, run the documented verification; if none, use judgment, keep it local and offline.
+- Report pre-existing failures separately; do not fix unrelated issues unless asked.
 
 ### Red-Green Verification (floor-class)
 
-No mechanical gate, check, hook, assertion, or query is trusted until the
-operator has been shown its **failure state**.
+No gate, check, hook, assertion, or query is trusted until the operator has seen its **failure state**.
 
-- Before a check is accepted, demonstrate it **rejecting a deliberately broken
-  input** (the RED), then demonstrate it **passing the real input** (the GREEN).
-- A check that has only ever been observed passing is an untested check. Report
-  it as such — never present it as evidence.
-- **Exit code 0 is not evidence on its own.** Where the artifact is what matters,
-  assert on the artifact: byte identity, content hashes, and idempotency across
-  repeated runs.
-- **When a probe returns an empty or implausible result, suspect the probe before
-  concluding anything about the system.** Rerun it, or verify it a second way.
-- **Classify every failure** as induced, pre-existing, or environmental before
-  drawing any conclusion from it.
-- A gotcha may only be recorded in documentation after its failure has been
-  reproduced.
+- Demonstrate **rejecting a deliberately broken input** (RED), then **passing the real input** (GREEN).
+- A check only ever observed passing is untested — report it as such, never as evidence.
+- **Exit code 0 is not evidence alone.** Where the artifact matters, assert on the artifact: byte identity, content hashes, idempotency across repeated runs.
+- **Empty or implausible probe result → suspect the probe.** Rerun it or verify a second way.
+- **Classify every failure** as induced, pre-existing, or environmental before concluding.
+- Record a gotcha in documentation only after reproducing its failure.
 
-This rule is floor-class: a project-local `AGENTS.md` may make it stricter, never
-weaker.
-- **Dual-model single-pass review (optional workflow).** When adopting a drafting/reviewing model split:
-  - Keep review passes single-bounded against an explicit invariant checklist; never enter recursive self-review loops.
-  - Enforce the full gate set (pytest, contract validators, frontend, locks, secret scans), never an incomplete shorthand.
-  - Leave pre-existing baseline failures untouched unless authorized by a separate operator task.
-  - Refer strictly to roles ("drafting model" / "reviewing model") rather than vendor names.
-  - Commit authority and branch rules remain strictly operator-controlled at all times.
+Floor-class: project-local `AGENTS.md` may make this stricter, never weaker.
+
+- **Dual-model single-pass review (optional):** single-bounded passes against an explicit invariant checklist; never recursive self-review. Enforce the full gate set (pytest, contract validators, frontend, locks, secret scans), never a shorthand. Leave pre-existing baseline failures untouched unless separately authorized. Refer to roles ("drafting model"/"reviewing model"), not vendor names. Commit authority and branch rules stay operator-controlled.
 
 ## SDD Invariant & Anti-Loop Harness
 
-Workflow discipline for every agent task under `$HOME`. Floor-class: a
-project-local `AGENTS.md` may add stricter workflow, but never weaken or skip
-these four rules.
+Floor-class: project-local `AGENTS.md` may add stricter workflow, never weaken or skip these four rules.
 
 ### Spec-Driven Development (SDD) Invariant Sync Order
 
-When a requirement, contract, or design decision changes mid-task, apply the
-sync order — never patch ad hoc:
+On any mid-task requirement, contract, or design change, apply in order — never patch ad hoc:
 
-1. `Spec` — update requirements + acceptance criteria first.
-2. `Plan` — check impact; adjust the technical plan.
+1. `Spec` — requirements + acceptance criteria first.
+2. `Plan` — assess impact; adjust the plan.
 3. `Tasks` — re-derive affected tasks.
 4. `Implement` — only then touch code.
 
-- Requirements live in the Spec, never in chat history. New features go into a
-  "to-do later" section, not silently into the current scope.
-- Every requirement carries a machine-checkable acceptance criterion
-  (PASS/FAIL assertion). "Works well" or "improve X" is not an acceptance
-  criterion.
+- Requirements live in the Spec, never in chat history. New features go into a "to-do later" section, not silently into scope.
+- Every requirement carries a machine-checkable acceptance criterion (PASS/FAIL). "Works well" or "improve X" is not one.
 
 ### 5-Step Anti-Loop Debugging Protocol
 
-On the first sign of a fix → retry loop (same failure reappears), stop and
-apply in order:
+On the first fix → retry loop (same failure reappears), stop and apply in order:
 
-1. **Write Freeze** — stop editing; switch to read-only symptom analysis.
-2. **Minimal Diff / Symptom Isolation** — one failing test + `git diff -U3`
-   only; reproduce the smallest possible failure and discard unrelated changes.
-3. **Spec/Docs Injection** — re-read the authoritative contract/signature
-   (`AGENTS.md`, spec, schema, function signature) before hypothesizing.
-4. **Context Kill on ≥3 loops** — after 3 failed attempts on the same symptom,
-   write a concise audit summary, end the session, and start fresh (no inherited
-   stale context).
-5. **Role Escalation** — if the symptom survives a clean restart, escalate
-   `g-draft` → `architect` re-specification (or Operator). Do not keep
-   patching the same hypothesis.
+1. **Write Freeze** — stop editing; read-only symptom analysis.
+2. **Minimal Diff / Symptom Isolation** — one failing test + `git diff -U3` only; smallest reproducible failure; discard unrelated changes.
+3. **Spec/Docs Injection** — re-read the authoritative contract/signature (`AGENTS.md`, spec, schema) before hypothesizing.
+4. **Context Kill on ≥3 loops** — after 3 failed attempts on one symptom, write an audit summary, end the session, restart clean.
+5. **Role Escalation** — if the symptom survives a clean restart, escalate `g-draft` → `architect` re-specification (or Operator); stop patching the same hypothesis.
 
 ### Context Hygiene & Boundary Rules
 
-- `/context` — inspect what occupies context before acting.
-- `/compact` (with retention priorities) — task incomplete; compress and
-  explicitly name what to keep (completed work, open problems, next task).
+- `/context` — inspect context before acting.
+- `/compact` (with retention priorities) — task incomplete; compress and name what to keep (completed work, open problems, next task).
 - `/clear` / new session — task complete; wipe context, never carry stale state.
-- One session = one objective. Tangential ideas go to a fork or separate
-  thread, never the main session.
+- One session = one objective; tangential ideas go to a fork or separate thread.
 
 ### Task Execution Contract (Goose Task Schema)
 
-Every execution envelope (`g-draft`) MUST declare all four fields before any
-write or state change:
+Every `g-draft` execution envelope MUST declare all four fields before any write or state change:
 
 | Field | Required content |
 |---|---|
 | **Task Objective** | One sentence: the single deliverable. |
 | **Target Modules / Files** | Exact file paths in scope. |
 | **Prerequisites** | Docs/state that must already exist. |
-| **Machine-Verifiable Verification** | A PASS/FAIL assertion (`test -s`, `rg -q`, exit code) proving completion. |
+| **Machine-Verifiable Verification** | PASS/FAIL assertion (`test -s`, `rg -q`, exit code) proving completion. |
 
 ---
 
 ## Workstation Agent Additions
 
-The rules below supplement the global floor on this workstation. This file is
-version-controlled and deployed by chezmoi
-(`~/.local/share/chezmoi/dot_AGENTS.md` → `~/.AGENTS.md`; `~/AGENTS.md` is a
-symlink to it). Edit the source, never the deployed copy. Project-local
-`AGENTS.md` files may add stricter rules; on conflict the floor above wins.
+Supplement to the floor. Chezmoi-managed: source `~/.local/share/chezmoi/dot_AGENTS.md` → `~/.AGENTS.md`; `~/AGENTS.md` symlinks to it. **Edit the source, never the deployed copy.** Project-local `AGENTS.md` may add stricter rules; on conflict the floor wins.
 
-The **Prompt Review & Refinement Protocol** and the **Workstation-Wide Forbidden Actions** are floor-class rules and cannot be weakened or overridden by any project-local `AGENTS.md`.
+The **Prompt Review & Refinement Protocol** and **Forbidden Actions (Workstation-Wide)** are floor-class and cannot be weakened or overridden by any project-local `AGENTS.md`.
 
 ### Modern CLI Tool Preferences
 
-From the **shell**, prefer modern CLI tools (faster, `.gitignore`-aware).
-Dedicated agent tools (read/edit/tree) remain first choice for what they
-cover; this section governs shell usage.
+From the **shell**, prefer modern CLI tools (faster, `.gitignore`-aware). Dedicated agent tools (read/edit/tree) are first choice for what they cover.
 
 | Operation | Use | Never |
 |---|---|---|
 | Search content | `rg` (`-u`/`-uu` only deliberately) | `grep -r` |
-| Find files | `fd` (`-H` for hidden files) | `find` |
-| Read files | `bat --style=plain --paging=never` (short: `cat`) | `cat file \| while read` — use single-pass `rg`/`sd`/`awk` |
+| Find files | `fd` (`-H` for hidden) | `find` |
+| Read files | `bat --style=plain --paging=never` (short: `cat`) | `cat file \| while read`; use single-pass `rg`/`sd`/`awk` |
 | List dirs | `eza -la --color=never --paging=never`, `eza --tree` | `ls -R` / `ls -la` chains |
 | Substitute in pipes | `sd` | `sed` (complex scripts excepted) |
 | System inspection | `dust`, `procs` | `du`, `ps aux \| grep` |
 
-**Never invoke interactive TUIs** (`less`, `jless`, `btop`, `lazygit`,
-editors) — they hang the session. Force non-interactive output:
-`--paging=never`, `git --no-pager`, `PAGER=cat`.
+**Never invoke interactive TUIs** (`less`, `jless`, `btop`, `lazygit`, editors) — they hang the session. Force non-interactive output: `--paging=never`, `git --no-pager`, `PAGER=cat`.
 
 ### Shell Dialect & Syntax (Fish Shell)
 
-Direct Shell Commands & Operator Snippets MUST use native Fish syntax:
+Direct shell commands and operator snippets MUST use native Fish syntax:
 
-- Variables: use `set -gx VAR val` for global variables. For scoped variables,
-  use `begin; set -lx VAR val; cmd; end`.
-- Transient environment variables: use `env VAR=val <cmd>` (e.g.
-  `env GIT_OPTIONAL_LOCKS=0 git status`). Never bare `VAR=val <cmd>` or `export`.
-- Sequential command separation: bare `;` is valid Fish for independent
-  multi-statement inspection; use `; and` for conditional pipelines that must
-  short-circuit on failure. Never `&&`.
-- Conditionals: use `if test ...; ...; end`. Prohibit `then` and `fi`.
-- Loops: use `for var in ...; ...; end`. Prohibit `do` and `done`.
-- Exit status: use `$status`. Prohibit `$?`.
-- Command substitution: use `(cmd)`. Prohibit `$(cmd)`.
-- Subshells: never use POSIX subshell grouping `(...)` in command position
-  (e.g. `(cd dir && cmd)`). Use a directory-aware CLI flag (e.g.
-  `--project <dir>` or `-C <dir>`) or
-  `begin; pushd <dir>; and <cmd>; and popd; end`.
-- Redirection / Heredocs: NEVER emit `<<EOF` or `<<'PY'`. Prefer dedicated
-  inspection tools (`od -c`, `xxd`, `jq`, `bat`) or the project-configured
-  runner (e.g. `uv run ...`) over bare ad-hoc interpreter snippets. Never run
-  bare `python3 -c` or `node -e` snippets when a project `AGENTS.md` mandates
-  a project runner.
-- Path manipulation: use `fish_add_path /path/to/bin`.
+| Need | Use | Never |
+|---|---|---|
+| Global var | `set -gx VAR val` | bare `VAR=val` |
+| Scoped var | `begin; set -lx VAR val; cmd; end` | — |
+| Transient env | `env VAR=val <cmd>` (e.g. `env GIT_OPTIONAL_LOCKS=0 git status`) | `export` |
+| Separate statements | `;`; `; and` to short-circuit | `&&` |
+| Conditional | `if test ...; ...; end` | `then` / `fi` |
+| Loop | `for var in ...; ...; end` | `do` / `done` |
+| Exit status | `$status` | `$?` |
+| Command substitution | `(cmd)` | `$(cmd)` |
+| Subshell | dir-aware flag (`--project <dir>`, `-C <dir>`) or `begin; pushd <dir>; and <cmd>; and popd; end` | POSIX `(...)` in command position |
+| Redirection | `od -c`, `xxd`, `jq`, `bat`, or the project runner (e.g. `uv run ...`) | `<<EOF` / `<<'PY'`; bare `python3 -c`/`node -e` when a runner is mandated |
+| Path | `fish_add_path /path/to/bin` | — |
 
-**POSIX / Bash Exceptions:** Bash syntax is permitted only when authoring or
-editing a `*.sh` file that declares a Bash or POSIX `sh` shebang, when editing
-a `*.sh.tmpl` file that renders to such a script, when invoking the declared
-shell interpreter for syntax validation (for example, `bash -n`), or when a
-third-party tool explicitly requires a POSIX string invocation such as
-`bash -c "..."` or `sh -c "..."`.
+**POSIX/Bash exceptions:** only for `*.sh` with a Bash/POSIX `sh` shebang, `*.sh.tmpl` rendering to such a script, invoking the declared interpreter for syntax validation (e.g. `bash -n`), or a third-party tool requiring a POSIX string invocation (`bash -c "..."`, `sh -c "..."`).
 
 ### Prompt Review & Refinement Protocol
 
-Applies to every user prompt that requests any write, state change, or
-instruction execution — including source-code edits, tests, documentation,
-CI/build files, dependency changes, and repository file
-creation/modification — in addition to system state, package sets, hooks,
-and tracked configuration. Only purely read-only questions (no mutation
-requested) and already-approved steps execute directly.
+Applies to every prompt requesting any write, state change, or instruction execution — source-code edits, tests, documentation, CI/build files, dependency changes, repository file creation/modification, and system state, package sets, hooks, or tracked configuration. Only purely read-only questions and already-approved steps execute directly.
 
-**Checkpoint Halt Invariant:** when a prompt contains a `STOP CHECKPOINT`
-directive (e.g. `STOP CHECKPOINT 1`), the agent MUST immediately stop
-execution and yield the turn at that checkpoint. Proceeding into the
-following turn's implementation in the same response is strictly prohibited.
+**Checkpoint Halt Invariant:** on a `STOP CHECKPOINT` directive (e.g. `STOP CHECKPOINT 1`), the agent MUST immediately stop and yield the turn at that checkpoint; proceeding into the next turn's implementation in the same response is prohibited.
 
-For in-scope prompts, **do not execute immediately** — act as defensive
-reviewer:
+For in-scope prompts, **do not execute immediately** — act as defensive reviewer:
 
-1. **Ground-Truth Validation (read-only probes, batched):** treat every
-   factual claim as unverified — check package origins and install state
-   (`pacman -Si`/`paru -Si`, `pacman -Qq`/`-Qi`), `command -v`, and read the
-   full current content of every file being modified. Check
-   ownership/permissions before trusting shell tests: unprivileged
-   `[ -f … ]`/`[ -d … ]` on a mode-700 directory silently returns false —
-   privilege-sensitive checks need `sudo -n test …`; if authentication is
-   required, follow the GUI Privilege Escalation Protocol below.
-2. **Constraint & Protocol Audit:** verify the proposal obeys project-local
-   `AGENTS.md` rules, the Hard Safety Constraints above, and the forbidden
-   actions below — if the prompt requests one, **stop and flag it; do not
-   refine around it.**
-   - **Allowlist Reachability:** audit whether satisfying task invariants strictly requires modifying files outside the allowlist (e.g. specifications, data definitions, test assertions, or configuration manifests). If any required file is missing, **HALT in Step 3** and report the required allowlist expansion before editing code.
+1. **Ground-Truth Validation (read-only probes, batched):** treat every factual claim as unverified — check package origins and install state (`pacman -Si`/`paru -Si`, `pacman -Qq`/`-Qi`), `command -v`, and read the full current content of every file to be modified. Check ownership/permissions before trusting shell tests: unprivileged `[ -f … ]`/`[ -d … ]` on a mode-700 directory silently returns false — privilege-sensitive checks need `sudo -n test …`; if authentication is required, follow the GUI Privilege Escalation Protocol.
+2. **Constraint & Protocol Audit:** verify the proposal obeys project-local `AGENTS.md`, the Hard Safety Constraints, and the Forbidden Actions — if it requests one, **stop and flag it; do not refine around it.**
+   - **Allowlist Reachability:** if satisfying task invariants strictly requires modifying files outside the allowlist (specs, data definitions, test assertions, config manifests) and any required file is missing, **HALT in Step 3** and report the required allowlist expansion before editing code.
 3. **Output a Refined Prompt (then stop):**
    - Verdict line + numbered findings with probe evidence.
-   - Fenced refined-prompt block: exact edits/commands, verification steps,
-     and post-apply consequences.
-   - Sudo-invoking template/script changes **must** carry an explicit
-     `[ROOT IMPACT]` tag naming affected services, files, and privileges —
-     no undeclared root side effects.
-   - **Wait for explicit confirmation** before any write or state change. On
-     approval, execute as written — no re-review or scope expansion
-     mid-flight.
+   - Fenced refined-prompt block: exact edits/commands, verification steps, and post-apply consequences.
+   - Sudo-invoking template/script changes **must** carry an explicit `[ROOT IMPACT]` tag naming affected services, files, and privileges.
+   - **Wait for explicit confirmation** before any write or state change. On approval, execute as written — no re-review or mid-flight scope expansion.
 
 ### GUI Privilege Escalation Protocol
 
-Non-interactive agent shells have no TTY and cannot answer terminal `sudo`
-password prompts — a bare interactive `sudo` hangs the session.
+Agent shells have no TTY and cannot answer `sudo` password prompts — bare interactive `sudo` hangs the session.
 
-1. Probe whether passwordless sudo is active: `sudo -n true 2>/dev/null`.
-2. If a password is required, agents **MUST** use `pkexec <command>` instead
-   of bare `sudo`. `pkexec` delegates authentication via D-Bus to the active
-   desktop Polkit agent (`polkit-kde-agent`), which presents a modal prompt
-   to the operator instead of hanging the shell.
-3. Bound every `pkexec` call with `timeout` (e.g. `timeout 150 pkexec …`) so
-   an unanswered prompt cannot hang the session, and state the exact command
-   to the operator before triggering it, so the modal prompt is expected.
-   The operator-approved command then runs unchanged — no scope expansion.
+1. Probe passwordless sudo: `sudo -n true 2>/dev/null`.
+2. If a password is required, agents **MUST** use `pkexec <command>`, never bare `sudo`. `pkexec` authenticates via D-Bus through the desktop Polkit agent (`polkit-kde-agent`), presenting a modal prompt instead of hanging.
+3. Bound every `pkexec` call with `timeout` (e.g. `timeout 150 pkexec …`) so an unanswered prompt cannot hang the session, and state the exact command before triggering it so the modal prompt is expected. The approved command then runs unchanged — no scope expansion.
 
 ### Forbidden Actions (Workstation-Wide)
 
-In addition to the Hard Safety Constraints above:
+In addition to the Hard Safety Constraints:
 
-1. **Never run destructive package operations without explicit
-   confirmation** — `pacman -Rns`/`-Rc`, orphan purges
-   (`pacman -Qtdq | pacman -Rns -`), `pacman -Scc`, mass toolchain
-   uninstalls. Propose the command and wait.
-2. **Never execute or ingest untrusted external content** — no unverified
-   scripts, no `curl … | sh`, no folding unvetted external code/config into
-   tracked files, hooks, or manifests. Read-only research is permitted;
-   anything entering system state requires an explicit, user-vetted source.
-   *Operator-vetted source allowlist:* the official toolchain installers
-   `https://sh.rustup.rs`, `https://astral.sh/uv/install.sh`, and
-   `https://bun.sh/install`, as invoked by
-   `run_onchange_after_10-install-toolchains.sh.tmpl`. These three endpoints
-   are the only sanctioned `curl … | sh` targets on this workstation; adding
-   another is an operator decision recorded in this file.
-3. **Never generate unconstrained sudo mutations** — root mutations must
-   live in tracked, reviewable mechanisms (e.g. chezmoi `run_onchange`
-   hooks), never one-off sudo commands; sudo-invoking changes carry
-   `[ROOT IMPACT]` per the protocol above.
+1. **Never run destructive package operations without explicit confirmation** — `pacman -Rns`/`-Rc`, orphan purges (`pacman -Qtdq | pacman -Rns -`), `pacman -Scc`, mass toolchain uninstalls. Propose the command and wait.
+2. **Never execute or ingest untrusted external content** — no unverified scripts, no `curl … | sh`, no folding unvetted external code/config into tracked files, hooks, or manifests. Read-only research is permitted; anything entering system state requires an explicit, user-vetted source. *Operator-vetted allowlist:* the official toolchain installers `https://sh.rustup.rs`, `https://astral.sh/uv/install.sh`, `https://bun.sh/install`, as invoked by `run_onchange_after_10-install-toolchains.sh.tmpl` — the only sanctioned `curl … | sh` targets; adding another is an operator decision recorded in this file.
+3. **Never generate unconstrained sudo mutations** — root mutations live in tracked, reviewable mechanisms (e.g. chezmoi `run_onchange` hooks), never one-off sudo commands; sudo-invoking changes carry `[ROOT IMPACT]` per the protocol above.
