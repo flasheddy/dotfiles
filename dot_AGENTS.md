@@ -184,7 +184,7 @@ cover; this section governs shell usage.
 | Search content | `rg` (`-u`/`-uu` only deliberately) | `grep -r` |
 | Find files | `fd` (`-H` for hidden files) | `find` |
 | Read files | `bat --style=plain --paging=never` (short: `cat`) | `cat file \| while read` — use single-pass `rg`/`sd`/`awk` |
-| List dirs | `eza -l`, `eza --tree` | `ls -R` / `ls -la` chains |
+| List dirs | `eza -la --color=never --paging=never`, `eza --tree` | `ls -R` / `ls -la` chains |
 | Substitute in pipes | `sd` | `sed` (complex scripts excepted) |
 | System inspection | `dust`, `procs` | `du`, `ps aux \| grep` |
 
