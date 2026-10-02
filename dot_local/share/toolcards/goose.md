@@ -16,9 +16,24 @@ authoritative: https://goose-docs.ai
   `slash_commands:` maps `command` → `recipe_path` (a `.yaml`/`.json` recipe).
 - **Recipe storage locations:** global `~/.config/goose/recipes/`, project-local
   `./.goose/recipes/`, or any dir in `GOOSE_RECIPE_PATH`.
+- **Local execution is pre-approved; capability changes are not.** The deployed
+  posture (`dot_config/goose/private_permission.yaml` →
+  `~/.config/goose/permission.yaml`) puts `shell`, `edit`, `write`, `read_image`
+  in `always_allow` alongside the read-only tools, so routine local work never
+  prompts. `extensionmanager__manage_extensions` stays in `ask_before`; `apps__*`
+  and `orchestrator__send_message`/`orchestrator__start_agent` stay in
+  `never_allow` (blocked, not merely gated). The `just check-permissions` gate
+  (`permissions-no-auto-allow`) now guards only capability-changing tools —
+  moving `manage_extensions` into `always_allow` fails the build.
 
 ## Verified gotchas
 
+- **goose rewrites `permission.yaml` itself at runtime.** The live file is
+  re-sorted and the `user` scope's `always_allow` is mutated, so `chezmoi status`
+  turns dirty mid-session and `chezmoi apply` then prompts
+  (`diff/overwrite/all-overwrite/skip/quit`). Reconcile with `chezmoi re-add`.
+  (Verified 2026-10-02: the live file changed again ~5 min after `re-add` had
+  made it byte-identical to the source.)
 - **`manage_extensions` is session-scoped — it does NOT persist to `config.yaml`.**
   To make enable/disable permanent, edit
   `~/.config/goose/config.yaml` → `extensions.<name>.enabled`, then `chezmoi apply`.
