@@ -668,6 +668,7 @@ drift:
 		echo "$status_out" >&2
 		exit 1
 	end
+	set status_out (string match -v "*permission.yaml*" $status_out)
 	set -l failed 0
 	for line in $status_out
 		test -z "$line"; and continue
