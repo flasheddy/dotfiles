@@ -9,8 +9,8 @@ authoritative: just --help
 ## Canonical here
 
 `just check` is the single uniform full-gate entry point across repositories; the
-global `pre-push` hook dispatches to it. Contract and guards: dotfiles README →
-*Repository Enforcement*.
+global `pre-push` hook dispatches to it. Contract and guards: dotfiles
+`AGENTS.md` → *Repository Enforcement & Verification Gates* (§1.4).
 
 ## Verified gotchas
 

@@ -5,7 +5,7 @@
 #   goose-doc-guide skill reads as authoritative documentation (i.e. it becomes
 #   model context). Requires interactive sudo at `chezmoi apply` time.
 # OFFLINE: this hook never fetches. It installs a tree the Operator has already
-#   built online into the staging directory below (see README).
+#   built online into the staging directory below (see AGENTS.md §2.11).
 # IDEMPOTENT: a populated /opt/goose-docs is left untouched.
 # No `include | sha256sum` header by design: the artifact is produced at runtime
 #   outside the source tree, so idempotency is enforced by the presence guard.
@@ -23,7 +23,7 @@ fi
 
 if [ ! -f "${STAGE}/${MARKER}" ]; then
   echo "goose-docs: staged docs tree not found at ${STAGE}." >&2
-  echo "goose-docs: build it once, online, per README -> 'Offline Goose Docs Root'." >&2
+  echo "goose-docs: build it once, online, per AGENTS.md §2.11 -> 'Offline Goose Docs Root'." >&2
   echo "goose-docs: skipping provisioning (graceful degradation)." >&2
   exit 0
 fi

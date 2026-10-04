@@ -1,6 +1,6 @@
 # AGENTS.md — Operational Rules for AI Agents
 
-<!-- floor-contract: sha256:bc9e3e62d7c475a97c7f7e93d9738ee87a59656807623d0bf294ce133f2f18b3 -->
+<!-- floor-contract: sha256:ffa21f47b8914b18c6ddd3e129f9bc9cc9f09ae147b24c0fea95c8c27c22ca1a -->
 
 Binding contract for Goose and any AI agent operating on this chezmoi
 repository. **Read fully before changing anything.** If a requested action
@@ -85,6 +85,62 @@ upstream installers, kept **out of Pacman** to avoid version conflicts:
 - AUR packages go **only** into `archive/pacman-foreign.txt`.
 - Verify origin before writing: `pacman -Si <pkg>` succeeds for native; `paru -Si <pkg>` reveals AUR origin.
 
+### 1.4 Repository Enforcement & Verification Gates
+
+Commit gates run through a single **global** pre-commit hook, deployed by
+chezmoi from `dot_config/git/hooks/executable_pre-commit` to
+`~/.config/git/hooks/pre-commit` and wired machine-wide through the tracked
+`~/.gitconfig` (`core.hooksPath = ~/.config/git/hooks`).
+
+The hook is **opt-in per repository**: it runs only where an `AGENTS.md` (or a
+local `git-hooks/` directory) exists and exits 0 otherwise, so third-party
+clones and scratch trees are never touched.
+
+1. **Documentation drift** — every cross-repo `*.md` path and `##`-prefixed
+   heading cited in the repository's `AGENTS.md` must resolve (globs and
+   `<placeholders>` are skipped). Detection only; it never rewrites a document.
+2. **Floor freshness** — a repository carrying a
+   `<!-- floor-contract: sha256:… -->` marker must match the live `~/.AGENTS.md`.
+   A stale marker **blocks** a commit that stages `AGENTS.md`: re-affirm the
+   inheritance, then run `floor-stamp` to refresh the marker line.
+3. **`git diff --cached --check`** — whitespace errors and conflict markers.
+4. **Secret scan** — `gitleaks git --staged --redact`, with a fail-closed `rg`
+   fallback when `gitleaks` is absent.
+
+The companion **pre-push** hook runs a repository's **full** verification before
+anything leaves the machine. It dispatches to the repository's `just check`
+recipe when one exists (this repository's `justfile` is the reference adapter)
+and fails closed when the entry point is present but unrunnable. Repositories
+without a `check` recipe are untouched, and partial gates must use other recipe
+names so they can never be mistaken for the full gate.
+
+`just check` is this repository's full gate:
+
+| Command | Purpose |
+|---|---|
+| `just check` | Full sequential gate: config invariants, recipe gate, gate self-test, lint, secret scan |
+| `just check-fast` | Same set plus the advisory drift report, **in parallel**, pinned to 3 workers |
+| `just check-commands [accept\|reject] [root]` | Structural recipe gate; `reject` runs the RED fixture self-test |
+| `just check-config` / `just lint` / `just secrets` / `just drift` | The individual stages |
+
+### 1.5 Goose Configuration Map
+
+The goose agent surface is chezmoi-managed. Edit the **Source** column only;
+`chezmoi apply` deploys to the live target. The `check-config` gate enforces the
+`config.yaml` invariants (`GOOSE_MODE` non-autonomous, the `memory` family
+disabled, `GOOSE_DOCS_ROOT` an absolute populated tree, no remote recipe repo).
+
+| Source (chezmoi) | Deployed to | Controls | How it reaches Goose |
+|---|---|---|---|
+| `dot_config/goose/config.yaml` | `~/.config/goose/config.yaml` | active provider, model defaults, extensions, thinking effort, context limit, telemetry | goose config loader |
+| `dot_config/goose/private_permission.yaml` | `~/.config/goose/permission.yaml` | tool pre-approval posture: `always_allow` (local execution), `ask_before` (extension management), `never_allow` (apps/orchestrator) | goose permission loader (the file is also rewritten by the runtime) |
+| `dot_config/goose/dot_goosehints.tmpl` | `~/.config/goose/.goosehints` | inlines `dot_AGENTS.md` (global floor) | goose "hints" auto-load into the system prompt |
+| `dot_config/goose/prompts/system.md` | `~/.config/goose/prompts/system.md` | base identity + hard shell/session-safety + extension template blocks | system-prompt template |
+| `dot_AGENTS.md` | `~/.AGENTS.md` (+ `~/AGENTS.md` symlink) | global agent floor: safety, Fish/CLI reference, pkexec, forbidden actions | inlined via `.goosehints`; read directly by home-path tools |
+| `dot_agents/agents/*.md` | `~/.agents/agents/*.md` | native summon subagents: `architect`, `g-draft`, `g-flash`, `g-audit-a`, `g-audit-b` | `delegate` / `load` (summon) |
+| `dot_config/fish/functions/g-*.fish` | `~/.config/fish/functions/g-*.fish` | role dispatch (provider/model per session) | operator launches session |
+| `dot_config/fish/config.fish` | `~/.config/fish/config.fish` | `GOOSE_SHELL`, CLI theme env | shell startup env |
+
 ---
 
 ## 2. Operating Protocols
@@ -153,7 +209,7 @@ The three hooks run with `set -euo pipefail` and execute real system changes (in
 
 ### 2.5 Dotfiles Refinement & Maintenance Protocol
 
-Periodic, report-first audit run on request (e.g. "Refine & Reconcile System" in `README.md`). Execute phases in order.
+Periodic, report-first audit run on request (e.g. the operator prompt "Refine & Reconcile System" below). Execute phases in order.
 
 **Phase 1 — Surface Drift.** `chezmoi status` + `chezmoi diff` (§2.1). Report drift; never fix silently.
 
@@ -170,6 +226,18 @@ Periodic, report-first audit run on request (e.g. "Refine & Reconcile System" in
 **Phase 4 — Report Before Mutate.** Executive summary grouped **Critical / Missing / Polish** with proposed fixes; **stop for confirmation** before any modification. Removals need explicit approval (`~/.AGENTS.md` forbidden actions).
 
 **Phase 5 — Post-Refinement Validation.** After approved changes: §2.4.4 template loop + §4 checklist.
+
+**Operator prompt (periodic maintenance) — "Refine & Reconcile System":**
+
+> "Run a complete dotfiles refinement audit per AGENTS.md §2.5. Reconcile pacman, AUR, Flatpak, and standalone toolchains with the manifests, scan for drift and portability issues, and report findings before modifying any files."
+
+Other routine operator prompts:
+
+- **Audit (read-only):** "Run `chezmoi status` and `chezmoi diff`, report any drift between the source tree and the live system. Change nothing."
+- **Update packages:** "Update the system, then reconcile newly installed/removed packages with the manifests under `packages/` and `archive/pacman-foreign.txt`. Follow `AGENTS.md` and ask before removing anything."
+- **Add a toolchain:** "Install `<tool>` with the appropriate toolchain manager (uv/cargo/bun/go), append it to the matching `toolchains/*.txt` manifest, and verify with `chezmoi status`. Follow `AGENTS.md`."
+
+Rule of thumb: agents may read freely, must document every install in a manifest, and must ask before anything destructive.
 
 ### 2.6 Agent Tool Execution Preferences
 
@@ -232,6 +300,24 @@ the sole **executor**. At every Operator-gated checkpoint:
 3. Never run git write operations (add/commit/merge/switch/branch/tag/reset/
    checkout -b/push). Operator is sole execution authority for
    branch/commit/merge/push (inherited from ~/.AGENTS.md).
+
+### 2.11 Offline Goose Docs Root (`/opt/goose-docs`)
+
+`goose-doc-guide` reads documentation from `GOOSE_DOCS_ROOT`; this machine pins
+it to a local tree so documentation lookups never hit the network. Provision it
+**once, online** (the only step that needs a network):
+
+```fish
+git clone --depth 1 --branch vX.Y.Z https://github.com/aaif-goose/goose /tmp/goose-src
+cd /tmp/goose-src/documentation; and npm ci; and npm run build
+mkdir -p ~/.cache/goose-docs-build
+cp -r /tmp/goose-src/documentation/build/. ~/.cache/goose-docs-build/
+```
+
+Match `vX.Y.Z` to `goose --version`. `chezmoi apply` then installs it to
+`/opt/goose-docs` via the idempotent `run_onchange_after_30` hook, which never
+fetches by itself. `just check` (the `check-config` `docs-root` rule) fails
+closed until the tree exists.
 
 ---
 
