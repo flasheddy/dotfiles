@@ -30,6 +30,7 @@ taplo-cli
 # Language servers and documentation tools
 bash-language-server
 gobject-introspection
+just-lsp
 lldb
 marksman
 zola
