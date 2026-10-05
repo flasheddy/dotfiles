@@ -169,7 +169,7 @@ else
     printf '%s\n' "pre-commit: private-key material found in staged diff; commit blocked." >&2
     exit 1
   fi
-  if git diff --cached --no-color -U0 | rg -n -i -E '(password|passwd|secret|api[-_]?key|access[-_]?key|client[-_]?secret|auth[-_]?token)[[:space:]]*[:=][[:space:]]*[^[:space:]]{8,}'; then
+  if git diff --cached --no-color -U0 | rg -n -i -e '(password|passwd|secret|api[-_]?key|access[-_]?key|client[-_]?secret|auth[-_]?token)[[:space:]]*[:=][[:space:]]*[^[:space:]]{8,}'; then
     printf '%s\n' "pre-commit: credential-shaped string found in staged diff; commit blocked." >&2
     exit 1
   fi
