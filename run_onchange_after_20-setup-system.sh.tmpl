@@ -24,6 +24,13 @@ if command -v ufw >/dev/null 2>&1; then
   sudo ufw default deny incoming
   sudo ufw default allow outgoing
   sudo ufw --force enable
+
+  # Syncthing LAN sync ports (22000/tcp+udp sync+QUIC, 21027/udp discovery).
+  # Idempotent: re-adding an identical rule is a no-op, so N runs == 1 run.
+  # The web UI (8384) stays bound to localhost and is deliberately not opened.
+  for rule in 22000/tcp 22000/udp 21027/udp; do
+    sudo ufw allow "$rule" || echo ":: Warning: ufw allow $rule failed"
+  done
 fi
 
 # -----------------------------------------------------------------------------
@@ -31,6 +38,10 @@ fi
 # -----------------------------------------------------------------------------
 
 sudo systemctl enable --now fstrim.timer paccache.timer 2>/dev/null || true
+
+# Keep user services (e.g. syncthing.service) alive across logout/reboot
+# without an interactive login. Idempotent: re-enabling is a no-op.
+sudo loginctl enable-linger "$(id -un)" 2>/dev/null || true
 
 # -----------------------------------------------------------------------------
 # Background daemons

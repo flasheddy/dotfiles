@@ -18,7 +18,9 @@ Key groups:
 - Kernels and firmware (`linux-cachyos*`, `linux-firmware`, `amd-ucode`, `sof-firmware`)
 - NVIDIA/AMD/Vulkan graphics drivers and 32-bit counterparts
 - Filesystem tools (`btrfs-progs`, `lvm2`, `cryptsetup`, `mdadm`, etc.)
-- Networking, Bluetooth, firewall, and remote access
+- Networking, Bluetooth, firewall, and remote access (incl. `syncthing`;
+  its LAN sync ports 22000/tcp+udp and 21027/udp are opened by the
+  `run_onchange_after_20-setup-system` hook)
 - Package-management helpers (`paru`, `pacman-contrib`)
 
 ### `10-desktop-environment.txt`

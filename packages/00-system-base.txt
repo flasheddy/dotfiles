@@ -127,6 +127,7 @@ networkmanager-openvpn
 nss-mdns
 openssh
 rsync
+syncthing
 ufw
 ufw-extras
 usb_modeswitch
