@@ -111,18 +111,18 @@ The **Prompt Review & Refinement Protocol** and **Forbidden Actions (Workstation
 
 ### Modern CLI Tool Preferences
 
-From the **shell**, prefer modern CLI tools (faster, `.gitignore`-aware). Dedicated agent tools (read/edit/tree) are first choice for what they cover.
+From the **shell**, prefer modern CLI tools (faster). `.gitignore` awareness is tool-specific: `rg`/`fd` honour it by default; `eza` requires `--git-ignore`. Dedicated agent tools (read/edit/tree) are first choice for what they cover.
 
 | Operation | Use | Never |
 |---|---|---|
 | Search content | `rg` (`-u`/`-uu` only deliberately) | `grep -r` |
 | Find files | `fd` (`-H` for hidden) | `find` |
 | Read files | `bat --style=plain --paging=never` (short: `cat`) | `cat file \| while read`; use single-pass `rg`/`sd`/`awk` |
-| List dirs | `eza -la --color=never --paging=never`, `eza --tree` | `ls -R` / `ls -la` chains |
+| List dirs | `eza -la --color=never` (hidden incl.), `eza -a --tree -L 2 --git-ignore` (always cap depth; `-a` shows dotfiles; `--git-ignore` honors ignore rules) | `ls -R` / `ls -la` chains |
 | Substitute in pipes | `sd` | `sed` (complex scripts excepted) |
 | System inspection | `dust`, `procs` | `du`, `ps aux \| grep` |
 
-**Never invoke interactive TUIs** (`less`, `jless`, `btop`, `lazygit`, editors) — they hang the session. Force non-interactive output: `--paging=never`, `git --no-pager`, `PAGER=cat`.
+**Never invoke interactive TUIs** (`less`, `jless`, `btop`, `lazygit`, editors) — they hang the session. Force non-interactive output **using each tool's own flag**: `bat --paging=never` (`--paging` exists ONLY in `bat`/`less`; `eza`, `rg`, `fd`, `sd` reject it with exit 2), `git --no-pager`, `PAGER=cat`.
 
 ### Shell Dialect & Syntax (Fish Shell)
 

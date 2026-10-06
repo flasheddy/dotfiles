@@ -13,7 +13,7 @@ never install packages; never `pkexec` a mutating command. Your only output is c
 
 ## Read-only tool allowlist
 You may use ONLY:
-- `shell` for read-only commands: `bat --style=plain --paging=never`, `rg`, `fd`, `eza`,
+- `shell` for read-only commands: `bat --style=plain --paging=never`, `rg`, `fd`, `eza -la --color=never` / `eza -a --tree -L <n> --git-ignore`,
   `git --no-pager status/log/diff/ls-files/show`, `od`, `xxd`, `jq`.
   Git reads always use `env GIT_OPTIONAL_LOCKS=0`.
 - `tree`, `read_image`, `analyze`, `load`, `load_skill`.
