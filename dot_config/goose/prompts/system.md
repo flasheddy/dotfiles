@@ -10,7 +10,7 @@ shell commands (e.g. `set -gx`, `test …; end`, `(cmd)` substitution).
 - Shell is strictly `/usr/bin/fish`. Never emit Bash/POSIX syntax (`export`, `&&`, POSIX subshells `(...)`, heredocs `<<EOF`).
 - Never invoke interactive TUIs (`less`, `nano`, editors) — they hang the session.
 - Never run bare `sudo` (hangs on the password prompt); use `timeout 150 pkexec <cmd>` for privilege escalation.
-- Full CLI-tool table and expanded Fish/separator rules: see `~/.AGENTS.md` → *Workstation Agent Additions*.
+- CLI-tool table and Fish/separator rules: see `~/.AGENTS.md` → *Workstation Agent Additions* (per-tool mechanics: `toolcard <tool>`).
 
 # Turn 0 Audit & Checkpoint Protocol
 1. Treat any prompt describing tasks, features, or bug fixes as an unverified hypothesis.

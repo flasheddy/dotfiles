@@ -111,14 +111,14 @@ The **Prompt Review & Refinement Protocol** and **Forbidden Actions (Workstation
 
 ### Modern CLI Tool Preferences
 
-From the **shell**, prefer modern CLI tools (faster). `.gitignore` awareness is tool-specific: `rg`/`fd` honour it by default; `eza` requires `--git-ignore`. Dedicated agent tools (read/edit/tree) are first choice for what they cover.
+From the **shell**, prefer modern CLI tools (faster). Dedicated agent tools (read/edit/tree) are first choice for what they cover. Per-tool flags and verified gotchas are delegated to the tool cards — query `toolcard <tool>` (the `toolcards` skill) before running unfamiliar, version-sensitive, or previously-failed commands.
 
 | Operation | Use | Never |
 |---|---|---|
-| Search content | `rg` (`-u`/`-uu` only deliberately) | `grep -r` |
-| Find files | `fd` (`-H` for hidden) | `find` |
+| Search content | `rg` | `grep -r` |
+| Find files | `fd` | `find` |
 | Read files | `bat --style=plain --paging=never` (short: `cat`) | `cat file \| while read`; use single-pass `rg`/`sd`/`awk` |
-| List dirs | `eza -la --color=never` (hidden incl.), `eza -a --tree -L 2 --git-ignore` (always cap depth; `-a` shows dotfiles; `--git-ignore` honors ignore rules) | `ls -R` / `ls -la` chains |
+| List dirs | `eza` (`toolcard eza` — no-TTY operand and `ls`-wrapper traps; always cap depth) | `ls -R` / `ls -la` chains |
 | Substitute in pipes | `sd` | `sed` (complex scripts excepted) |
 | System inspection | `dust`, `procs` | `du`, `ps aux \| grep` |
 
@@ -126,7 +126,7 @@ From the **shell**, prefer modern CLI tools (faster). `.gitignore` awareness is 
 
 ### Shell Dialect & Syntax (Fish Shell)
 
-Direct shell commands and operator snippets MUST use native Fish syntax:
+Direct shell commands and operator snippets MUST use native Fish syntax (full reference: `man fish`; workstation gotchas: `toolcard fish`). The table pairs each Bash/POSIX form to avoid with its Fish replacement:
 
 | Need | Use | Never |
 |---|---|---|
@@ -142,7 +142,7 @@ Direct shell commands and operator snippets MUST use native Fish syntax:
 | Redirection | `od -c`, `xxd`, `jq`, `bat`, or the project runner (e.g. `uv run ...`) | `<<EOF` / `<<'PY'`; bare `python3 -c`/`node -e` when a runner is mandated |
 | Path | `fish_add_path /path/to/bin` | — |
 
-**POSIX/Bash exceptions:** only for `*.sh` with a Bash/POSIX `sh` shebang, `*.sh.tmpl` rendering to such a script, invoking the declared interpreter for syntax validation (e.g. `bash -n`), or a third-party tool requiring a POSIX string invocation (`bash -c "..."`, `sh -c "..."`).
+**POSIX/Bash exceptions** (`toolcard bash`): only for `*.sh` with a Bash/POSIX `sh` shebang, `*.sh.tmpl` rendering to such a script, invoking the declared interpreter for syntax validation (e.g. `bash -n`), or a third-party tool requiring a POSIX string invocation (`bash -c "..."`, `sh -c "..."`).
 
 ### Prompt Review & Refinement Protocol
 
@@ -163,11 +163,9 @@ For in-scope prompts, **do not execute immediately** — act as defensive review
 
 ### GUI Privilege Escalation Protocol
 
-Agent shells have no TTY and cannot answer `sudo` password prompts — bare interactive `sudo` hangs the session.
+Agent shells have no TTY and cannot answer `sudo` password prompts — bare interactive `sudo` hangs the session. Probe passwordless sudo first (`sudo -n true 2>/dev/null`); if a password is required, agents **MUST** use `pkexec <command>`, never bare `sudo` — it authenticates via D-Bus through the desktop Polkit agent (`polkit-kde-agent`), presenting a modal prompt instead of hanging.
 
-1. Probe passwordless sudo: `sudo -n true 2>/dev/null`.
-2. If a password is required, agents **MUST** use `pkexec <command>`, never bare `sudo`. `pkexec` authenticates via D-Bus through the desktop Polkit agent (`polkit-kde-agent`), presenting a modal prompt instead of hanging.
-3. Bound every `pkexec` call with `timeout` (e.g. `timeout 150 pkexec …`) so an unanswered prompt cannot hang the session, and state the exact command before triggering it so the modal prompt is expected. The approved command then runs unchanged — no scope expansion.
+Bound every `pkexec` call with `timeout` (e.g. `timeout 150 pkexec …`) so an unanswered prompt cannot hang the session, and state the exact command before triggering it so the modal prompt is expected. The approved command then runs unchanged — no scope expansion.
 
 ### Forbidden Actions (Workstation-Wide)
 
