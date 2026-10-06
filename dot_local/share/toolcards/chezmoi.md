@@ -25,3 +25,13 @@ deployed target. Full protocol: `~/.AGENTS.md` → *Chezmoi Execution Model*.
   instead — e.g. `chezmoi apply ~/.config/git/hooks`, not the file inside it.
 - **`chezmoi status` clean means "no unapplied source↔target difference"**, not
   "git is clean". The two are independent.
+- **Bare `chezmoi apply` hangs in an agent shell.** If any managed target has
+  drifted since chezmoi last wrote it — e.g. `~/.config/goose/permission.yaml`,
+  which the goose runtime rewrites itself — apply stops on an interactive
+  `… has changed since chezmoi last wrote it?` prompt. An agent shell has no
+  usable stdin, so it waits out the harness timeout (observed: a 300 s hang),
+  and if the prompt is ever answered it would clobber unrelated drift. Agents
+  MUST pass `--no-tty` **and** an explicit target:
+  `chezmoi --no-tty apply ~/.local/share/toolcards/eza.md`. `--no-tty` turns any
+  surviving prompt into a hard error instead of a hang, and the scoped path
+  keeps unrelated drift (like `permission.yaml`) out of the run.
