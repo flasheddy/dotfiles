@@ -9,7 +9,8 @@ authoritative: man git
 ## Canonical here
 
 The operator is the sole executor of write operations (branch, commit, merge,
-push); agents supply commands only. See `~/.AGENTS.md` → *Git Handoff Protocol*.
+push); agents supply commands only. See the dotfiles `AGENTS.md` →
+*Git Handoff Protocol (Operator-Executed)* (§2.10).
 The shared hooks live in `~/.config/git/hooks`, wired via `core.hooksPath`.
 
 ## Verified gotchas

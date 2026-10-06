@@ -138,6 +138,7 @@ disabled, `GOOSE_DOCS_ROOT` an absolute populated tree, no remote recipe repo).
 | `dot_config/goose/prompts/system.md` | `~/.config/goose/prompts/system.md` | base identity + hard shell/session-safety + extension template blocks | system-prompt template |
 | `dot_AGENTS.md` | `~/.AGENTS.md` (+ `~/AGENTS.md` symlink) | global agent floor: safety, Fish/CLI reference, pkexec, forbidden actions | inlined via `.goosehints`; read directly by home-path tools |
 | `dot_agents/agents/*.md` | `~/.agents/agents/*.md` | native summon subagents: `architect`, `g-draft`, `g-flash`, `g-audit-a`, `g-audit-b` | `delegate` / `load` (summon) |
+| `dot_agents/skills/*/SKILL.md` | `~/.agents/skills/*/SKILL.md` | on-demand skill instructions (e.g. `toolcards`: local tool conventions + verified gotchas at `~/.local/share/toolcards/`) | goose `skills` extension (description always on; body via `load_skill`) |
 | `dot_config/fish/functions/g-*.fish` | `~/.config/fish/functions/g-*.fish` | role dispatch (provider/model per session) | operator launches session |
 | `dot_config/fish/config.fish` | `~/.config/fish/config.fish` | `GOOSE_SHELL`, CLI theme env | shell startup env |
 

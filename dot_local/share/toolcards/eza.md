@@ -6,6 +6,17 @@ authoritative: eza --help
 
 # eza
 
+## Canonical here
+
+The workstation listing tool; `ls` is a Fish wrapper around it (see the second
+gotcha). Conventions the global floor delegates here:
+
+- `eza -la --color=never` — full listing, hidden entries included, no ANSI.
+- `eza -a --tree -L 2 --git-ignore` — tree view; always cap depth with `-L`, and
+  pass `--git-ignore` explicitly (eza is not `.gitignore`-aware by default,
+  unlike `rg` and `fd`).
+- Always name the target (`eza .`); never run bare `eza`.
+
 ## Verified gotchas
 
 - **In an agent shell, bare `eza` prints nothing and exits 0.** Piped (no TTY)
@@ -23,3 +34,7 @@ authoritative: eza --help
   stdout parser. Use `command ls` to reach the real binary (verified: 0 ESC
   bytes). Piped `eza` itself already auto-disables colour — the escapes come
   only from the wrapper's hard-coded `--color=always --icons=always`.
+- **`eza` rejects `--paging`.** `eza --paging=never` exits 2 with
+  `error: unexpected argument '--paging' found` (verified). `--paging` is a
+  `bat`/`less`-only flag — `rg`, `fd` and `sd` reject it with exit 2 as well.
+  The non-interactive form for eza is a named target plus `--color=never`.

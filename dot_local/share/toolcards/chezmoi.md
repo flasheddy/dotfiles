@@ -9,7 +9,7 @@ authoritative: chezmoi --help
 ## Canonical here
 
 `~/.local/share/chezmoi` is the single source of truth; edit the source, never the
-deployed target. Full protocol: `~/.AGENTS.md` → *Chezmoi Execution Model*.
+deployed target. Full protocol: the dotfiles `AGENTS.md` → *Chezmoi Execution Model*.
 
 ## Verified gotchas
 
