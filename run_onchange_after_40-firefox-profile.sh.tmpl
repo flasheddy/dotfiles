@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# Firefox declarative layer: install user.js into the active default profile.
+#
+# archive/firefox/user.js: {{ include "archive/firefox/user.js" | sha256sum }}
+#
+# WHY A HOOK (not a managed dotfile): Firefox 143+ names the profile directory
+#   from a random salt (e.g. ~/.config/mozilla/firefox/iu4mwubh.default-release),
+#   so the path is not stable and cannot be tracked by chezmoi. The profile also
+#   holds secret material (cookies.sqlite, logins.json, key4.db) that must never
+#   enter the source state. The hook resolves the default profile at apply time
+#   and installs only user.js.
+# NO ROOT IMPACT: runs entirely as the invoking user; no sudo, no systemd.
+# NO NETWORK: the payload lives in the source tree.
+# IDEMPOTENT: content-compared with cmp(1); a current file is left untouched.
+
+set -euo pipefail
+
+export HOME="${HOME:-$(getent passwd "$(id -u)" | cut -d: -f6)}"
+
+SRC="{{ joinPath .chezmoi.sourceDir "archive/firefox/user.js" }}"
+
+# -----------------------------------------------------------------------------
+# Locate the Firefox profile root.
+# XDG dedicated-profile layout (Firefox 143+) first, legacy ~/.mozilla second.
+# -----------------------------------------------------------------------------
+FF_ROOT=""
+for candidate in "$HOME/.config/mozilla/firefox" "$HOME/.mozilla/firefox"; do
+  if [ -d "$candidate" ]; then
+    FF_ROOT="$candidate"
+    break
+  fi
+done
+
+if [ -z "$FF_ROOT" ]; then
+  echo "firefox-userjs: no Firefox profile root found; nothing to do."
+  exit 0
+fi
+
+# -----------------------------------------------------------------------------
+# Resolve the default profile.
+#   installs.ini: "[<installhash>]" section with "Default=<profile dir name>".
+#   profiles.ini: the [ProfileN] block carrying Default=1; its Path= may be
+#                 relative (IsRelative=1) or absolute (IsRelative=0).
+# -----------------------------------------------------------------------------
+PROFILE_NAME=""
+if [ -f "$FF_ROOT/installs.ini" ]; then
+  PROFILE_NAME="$(sed -n 's/^Default=//p' "$FF_ROOT/installs.ini" | head -n 1)"
+fi
+
+if [ -z "$PROFILE_NAME" ] && [ -f "$FF_ROOT/profiles.ini" ]; then
+  PROFILE_NAME="$(awk '
+    /^\[Profile/ { if (path != "" && def) { print path; exit } path = ""; def = 0 }
+    /^Path=/     { sub(/^Path=/, ""); path = $0 }
+    /^Default=1/ { def = 1 }
+    END          { if (path != "" && def) print path }
+  ' "$FF_ROOT/profiles.ini" | head -n 1)"
+fi
+
+if [ -z "$PROFILE_NAME" ]; then
+  echo "firefox-userjs: ERROR: no default profile resolved from $FF_ROOT" >&2
+  exit 1
+fi
+
+case "$PROFILE_NAME" in
+  /*) PROFILE_DIR="$PROFILE_NAME" ;;
+  *)  PROFILE_DIR="$FF_ROOT/$PROFILE_NAME" ;;
+esac
+
+if [ ! -d "$PROFILE_DIR" ]; then
+  echo "firefox-userjs: ERROR: resolved default profile does not exist: $PROFILE_DIR" >&2
+  exit 1
+fi
+
+if [ ! -f "$SRC" ]; then
+  echo "firefox-userjs: ERROR: source user.js missing: $SRC" >&2
+  exit 1
+fi
+
+# -----------------------------------------------------------------------------
+# Install. cmp-guarded, so N runs are equivalent to one.
+# -----------------------------------------------------------------------------
+DEST="$PROFILE_DIR/user.js"
+if [ -f "$DEST" ] && cmp -s "$SRC" "$DEST"; then
+  echo "firefox-userjs: $DEST is already current."
+else
+  cp "$SRC" "$DEST"
+  echo "firefox-userjs: installed $DEST"
+fi
