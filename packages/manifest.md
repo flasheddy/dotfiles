@@ -71,8 +71,8 @@ Git tooling, and everyday CLI utilities.
 Key groups:
 
 - Editors (`helix`)
-- Readers (`csvlens`, `glow`, `jless`) — read-only terminal document viewers
-  (Markdown / JSON / TSV)
+- Readers (`csvlens`, `jless`) — read-only terminal document viewers
+  (JSON / TSV)
 - Shell enhancements (`starship`, `zoxide`)
 - Git tooling (`git`, `github-cli`, `gitleaks`, `git-delta`, `lazygit`)
 - CLI utilities (`ripgrep`, `fd`, `sd`, `dust`, `duckdb`, `procs`, `hyperfine`, `just`, `tokei`, `btop`, `7zip`, `wget`, `xh`, `vivid`, etc.)

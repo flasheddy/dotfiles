@@ -61,7 +61,6 @@ if status is-interactive
     abbr --add --global gdc 'git --no-pager diff | wl-copy'
 
     # Add convenient abbreviations for terminal document readers
-    abbr --add --global gm glow
     abbr --add --global jl jless
     abbr --add --global tsv 'csvlens -t'
 

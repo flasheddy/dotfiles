@@ -69,29 +69,26 @@ Defined in `~/.config/fish/config.fish`:
 | `cm` | `cd ~/.local/share/chezmoi` | jump to the chezmoi source directory (native `cd` — no wrapper process) |
 | `cma` | `chezmoi apply` | apply source changes to the live system |
 | `cms` | `chezmoi status` | show pending changes |
-| `gm` | `glow` | read-only Markdown reader (see Terminal Document Readers) |
 | `jl` | `jless` | read-only JSON pager with tree folding & vi keybindings |
 | `tsv` | `csvlens -t` | read-only column-aligned TSV/dataset viewer |
 
 ### Terminal Document Readers
 
 Document review is separated from editing: **read-only CLI viewers**
-(`gm`/`jl`/`tsv`) inspect files without ever opening a modifiable buffer, while
+(`jl`/`tsv`) inspect files without ever opening a modifiable buffer, while
 Helix (`hx`) is reserved for intentional edits. This eliminates accidental
 buffer modifications when reviewing large documents.
 
 | Reader | File Types | Abbreviation | Highlights |
 |---|---|---|---|
-| `glow` | Markdown | `gm` | Catppuccin Mocha theme (Mauve accent), 120-column wrap, auto-paging for long documents |
 | `jless` | JSON | `jl` | interactive pager with tree folding and Helix/vi keybindings |
 | `csvlens -t` | TSV, Anki exports & datasets | `tsv` | column-aligned viewer (`-t` = tab-separated, shortcut for `-d '\t'`) |
 
-All three are native packages from the Zen 4–optimized `cachyos-extra-znver4`
+Both are native packages from the Zen 4–optimized `cachyos-extra-znver4`
 repository, installed via the `# Readers` group in
-`packages/30-terminal-utilities.txt`. The glow theme source lives in
-`dot_config/glow/` (→ `~/.config/glow/catppuccin-mocha.json`). Reader
-abbreviations are defined only for interactive shells; agent and other
-non-interactive shells force non-interactive output per `~/.AGENTS.md`.
+`packages/30-terminal-utilities.txt`. Reader abbreviations are defined only for
+interactive shells; agent and other non-interactive shells force
+non-interactive output per `~/.AGENTS.md`.
 
 ### Agent Turn Checkpoint Handoff
 
