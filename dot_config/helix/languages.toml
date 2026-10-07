@@ -118,13 +118,19 @@ javascript.inlayHints.variableTypes.enabled = true
 # --- Markdown (docs / notes) ---
 [[language]]
 name = "markdown"
-# Only list Marksman here to keep the health check clean
-language-servers = [ "marksman" ]
+roots = [ ".git", "mkdocs.yml", ".obsidian" ]
+# List only servers that are actually installed, to keep `hx --health markdown` clean.
+# CAVEAT: Helix silently DROPS a `language-servers` name with no definition — it
+# appears as neither ✓ nor ✘ in the health check. A defined-but-missing server
+# shows ✘. So an "absent" entry means "undefined", not "fine".
+# markdown-oxide: built-in definition (Helix 25.07.1) — link completion,
+#   go-to-def, backlinks, rename; Obsidian-style wiki links.
+# typos-lsp: NOT built-in — definition below.
+language-servers = [ "markdown-oxide", "typos-lsp" ]
 formatter = { command = "prettier", args = ["--parser", "markdown"] }
 
-[language-server.marksman]
-command = "marksman"
-args = ["server"]
+[language-server.typos-lsp]
+command = "typos-lsp"
 
 # --- HTML ---
 [[language]]
