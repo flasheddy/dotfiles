@@ -2,3 +2,5 @@
 # (Not managed by uv, cargo, bun, rustup, or other toolchain managers.)
 goose
 # hx -> /usr/bin/helix (chezmoi-managed symlink: dot_local/bin/symlink_hx)
+# zed -> ~/.local/zed.app/bin/zed (manual bundle at ~/.local/zed.app;
+#   CLI symlink chezmoi-managed as dot_local/bin/symlink_zed.tmpl)

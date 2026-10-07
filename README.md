@@ -72,23 +72,17 @@ Defined in `~/.config/fish/config.fish`:
 | `jl` | `jless` | read-only JSON pager with tree folding & vi keybindings |
 | `tsv` | `csvlens -t` | read-only column-aligned TSV/dataset viewer |
 
-### Terminal Document Readers
+### Document Readers
 
-Document review is separated from editing: **read-only CLI viewers**
-(`jl`/`tsv`) inspect files without ever opening a modifiable buffer, while
-Helix (`hx`) is reserved for intentional edits. This eliminates accidental
-buffer modifications when reviewing large documents.
+Document review is separated from editing to prevent accidental buffer changes.
+Markdown and dataset reader workflow bifurcates based on complexity:
 
-| Reader | File Types | Abbreviation | Highlights |
+| Reader | Target File Types | Invocation | Highlights |
 |---|---|---|---|
-| `jless` | JSON | `jl` | interactive pager with tree folding and Helix/vi keybindings |
-| `csvlens -t` | TSV, Anki exports & datasets | `tsv` | column-aligned viewer (`-t` = tab-separated, shortcut for `-d '\t'`) |
-
-Both are native packages from the Zen 4–optimized `cachyos-extra-znver4`
-repository, installed via the `# Readers` group in
-`packages/30-terminal-utilities.txt`. Reader abbreviations are defined only for
-interactive shells; agent and other non-interactive shells force
-non-interactive output per `~/.AGENTS.md`.
+| `zed` | Complex Markdown (SDD plans, tables) | `zed <file>` | GUI sidecar previewer. Bypasses terminal width limits; soft-wraps dense cells. |
+| `bat` | Simple Markdown (inline CLI) | `bat <file>` | Fast, non-interactive syntax highlighting for standard CLI reads. |
+| `jless` | JSON | `jl` | Interactive pager with tree folding and Helix/vi keybindings. |
+| `csvlens` | TSV, Anki exports & datasets | `tsv` | Column-aligned viewer (`-t` = tab-separated). |
 
 ### Agent Turn Checkpoint Handoff
 
@@ -109,7 +103,7 @@ to stderr with exit status 1.
 
 ### PATH Symlinks
 
-Managed via `dot_local/bin/symlink_*` (tracked in `toolchains/local-bin.txt`): `hx` → `/usr/bin/helix`.
+Managed via `dot_local/bin/symlink_*` (tracked in `toolchains/local-bin.txt`): `hx` → `/usr/bin/helix`, `zed` → `~/.local/zed.app/bin/zed`.
 
 ### Editing Files
 
