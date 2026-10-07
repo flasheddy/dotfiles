@@ -32,5 +32,7 @@ bash-language-server
 gobject-introspection
 just-lsp
 lldb
-marksman
+markdown-oxide
+typos
+typos-lsp
 zola

@@ -57,7 +57,10 @@ Key groups:
 - Go toolchain (`delve`, `golangci-lint`, `gopls`)
 - Build/test/linters (`bats*`, `shellcheck`, `shfmt`, `taplo-cli`)
 - Language servers and documentation tools (`bash-language-server`, `lldb`,
-  `marksman`, `zola`)
+  `markdown-oxide`, `typos-lsp`, `zola`)
+- Spelling/typo gate (`typos`, standalone CLI). Its global config is
+  `~/.typos.toml` (chezmoi source: `dot_typos.toml`) — typos walks up from the
+  working directory and does **not** read `$XDG_CONFIG_HOME`.
 
 **Note:** Rust (`rustup`/`cargo`) and `uv` are intentionally omitted from this
 file. They are managed as standalone toolchains (see the `toolchains/`
