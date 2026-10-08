@@ -11,7 +11,14 @@ end
 function fish_user_key_bindings
     # Set Vim Mode
     set -g fish_key_bindings fish_vi_key_bindings
-    # Bind Alt+C to act like Right Arrow
+
+    # fzf: Ctrl-R history, Ctrl-T file picker.
+    # Sourced HERE on purpose: fish_vi_key_bindings resets bindings, and this
+    # hook is the last thing fish runs, so binds placed here survive.
+    type -q fzf; and fzf --fish | source
+
+    # Bind Alt+C to act like Right Arrow.
+    # Deliberately AFTER the fzf source above, so it overrides fzf's Alt-C fuzzy-cd.
     bind -M insert \ec forward-char
     bind -M default \ec forward-char
 end
@@ -24,6 +31,9 @@ else
     set -gx BAT_PAGING never
 end
 set -gx BAT_THEME "Catppuccin Mocha"
+
+# fzf: match BAT_THEME (hexes taken from ~/.config/bat/themes/Catppuccin Mocha.tmTheme)
+set -gx FZF_DEFAULT_OPTS "--height=60% --layout=reverse --border --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8,fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc,marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
 set -gx GOOSE_CLI_THEME dark
 set -gx GOOSE_CLI_DARK_THEME "Catppuccin Mocha"
 set -gx GOOSE_SHELL /usr/bin/fish
