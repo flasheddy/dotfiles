@@ -17,7 +17,12 @@ function fish_user_key_bindings
 end
 
 # Environment variables
-set -gx BAT_PAGING never
+# Guard bat pager on interactive shell
+if status is-interactive
+    set -gx BAT_PAGING auto
+else
+    set -gx BAT_PAGING never
+end
 set -gx BAT_THEME "Catppuccin Mocha"
 set -gx GOOSE_CLI_THEME dark
 set -gx GOOSE_CLI_DARK_THEME "Catppuccin Mocha"
