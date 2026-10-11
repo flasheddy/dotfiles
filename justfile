@@ -649,10 +649,8 @@ lint:
 	end
 	echo "lint: hook templates, git hooks, tool cards, whitespace"
 
-# Advisory drift report. Never fails on drift content: `chezmoi diff`'s exit code
-# is not a reliable drift predicate (verified 0 on a clean tree; dirty case
-# unverified). Fails closed only when chezmoi itself is unavailable.
-
+# Why `status` and not `diff`: `chezmoi diff` exits 0 even with real drift
+# present (verified 2026-10-11: 41-line diff, exit 0); non-zero means error.
 # Drift gate (HARD): any externally-modified or unapplied managed file fails the
 # build; pending `run_` scripts are warned about, not failed on.
 drift:
