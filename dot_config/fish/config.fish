@@ -12,15 +12,12 @@ function fish_user_key_bindings
     # Set Vim Mode
     set -g fish_key_bindings fish_vi_key_bindings
 
-    # fzf: Ctrl-R history, Ctrl-T file picker.
-    # Sourced HERE on purpose: fish_vi_key_bindings resets bindings, and this
-    # hook is the last thing fish runs, so binds placed here survive.
-    type -q fzf; and fzf --fish | source
-
-    # Bind Alt+C to act like Right Arrow.
-    # Deliberately AFTER the fzf source above, so it overrides fzf's Alt-C fuzzy-cd.
-    bind -M insert \ec forward-char
-    bind -M default \ec forward-char
+    # Accept the autosuggestion with Ctrl-F, mirroring Right Arrow: forward-char
+    # accepts the suggestion at end-of-line and moves one character mid-line.
+    # Alt-C is deliberately left unbound here, so it falls through to fzf's
+    # fuzzy-cd widget (sourced with the other tools in the interactive section).
+    bind -M insert \cf forward-char
+    bind -M default \cf forward-char
 end
 
 # Environment variables
@@ -115,6 +112,12 @@ if status is-interactive
     # Add convenient abbreviations for terminal document readers
     abbr --add --global jl jless
     abbr --add --global tsv 'csvlens -t'
+
+    # Fuzzy finder: Ctrl-R history, Ctrl-T file picker, Alt-C fuzzy cd.
+    # Its widget binds are user binds, so they survive preset application and can
+    # live here with the other tool initialisation instead of inside
+    # fish_user_key_bindings (that hook runs last and binds only Ctrl-F).
+    type -q fzf; and fzf --fish | source
 
     # Prompt
     type -q starship; and starship init fish | source
