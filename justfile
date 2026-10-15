@@ -653,6 +653,9 @@ lint:
 # present (verified 2026-10-11: 41-line diff, exit 0); non-zero means error.
 # Drift gate (HARD): any externally-modified or unapplied managed file fails the
 # build; pending `run_` scripts are warned about, not failed on.
+# No exclusions: the status report is evaluated verbatim. The former permission.yaml
+# filter is gone — that target is deliberately unmanaged (see .chezmoiignore), so
+# re-adding a filter here would silently mute a real gate.
 drift:
 	#!/usr/bin/env fish
 	if not command -v chezmoi >/dev/null
@@ -666,7 +669,6 @@ drift:
 		echo "$status_out" >&2
 		exit 1
 	end
-	set status_out (string match -v "*permission.yaml*" $status_out)
 	set -l failed 0
 	for line in $status_out
 		test -z "$line"; and continue

@@ -26,16 +26,15 @@ deployed target. Full protocol: the dotfiles `AGENTS.md` → *Chezmoi Execution 
 - **`chezmoi status` clean means "no unapplied source↔target difference"**, not
   "git is clean". The two are independent.
 - **Bare `chezmoi apply` hangs in an agent shell; `--dry-run` is not safe
-  either.** If any managed target has drifted since chezmoi last wrote it —
-  e.g. `~/.config/goose/permission.yaml`,
-  which the goose runtime rewrites itself — apply stops on an interactive
+  either.** If any managed target has drifted since chezmoi last wrote it — e.g.
+  a hand-edited toolcard — apply stops on an interactive
   `… has changed since chezmoi last wrote it?` prompt. An agent shell has no
   usable stdin, so it waits out the harness timeout (observed: a 300 s hang),
   and if the prompt is ever answered it would clobber unrelated drift. Agents
   MUST pass `--no-tty` **and** an explicit target:
   `chezmoi --no-tty apply ~/.local/share/toolcards/eza.md`. `--no-tty` turns any
   surviving prompt into a hard error instead of a hang, and the scoped path
-  keeps unrelated drift (like `permission.yaml`) out of the run.
+  keeps unrelated drift out of the run.
 - **A source-deleted entity vanishes from `chezmoi status` and `chezmoi diff`.**
   Status reports the *target* state, so an entity removed from the source simply
   stops being listed; `chezmoi diff <target>` and a scoped `chezmoi apply
