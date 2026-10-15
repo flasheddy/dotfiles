@@ -1,5 +1,10 @@
 # Canonical pre-approval posture for goose tool permissions.
 #
+# NOT deployed: goose owns ~/.config/goose/permission.yaml at runtime (it
+# serializes, locks and rewrites the file, dropping comments and repartitioning
+# the active mode's scope key). This source file is the `just check-permissions`
+# gate input and the reference posture for a fresh machine — see .chezmoiignore.
+#
 # Local execution is pre-approved (operator decision 2026-10-02): `shell`, `edit`,
 # `write`, `read_image` sit in `always_allow` so routine local work does not
 # interrupt for approval. Extension management stays gated (`ask_before`) because

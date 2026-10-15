@@ -13,8 +13,8 @@ justfile
 
 # Goose: OAuth token caches, secret stores, and lockfiles hold credentials and
 # must never be tracked in the source state or deployed (§3.1 secrets rule).
-# Only dot_config/goose/config.yaml, dot_goosehints, prompts/system.md, and
-# permission.yaml are managed.
+# Managed by chezmoi: dot_config/goose/config.yaml, dot_goosehints,
+# prompts/system.md.
 .config/goose/secrets.yaml
 .config/goose/secrets.yaml.lock
 .config/goose/chatgpt_codex
@@ -23,6 +23,15 @@ justfile
 .config/goose/gemini_oauth/**
 .config/goose/xai_oauth
 .config/goose/xai_oauth/**
+
+# Goose permission.yaml is deliberately NOT deployed: goose serializes, locks and
+# rewrites that file itself at runtime (verified 2026-10-15: the comment block is
+# dropped and the active mode's scope key is repartitioned, so chezmoi can never
+# hold a byte-identical copy). Managing it produced permanent drift plus an
+# interactive "has changed since chezmoi last wrote it" prompt on `chezmoi apply`.
+# The source file (dot_config/goose/private_permission.yaml) stays tracked as the
+# `just check-permissions` gate input and the fresh-machine reference posture.
+.config/goose/permission.yaml
 
 # Repository metadata and package manifests
 archive

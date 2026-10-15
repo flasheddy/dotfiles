@@ -16,11 +16,11 @@ authoritative: https://goose-docs.ai
   `slash_commands:` maps `command` → `recipe_path` (a `.yaml`/`.json` recipe).
 - **Recipe storage locations:** global `~/.config/goose/recipes/`, project-local
   `./.goose/recipes/`, or any dir in `GOOSE_RECIPE_PATH`.
-- **Local execution is pre-approved; capability changes are not.** The deployed
-  posture (`dot_config/goose/private_permission.yaml` →
-  `~/.config/goose/permission.yaml`) puts `shell`, `edit`, `write`, `read_image`
-  in `always_allow` alongside the read-only tools, so routine local work never
-  prompts. `extensionmanager__manage_extensions` stays in `ask_before`; `apps__*`
+- **Local execution is pre-approved; capability changes are not.** The canonical
+  posture (`dot_config/goose/private_permission.yaml` — tracked, **not** deployed;
+  goose owns the live `~/.config/goose/permission.yaml`) puts `shell`, `edit`, `write`,
+  `read_image` in `always_allow` alongside the read-only tools, so routine local work
+  never prompts. `extensionmanager__manage_extensions` stays in `ask_before`; `apps__*`
   and `orchestrator__send_message`/`orchestrator__start_agent` stay in
   `never_allow` (blocked, not merely gated). The `just check-permissions` gate
   (`permissions-no-auto-allow`) now guards only capability-changing tools —
@@ -28,12 +28,18 @@ authoritative: https://goose-docs.ai
 
 ## Verified gotchas
 
-- **goose rewrites `permission.yaml` itself at runtime.** The live file is
-  re-sorted and the `user` scope's `always_allow` is mutated, so `chezmoi status`
-  turns dirty mid-session and `chezmoi apply` then prompts
-  (`diff/overwrite/all-overwrite/skip/quit`). Reconcile with `chezmoi re-add`.
-  (Verified 2026-10-02: the live file changed again ~5 min after `re-add` had
-  made it byte-identical to the source.)
+- **goose rewrites `permission.yaml` itself at runtime — the live file is NOT
+  chezmoi-managed** (`.chezmoiignore` → `.config/goose/permission.yaml`; tracked
+  source stays as the `just check-permissions` input and the fresh-machine
+  reference). The live file loses the comment block and the active mode's scope
+  key is repartitioned: verified 2026-10-15, `smart_approve` moved `edit`,
+  `read_image`, `shell`, `todo__todo_write` and `write` into `ask_before` while
+  the `user` scope survived byte-identical; an earlier 2026-10-02 run mutated the
+  `user` scope's `always_allow` instead. So the rewrite is not merely a re-sort —
+  never `chezmoi re-add` it and never re-manage it. Two-writer proof:
+  `chezmoi state dump` (entryState) records the **source** hash
+  (`719429a1…`), the live file carries a different hash (`d55fab34…`) and an
+  mtime inside the running session.
 - **`manage_extensions` is session-scoped — it does NOT persist to `config.yaml`.**
   To make enable/disable permanent, edit
   `~/.config/goose/config.yaml` → `extensions.<name>.enabled`, then `chezmoi apply`.

@@ -54,6 +54,7 @@ sudo keyd list-keys
 rustup show; uv --version; bun --version; go version
 printf '%s\n' $PATH                      # toolchain bins on PATH
 chezmoi status                           # no unexpected drift
+test -f ~/.config/goose/permission.yaml; or install -m 600 -D ~/.local/share/chezmoi/dot_config/goose/private_permission.yaml ~/.config/goose/permission.yaml   # seed goose posture if absent (runtime-owned, not chezmoi-managed)
 ```
 
 ---

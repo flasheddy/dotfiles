@@ -125,15 +125,15 @@ names so they can never be mistaken for the full gate.
 
 ### 1.5 Goose Configuration Map
 
-The goose agent surface is chezmoi-managed. Edit the **Source** column only;
-`chezmoi apply` deploys to the live target. The `check-config` gate enforces the
+The goose agent surface is chezmoi-managed, with one deliberate exception
+(`permission.yaml` — see the note under the table). Edit the **Source** column
+only; `chezmoi apply` deploys to the live target. The `check-config` gate enforces the
 `config.yaml` invariants (`GOOSE_MODE` non-autonomous, the `memory` family
 disabled, `GOOSE_DOCS_ROOT` an absolute populated tree, no remote recipe repo).
 
 | Source (chezmoi) | Deployed to | Controls | How it reaches Goose |
 |---|---|---|---|
 | `dot_config/goose/config.yaml` | `~/.config/goose/config.yaml` | active provider, model defaults, extensions, thinking effort, context limit, telemetry | goose config loader |
-| `dot_config/goose/private_permission.yaml` | `~/.config/goose/permission.yaml` | tool pre-approval posture: `always_allow` (local execution), `ask_before` (extension management), `never_allow` (apps/orchestrator) | goose permission loader (the file is also rewritten by the runtime) |
 | `dot_config/goose/dot_goosehints.tmpl` | `~/.config/goose/.goosehints` | inlines `dot_AGENTS.md` (global floor) | goose "hints" auto-load into the system prompt |
 | `dot_config/goose/prompts/system.md` | `~/.config/goose/prompts/system.md` | base identity + hard shell/session-safety + extension template blocks | system-prompt template |
 | `dot_AGENTS.md` | `~/.AGENTS.md` (+ `~/AGENTS.md` symlink) | global agent floor: safety, Fish/CLI reference, pkexec, forbidden actions | inlined via `.goosehints`; read directly by home-path tools |
@@ -141,6 +141,18 @@ disabled, `GOOSE_DOCS_ROOT` an absolute populated tree, no remote recipe repo).
 | `dot_agents/skills/*/SKILL.md` | `~/.agents/skills/*/SKILL.md` | on-demand skill instructions (e.g. `toolcards`: local tool conventions + verified gotchas at `~/.local/share/toolcards/`) | goose `skills` extension (description always on; body via `load_skill`) |
 | `dot_config/fish/functions/g-*.fish` | `~/.config/fish/functions/g-*.fish` | role dispatch (provider/model per session) | operator launches session |
 | `dot_config/fish/config.fish` | `~/.config/fish/config.fish` | `GOOSE_SHELL`, CLI theme env | shell startup env |
+
+**Tracked but not deployed — `permission.yaml`.** `dot_config/goose/private_permission.yaml`
+is the canonical tool-permission posture (`always_allow` local execution, `ask_before`
+extension management, `never_allow` apps/orchestrator) and stays in git, but it is
+**not** deployed to `~/.config/goose/permission.yaml` — see `.chezmoiignore`. goose
+serializes, locks and rewrites that file itself at runtime (comments dropped, the
+active mode's scope key repartitioned), so chezmoi can never hold a byte-identical
+copy: managing it produced permanent drift and an interactive *"has changed since
+chezmoi last wrote it"* prompt on `chezmoi apply`. The source file remains the
+`just check-permissions` gate input (that gate reads the **source** name by design,
+never the deployed file) and the reference posture for a fresh machine — seed it
+manually or re-apply it with `goose configure`.
 
 ### 1.6 Syncthing (PC ↔ Android Sync)
 
