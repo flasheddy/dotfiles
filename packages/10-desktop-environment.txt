@@ -21,8 +21,8 @@ cosmic-viewer
 cosmic-wallpapers
 
 # Display manager and display utilities
+# polkit agent: COSMIC provides one inside cosmic-osd; no separate agent package
 mesa-utils
-polkit-kde-agent
 sddm
 
 # Audio stack

@@ -163,7 +163,7 @@ For in-scope prompts, **do not execute immediately** — act as defensive review
 
 ### GUI Privilege Escalation Protocol
 
-Agent shells have no TTY and cannot answer `sudo` password prompts — bare interactive `sudo` hangs the session. Probe passwordless sudo first (`sudo -n true 2>/dev/null`); if a password is required, agents **MUST** use `pkexec <command>`, never bare `sudo` — it authenticates via D-Bus through the desktop Polkit agent (`polkit-kde-agent`), presenting a modal prompt instead of hanging.
+Agent shells have no TTY and cannot answer `sudo` password prompts — bare interactive `sudo` hangs the session. Probe passwordless sudo first (`sudo -n true 2>/dev/null`); if a password is required, agents **MUST** use `timeout 150 pkexec --disable-internal-agent <command>`, never bare `sudo`. Plain `pkexec` registers its **own textual agent** and blocks on the controlling terminal, which an agent shell cannot answer; `--disable-internal-agent` routes the challenge to the session's polkit agent, which COSMIC provides **inside `cosmic-osd`** (no separate agent package is started). Confirm it is live with `pgrep -x cosmic-osd` before escalating.
 
 Bound every `pkexec` call with `timeout` (e.g. `timeout 150 pkexec …`) so an unanswered prompt cannot hang the session, and state the exact command before triggering it so the modal prompt is expected. The approved command then runs unchanged — no scope expansion.
 
