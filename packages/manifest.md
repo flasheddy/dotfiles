@@ -56,8 +56,10 @@ Key groups:
 - Language runtimes: Go, Node.js LTS (+ `npm`), Perl, Python
 - Go toolchain (`delve`, `golangci-lint`, `gopls`)
 - Build/test/linters (`bats*`, `shellcheck`, `shfmt`, `taplo-cli`)
-- Language servers and documentation tools (`bash-language-server`, `lldb`,
-  `markdown-oxide`, `typos-lsp`, `zola`)
+- Language servers and documentation tools (`bash-language-server`, `gdb`,
+  `lldb`, `markdown-oxide`, `typos-lsp`, `zola`). `gdb` is Helix's C/C++ debug
+  adapter (`gdb --interpreter=dap`, see `dot_config/helix/languages.toml`);
+  `lldb`'s `lldb-dap` is unusable with Helix 25.07 (handshake deadlock).
 - Spelling/typo gate (`typos`, standalone CLI). Its global config is
   `~/.typos.toml` (chezmoi source: `dot_typos.toml`) — typos walks up from the
   working directory and does **not** read `$XDG_CONFIG_HOME`.

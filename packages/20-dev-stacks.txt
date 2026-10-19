@@ -29,6 +29,7 @@ taplo-cli
 
 # Language servers and documentation tools
 bash-language-server
+gdb
 gobject-introspection
 just-lsp
 lldb
