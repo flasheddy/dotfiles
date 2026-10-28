@@ -1,64 +1,82 @@
 theme = "catppuccin_mocha"
 
+
 [editor]
-line-number = "relative" # Helps with modal navigation
-cursorline = true
+bufferline = "multiple" # Shows open files when more than one
 color-modes = true
-auto-format = true
+completion-trigger-len = 1 # Completion pops after first typed char
+end-of-line-diagnostics = "hint" # Inline first diagnostic at end of line
 idle-timeout = 50
+popup-border = "all" # Bordered hover/signature-help popups
+rulers = [81]
 true-color = true
-bufferline = "multiple"  # Shows open files when more than one
-# mouse = false            # Disable mouse for terminal-centric workflow
-end-of-line-diagnostics = "hint"   # Inline first diagnostic at end of line
-popup-border = "all"               # Bordered hover/signature-help popups
-rulers = [100]                     # Backend line-length guide (ruff/prettier)
-completion-trigger-len = 1         # Completion pops after first typed char
+gutters = [
+  "diff",
+  "diagnostics",
+  "line-numbers",
+  "spacer",
+] # The "Pure Minimalism" UI
 
-# --- The "Pure Minimalism" UI ---
-gutters = ["diff", "diagnostics", "line-numbers", "spacer"]
+[editor.statusline]
+left = [
+  "mode",
+  "spacer",
+  "spinner",
+  "file-name",
+  "read-only-indicator",
+  "file-modification-indicator",
+]
+right = [
+  "diagnostics",
+  "workspace-diagnostics",
+  "selections",
+  "register",
+  "position",
+  "file-encoding",
+  "file-line-ending",
+  "file-type",
+  "version-control",
+]
 
-# --- LSP feedback ---
 [editor.lsp]
-display-inlay-hints = true   # TS/Python parameter & return-type hints inline
-display-messages = true      # Server status/progress messages
-
-# --- File picker ---
-[editor.file-picker]
-hidden = false               # Show dotfiles (dotfiles repo lives in .config); .gitignore still respected
+display-inlay-hints = true # Display inlay hints
 
 [editor.cursor-shape]
 insert = "bar"
 normal = "block"
 select = "underline"
 
-# --- Soft Wrapping (Crucial for Markdown/Docs) ---
+[editor.file-picker]
+hidden = false # Show dotfiles in `~/.config`; .gitignore still respected
+
+[editor.auto-save]
+focus-lost = true
+
+[editor.indent-guides]
+render = true
+character = "╎"
+
 [editor.soft-wrap]
 enable = true
 wrap-at-text-width = true
 
-[editor.statusline]
-left = ["mode", "spacer", "spinner", "file-name", "read-only-indicator", "file-modification-indicator"]
-right = ["diagnostics", "workspace-diagnostics", "selections", "position", "file-encoding", "file-line-ending", "file-type", "version-control"]
-mode.normal = "NORMAL"
-mode.insert = "INSERT"
-mode.select = "SELECT"
-
-[editor.whitespace.render]
-space = "none"
-tab = "none"
-
-[editor.indent-guides]
-render = true
-character = "╎" # Subtle guide character
 
 # --- Keymaps: navigation & buffers ---
-# Helix merges these with defaults; same-key conflicts override, "no_op" unbinds.
 [keys.normal]
-C-s = ":w"                                      # Save (if terminal freezes on C-s: stty -ixon)
-C-d = ["page_cursor_half_down", "align_view_center"]   # Centered cursor half-page down
-C-u = ["page_cursor_half_up", "align_view_center"]     # Centered cursor half-page up
-"]" = { b = "goto_next_buffer" }                # Buffer cycling: ]b / [b
+C-s = ":w"
+C-t = ":toggle soft-wrap.enable"
+
+C-d = [
+  "page_cursor_half_down",
+  "align_view_center",
+] # Centered cursor half-page down
+C-u = [
+  "page_cursor_half_up",
+  "align_view_center",
+] # Centered cursor half-page up
+
+"]" = { b = "goto_next_buffer" }     # Buffer cycling: ]b / [b
 "[" = { b = "goto_previous_buffer" }
 
 [keys.normal.space]
-x = ":buffer-close"                             # Space-x closes current buffer
+x = ":buffer-close" # Space-x closes current buffer

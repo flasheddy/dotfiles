@@ -5,8 +5,9 @@
 # --- Python (extraction pipelines) ---
 [[language]]
 name = "python"
+auto-format = true
 roots = ["pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git"]
-language-servers = [ "basedpyright", "ruff" ]
+language-servers = ["basedpyright", "ruff"]
 formatter = { command = "ruff", args = ["format", "-"] }
 
 [language.debugger]
@@ -18,10 +19,12 @@ args = ["-m", "debugpy.adapter"]
 [[language.debugger.templates]]
 name = "source"
 request = "launch"
-completion = [ { name = "entrypoint", completion = "filename", default = "main.py" } ]
+completion = [
+  { name = "entrypoint", completion = "filename", default = "main.py" },
+]
 args = { program = "{0}" }
 
-# basedpyright: fast type checking + auto-imports (prereq: uv tool install basedpyright)
+# basedpyright: fast type checking + auto-imports
 [language-server.basedpyright]
 command = "basedpyright-langserver"
 args = ["--stdio"]
@@ -29,7 +32,7 @@ args = ["--stdio"]
 [language-server.basedpyright.config.basedpyright.analysis]
 typeCheckingMode = "recommended"
 autoImportCompletions = true
-disableOrganizeImports = true # ruff owns import sorting
+disableOrganizeImports = true    # ruff owns import sorting
 
 # ruff native server: lint diagnostics + organize imports
 [language-server.ruff]
@@ -42,8 +45,7 @@ args = ["server"]
 # ============================================================================
 
 # --- Rust (systems katas) ---
-# (no [[language]] overrides needed — Helix defaults apply; auto-format is global)
-
+# no [[language]] override needed — rust-analyzer formats over LSP
 # rust-analyzer: clippy on save, all features, lifetime/reborrow/closure inlay hints
 [language-server.rust-analyzer.config]
 check = { command = "clippy" }
@@ -53,7 +55,7 @@ inlayHints = { lifetimeElisionHints = { enable = "skip_trivial" }, reborrowHints
 # --- Go ---
 [[language]]
 name = "go"
-language-servers = [ "gopls", "golangci-lint-lsp" ]
+language-servers = ["gopls", "golangci-lint-lsp"]
 
 [language-server.gopls.config]
 # Helpful Go-specific features
@@ -65,15 +67,13 @@ command = "golangci-lint-langserver"
 # --- C ---
 [[language]]
 name = "c"
-formatter = { command = "clang-format", args = ["--style=file", "--fallback-style=LLVM"] }
+auto-format = true
+formatter = { command = "clang-format", args = [
+  "--style=file",
+  "--fallback-style=LLVM",
+] }
 
-# GDB's built-in DAP server (gdb >= 14). Deliberately NOT lldb-dap: LLDB 23.1.3's
-# lldb-dap inverts the DAP handshake — it withholds the `initialized` event until
-# after `configurationDone`, but Helix 25.07 waits for `initialized` before sending
-# its breakpoints/configurationDone, so the adapter is torn down and Helix reports
-# "Failed to start debug: server closed the stream". gdb 18.1 speaks the handshake
-# in the order Helix expects.
-# Launch with Space+G (DAP menu) or :debug-start; no extra keymap needed.
+# GDB's built-in DAP server (gdb >= 14).
 [language.debugger]
 name = "gdb"
 transport = "stdio"
@@ -84,7 +84,7 @@ args = ["--interpreter=dap", "-q"]
 [[language.debugger.templates]]
 name = "binary"
 request = "launch"
-completion = [ { name = "binary", completion = "filename" } ]
+completion = [{ name = "binary", completion = "filename" }]
 args = { program = "{0}" }
 
 
@@ -95,7 +95,8 @@ args = { program = "{0}" }
 # --- Fish (daily shell / dotfiles) ---
 [[language]]
 name = "fish"
-language-servers = [ "fish-lsp" ]
+auto-format = true
+language-servers = ["fish-lsp"]
 formatter = { command = "fish_indent" }
 
 [language-server.fish-lsp]
@@ -105,7 +106,8 @@ args = ["start"]
 # --- Bash (ops / chezmoi hooks) ---
 [[language]]
 name = "bash"
-language-servers = [ "bash-language-server" ]
+auto-format = true
+language-servers = ["bash-language-server"]
 formatter = { command = "shfmt", args = ["-i", "2", "-ci"] }
 
 
@@ -116,15 +118,17 @@ formatter = { command = "shfmt", args = ["-i", "2", "-ci"] }
 # --- TypeScript (Node/bun services) ---
 [[language]]
 name = "typescript"
+auto-format = true
 roots = ["package.json", "tsconfig.json", ".git"]
-language-servers = [ "typescript-language-server" ]
+language-servers = ["typescript-language-server"]
 formatter = { command = "prettier", args = ["--parser", "typescript"] }
 
 # --- JavaScript (scripts / SDKs) ---
 [[language]]
 name = "javascript"
+auto-format = true
 roots = ["package.json", "jsconfig.json", ".git"]
-language-servers = [ "typescript-language-server" ]
+language-servers = ["typescript-language-server"]
 formatter = { command = "prettier", args = ["--parser", "babel"] }
 
 # tsserver inlay hints (applies to both TS and JS buffers)
@@ -138,15 +142,9 @@ javascript.inlayHints.variableTypes.enabled = true
 # --- Markdown (docs / notes) ---
 [[language]]
 name = "markdown"
-roots = [ ".git", "mkdocs.yml", ".obsidian" ]
-# List only servers that are actually installed, to keep `hx --health markdown` clean.
-# CAVEAT: Helix silently DROPS a `language-servers` name with no definition — it
-# appears as neither ✓ nor ✘ in the health check. A defined-but-missing server
-# shows ✘. So an "absent" entry means "undefined", not "fine".
-# markdown-oxide: built-in definition (Helix 25.07.1) — link completion,
-#   go-to-def, backlinks, rename; Obsidian-style wiki links.
-# typos-lsp: NOT built-in — definition below.
-language-servers = [ "markdown-oxide", "typos-lsp" ]
+auto-format = true
+roots = [".git", "mkdocs.yml", ".obsidian"]
+language-servers = ["markdown-oxide", "typos-lsp"]
 formatter = { command = "prettier", args = ["--parser", "markdown"] }
 
 [language-server.typos-lsp]
@@ -155,14 +153,15 @@ command = "typos-lsp"
 # --- HTML ---
 [[language]]
 name = "html"
-# Only list vscode-html-language-server to keep the health check clean
-language-servers = [ "vscode-html-language-server" ]
+auto-format = true
+language-servers = ["vscode-html-language-server"]
 formatter = { command = "prettier", args = ["--parser", "html"] }
 
 # --- TOML (configs) ---
 [[language]]
 name = "toml"
-language-servers = [ "taplo" ]
+auto-format = true
+language-servers = ["taplo"]
 formatter = { command = "taplo", args = ["format", "-"] }
 
 [language-server.taplo]
@@ -172,19 +171,21 @@ args = ["lsp", "stdio"]
 # --- JSON / JSONC (configs, tsconfig, package manifests) ---
 [[language]]
 name = "json"
-language-servers = [ "vscode-json-language-server" ]
+auto-format = true
+language-servers = ["vscode-json-language-server"]
 formatter = { command = "prettier", args = ["--parser", "json"] }
 
 [[language]]
 name = "jsonc"
-language-servers = [ "vscode-json-language-server" ]
+auto-format = true
+language-servers = ["vscode-json-language-server"]
 formatter = { command = "prettier", args = ["--parser", "jsonc"] }
 
 # --- YAML (CI pipelines / Compose) ---
 [[language]]
 name = "yaml"
-# Only list yaml-language-server to keep the health check clean
-language-servers = [ "yaml-language-server" ]
+auto-format = true
+language-servers = ["yaml-language-server"]
 formatter = { command = "prettier", args = ["--parser", "yaml"] }
 
 [language-server.yaml-language-server]
