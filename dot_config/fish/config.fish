@@ -76,6 +76,9 @@ if status is-interactive
     abbr --add --global jl jless
     abbr --add --global tsv 'csvlens -t'
 
+    # Add the abberviation for focus-timer
+    abbr --add --global ft focus-timer
+
     # Fuzzy finder: Ctrl-R history, Ctrl-T file picker, Alt-C fuzzy cd.
     # Its widget binds are user binds, so they survive preset application and can
     # live here with the other tool initialisation instead of inside
