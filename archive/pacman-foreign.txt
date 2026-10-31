@@ -1,5 +1,6 @@
 catppuccin-cursors-mocha
 catppuccin-whiskers-bin
 clash-verge-rev-bin
+dotool
 pandoc-bin
 shellcheck-bin

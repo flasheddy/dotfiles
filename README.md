@@ -93,6 +93,52 @@ assistant text block, session ID, git context (branch, commit, working-tree
 status), and plan path into a Markdown buffer, then copies it to the Wayland
 clipboard via `wl-copy` for pasting into Gemini Chat.
 
+### Dictation
+
+Fully local speech-to-text: `dictate` records from the default PipeWire source,
+transcribes with whisper.cpp on the CPU, and types the result into the focused
+window via `dotool` (`/dev/uinput` — no X11 and no compositor-specific protocol).
+
+**One-time model fetch.** The `ggml` weights are data, not a package, and are
+deliberately untracked. `huggingface.co` is unreachable from some networks;
+`hf-mirror.com` serves the identical blob — verify the hash before trusting it:
+
+```fish
+set -l dir ~/.local/share/whisper/models
+mkdir -p $dir
+curl -fL -o $dir/ggml-base.en.bin \
+    https://hf-mirror.com/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin
+sha256sum $dir/ggml-base.en.bin
+# must print a03779c86df3323075f5e796cb2ce5029f00ec8869eee3fdfb897afe36c6d002
+# (147,964,211 bytes)
+```
+
+**Shortcut.** COSMIC settings are intentionally not chezmoi-managed, so bind it
+once by hand: Settings → Keyboard Shortcuts → Custom Shortcuts → add
+`dictate toggle` on `Super+Alt+D`. (`Ctrl+Space` is left alone — fcitx5 owns it
+for input-method switching.)
+
+**Usage**
+
+| Command | Effect |
+|---|---|
+| `dictate toggle` | start recording; press again to stop, transcribe and type |
+| `dictate start` / `dictate stop` | explicit start / stop-and-type |
+| `dictate last` | re-transcribe the most recent recording |
+| `dictate status` | report whether a recording is in progress |
+| `dictate last --print` | print the transcript instead of typing it |
+| `dictate last --copy` | copy the transcript to the clipboard instead of typing |
+| `dictate --model small.en` | use another model (fetch `ggml-small.en.bin` the same way) |
+
+Notes:
+
+- Runtime state lives in `$XDG_RUNTIME_DIR/dictate/` (tmpfs) — nothing survives a reboot.
+- Recording is 16 kHz mono `s16`, whisper's native format, so there is no resampling.
+- The packaged `whisper-cpp` is a **CPU** build; the RTX 5060 stays idle. GPU
+  inference would need a from-source CUDA build (`ggml-cuda` is packaged, but the
+  Blackwell/sm_120 path is untested here).
+- Silent or sub-0.4 s recordings are discarded without typing anything.
+
 ### PATH Symlinks
 
 Managed via `dot_local/bin/symlink_*` (tracked in `toolchains/local-bin.txt`): `hx` → `/usr/bin/helix`, `zed` → `~/.local/zed.app/bin/zed`.

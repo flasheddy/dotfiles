@@ -81,6 +81,9 @@ Key groups:
 - Shell enhancements (`starship`, `zoxide`)
 - Git tooling (`git`, `github-cli`, `gitleaks`, `git-delta`, `lazygit`)
 - CLI utilities (`ripgrep`, `fd`, `sd`, `dust`, `duckdb`, `procs`, `hyperfine`, `just`, `tokei`, `btop`, `7zip`, `wget`, `xh`, `vivid`, etc.)
+- Local dictation (`whisper-cpp`): the CPU whisper.cpp CLI behind `dictate`
+  (see README → Dictation). The `ggml` model is data, not a package, so it is
+  fetched once and never tracked.
 
 ### `flatpak.txt`
 
@@ -105,6 +108,9 @@ These are the original explicitly-installed package dumps, now archived under
 
 - `archive/pacman-native.txt`: packages from official repositories.
 - `archive/pacman-foreign.txt`: packages from the AUR or other non-official sources.
+  This is also the **live** AUR manifest that hook 00 consumes (§1.3), so new AUR
+  entries go here. Added beyond the original dump: `dotool` (compositor-agnostic
+  text injection through `/dev/uinput`, used by `dictate`).
 
 They were used as the source for the modular lists above. Several packages
 appear in both files; in practice those overlapping packages are AUR builds.

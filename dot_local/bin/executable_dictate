@@ -1,0 +1,246 @@
+#!/usr/bin/env fish
+# dictate — local dictation for COSMIC/Wayland.
+#
+# Press a shortcut (bound to `dictate toggle`), speak, press it again: the
+# recording is transcribed by whisper.cpp (CPU) and typed into whichever window
+# has focus. Nothing leaves the machine.
+#
+# State lives in $XDG_RUNTIME_DIR/dictate/ (tmpfs, so nothing survives a reboot):
+#   rec.wav   the current or most recent recording
+#   rec.pid   the pw-record pid while recording
+#
+# Requires: pw-record (pipewire), whisper-cli (whisper-cpp), dotool (AUR; text
+# injection through /dev/uinput, so the user must be in the `uinput` group).
+# A model must exist at ~/.local/share/whisper/models/ggml-<model>.bin — see the
+# README "Dictation" section for the one-time, hash-verified fetch.
+
+function __dictate_die
+    echo "dictate: $argv" >&2
+    return 1
+end
+
+function __dictate_dir
+    set -l base $XDG_RUNTIME_DIR
+    test -n "$base"; or set base /tmp
+    set -l dir $base/dictate
+    mkdir -p $dir; or return 1
+    echo $dir
+end
+
+function __dictate_model_path
+    set -l data $XDG_DATA_HOME
+    test -n "$data"; or set data $HOME/.local/share
+    echo $data/whisper/models/ggml-$__dictate_model.bin
+end
+
+# Echo the pid of a live recorder, or nothing.
+function __dictate_recording_pid
+    set -l dir (__dictate_dir); or return 1
+    set -l pidfile $dir/rec.pid
+    test -f $pidfile; or return 1
+    set -l pid (cat $pidfile 2>/dev/null)
+    test -n "$pid"; or return 1
+    kill -0 $pid 2>/dev/null; or return 1
+    echo $pid
+end
+
+function __dictate_start
+    set -l dir (__dictate_dir); or return 1
+
+    set -l pid (__dictate_recording_pid)
+    if test -n "$pid"
+        echo "dictate: already recording (pid $pid)" >&2
+        return 0
+    end
+
+    command -q pw-record; or __dictate_die "pw-record not found (pipewire)."
+
+    # 16 kHz mono s16 is whisper's native input: no resampling in the hot path.
+    set -l wav $dir/rec.wav
+    rm -f $wav
+    pw-record --rate 16000 --channels 1 --format s16 --container wav $wav &
+    set -l pid $last_pid
+    printf '%s' $pid > $dir/rec.pid
+
+    # Give pw-record a moment to fail loudly (no default source, bad format).
+    sleep 0.3
+    if not kill -0 $pid 2>/dev/null
+        rm -f $dir/rec.pid
+        __dictate_die "pw-record exited immediately; check the default input source."
+    end
+
+    echo "dictate: recording (pid $pid)"
+end
+
+# Stop the recorder and echo the finished WAV path.
+function __dictate_stop
+    set -l dir (__dictate_dir); or return 1
+    set -l pid (__dictate_recording_pid)
+    if test -z "$pid"
+        rm -f $dir/rec.pid
+        __dictate_die "not recording"
+        return 1
+    end
+
+    # SIGINT lets pw-record finalize the WAV header.
+    kill -INT $pid 2>/dev/null
+    for i in (seq 40)
+        kill -0 $pid 2>/dev/null; or break
+        sleep 0.05
+    end
+    kill -0 $pid 2>/dev/null; and kill -TERM $pid 2>/dev/null
+    rm -f $dir/rec.pid
+
+    echo $dir/rec.wav
+end
+
+# Echo the transcript for a WAV path, or nothing when there was no speech.
+function __dictate_transcribe --argument-names wav
+    set -l model (__dictate_model_path)
+    test -f $model; or __dictate_die "model missing: $model (see README → Dictation)"
+    or return 1
+
+    test -f $wav; or __dictate_die "no recording at $wav"
+    or return 1
+
+    # Under ~0.4 s of audio: a stray keypress, not an utterance.
+    set -l bytes (stat -c %s $wav 2>/dev/null)
+    if test -n "$bytes"; and test "$bytes" -lt 12000
+        return 0
+    end
+
+    command -q whisper-cli; or __dictate_die "whisper-cli not found (install whisper-cpp)."
+    or return 1
+
+    # Energy gate: a muted or near-silent capture is not worth decoding (and
+    # whisper cheerfully hallucinates "you" on digital silence).
+    set -l peak (ffmpeg -hide_banner -nostats -i $wav -af volumedetect -f null - 2>&1 \
+        | string match -rg 'max_volume: (-?[0-9.]+) dB' | tail -1)
+    if test -n "$peak"; and test "$peak" -lt -60
+        return 0
+    end
+
+    set -l text (whisper-cli --model $model --file $wav --language en \
+        --no-timestamps --no-prints 2>/dev/null | string collect)
+
+    # Single line: dotool's stdin is line-oriented, so never emit a newline.
+    set text (string replace -a -r -- '\s+' ' ' $text | string trim)
+
+    # whisper annotates non-speech as [BLANK_AUDIO] / (silence).
+    if string match -qr '^[[:space:]]*[\[(][^)\]]*[\])][[:space:]]*$' -- "$text"
+        set text ''
+    end
+
+    # Filler-hallucination guard. On quiet captures base.en emits stock
+    # non-speech phrases ("you" on digital silence, "Thank you." on room
+    # noise). whisper's own knobs do not cover this — `-nth` leaks straight
+    # through, 1.9.5's full JSON carries no no_speech_prob (verified), and no
+    # silero VAD model is reachable offline — so a known filler string is
+    # discarded only when the capture was quiet. Speech at speaking volume
+    # always clears this gate, including a genuine "thank you".
+    if test -n "$peak"; and test -n "$text"; and test "$peak" -lt -30
+        set -l flat (string lower (string replace -a -r -- '[.,!?]' '' $text | string trim))
+        for filler in you 'thank you' thanks 'thank you very much' 'thanks for watching' 'thank you for watching' ok okay hmm uh um bye
+            if test "$flat" = "$filler"
+                return 0
+            end
+        end
+    end
+
+    printf '%s' $text
+end
+
+function __dictate_emit --argument-names text
+    if test -z "$text"
+        return 0
+    end
+
+    if test $__dictate_print -eq 1
+        printf '%s\n' $text
+        return 0
+    end
+
+    if test $__dictate_copy -eq 1
+        command -q wl-copy; or __dictate_die "wl-copy not found (wl-clipboard)."
+        or return 1
+        printf '%s' $text | wl-copy
+        echo "dictate: transcript copied to clipboard" >&2
+        return 0
+    end
+
+    command -q dotool; or __dictate_die "dotool not found (AUR package; run 'cma')."
+    or return 1
+    printf 'type %s\n' $text | dotool
+end
+
+function __dictate_usage
+    echo "dictate — offline dictation for COSMIC/Wayland"
+    echo
+    echo "usage: dictate [command] [options]"
+    echo
+    echo "  toggle   start recording, or stop + transcribe + type (default)"
+    echo "  start    begin recording"
+    echo "  stop     stop, transcribe and type"
+    echo "  last     re-transcribe the most recent recording"
+    echo "  status   report recorder state"
+    echo
+    echo "  -m, --model NAME   whisper model (default: $__dictate_model)"
+    echo "  -p, --print        print the transcript instead of typing it"
+    echo "  -c, --copy         copy the transcript instead of typing it"
+    echo "  -h, --help         show this help"
+end
+
+argparse 'm/model=' 'p/print' 'c/copy' 'h/help' -- $argv
+or exit 2
+
+set -g __dictate_model base.en
+set -g __dictate_print 0
+set -g __dictate_copy 0
+
+set -q _flag_model; and set -g __dictate_model $_flag_model
+set -q _flag_print; and set -g __dictate_print 1
+set -q _flag_copy; and set -g __dictate_copy 1
+
+if set -q _flag_help
+    set __dictate_model_hint (__dictate_model_path)
+    __dictate_usage
+    echo
+    echo "model in use: $__dictate_model_hint"
+    exit 0
+end
+
+set -l cmd toggle
+set -q argv[1]; and set cmd $argv[1]
+
+switch $cmd
+    case toggle
+        set -l pid (__dictate_recording_pid)
+        if test -n "$pid"
+            set -l wav (__dictate_stop)
+            test -z "$wav"; and exit 1
+            __dictate_emit (__dictate_transcribe $wav)
+        else
+            __dictate_start
+        end
+    case start
+        __dictate_start
+    case stop
+        set -l wav (__dictate_stop)
+        test -z "$wav"; and exit 1
+        __dictate_emit (__dictate_transcribe $wav)
+    case last
+        set -l dir (__dictate_dir)
+        or exit 1
+        __dictate_emit (__dictate_transcribe $dir/rec.wav)
+    case status
+        set -l pid (__dictate_recording_pid)
+        if test -n "$pid"
+            echo "dictate: recording (pid $pid)"
+        else
+            echo "dictate: idle"
+        end
+    case '*'
+        echo "dictate: unknown command: $cmd" >&2
+        echo "Try 'dictate --help'." >&2
+        exit 2
+end

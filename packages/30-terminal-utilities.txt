@@ -43,3 +43,7 @@ unzip
 vivid
 wget
 xh
+
+# Dictation (CPU whisper.cpp CLI; the ggml model is fetched separately and
+# deliberately not tracked — see README → Dictation)
+whisper-cpp
