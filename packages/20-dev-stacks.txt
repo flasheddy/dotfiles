@@ -29,6 +29,7 @@ taplo-cli
 
 # Language servers and documentation tools
 bash-language-server
+dockerfile-language-server
 gdb
 gobject-introspection
 just-lsp

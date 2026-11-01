@@ -110,6 +110,12 @@ auto-format = true
 language-servers = ["bash-language-server"]
 formatter = { command = "shfmt", args = ["-i", "2", "-ci"] }
 
+# --- Dockerfile (containers / images) ---
+[[language]]
+name = "dockerfile"
+auto-format = true
+formatter = { command = "dockerfmt" }
+
 
 # ============================================================================
 # 4. Frontend, APIs & Data Feeds
