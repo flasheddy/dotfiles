@@ -48,7 +48,16 @@ set -gx IMMODULE fcitx
 
 # Toolchain and user binary paths (portable: $HOME expands per machine;
 # ~/.cargo/bin is handled by conf.d/rustup.fish)
-fish_add_path $HOME/.local/bin $HOME/.bun/bin $HOME/go/bin
+fish_add_path -P -m $HOME/.local/bin $HOME/.bun/bin $HOME/go/bin
+
+# Deduplicate $PATH preserving priority order
+set -l _unique_path
+for _entry in $PATH
+    if not contains -- $_entry $_unique_path
+        set -a _unique_path $_entry
+    end
+end
+set -gx PATH $_unique_path
 
 if status is-interactive
     # Interactive command-line abbreviations
