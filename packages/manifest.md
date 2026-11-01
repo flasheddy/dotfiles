@@ -110,7 +110,15 @@ These are the original explicitly-installed package dumps, now archived under
 - `archive/pacman-foreign.txt`: packages from the AUR or other non-official sources.
   This is also the **live** AUR manifest that hook 00 consumes (§1.3), so new AUR
   entries go here. Added beyond the original dump: `dotool` (compositor-agnostic
-  text injection through `/dev/uinput`, used by `dictate`).
+  text injection through `/dev/uinput`, used by `dictate`) and `docker-desktop`
+  (AUR — runs its own QEMU/KVM VM and **provides** `docker-compose`,
+  `docker-buildx`, `docker-debug`, `docker-mcp` and `docker-scout`, so those must
+  never be added as standalone packages while it is installed). Its dependencies
+  (`docker`, `qemu*`, `pass`, `nftables`, …) are deliberately left transitive;
+  `w3m` is a makedep and is not tracked. `pass` is unusable as Desktop's
+  credential store until a GPG secret key exists (`pass init <key-id>`). The
+  root `docker.service` stays **disabled** — Desktop drives its own VM through
+  the per-user `docker-desktop.service`.
 
 They were used as the source for the modular lists above. Several packages
 appear in both files; in practice those overlapping packages are AUR builds.
