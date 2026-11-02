@@ -4,34 +4,32 @@
 
 Binding contract for Goose and any AI agent operating on this chezmoi
 repository. **Read fully before changing anything.** If a requested action
-conflicts with these rules, stop and ask the user.
+conflicts with these rules, stop and ask the user. This repository inherits the
+workstation-wide safety floor in `~/.AGENTS.md`; the rules below are
+dotfiles-specific operational extensions.
 
-This repository inherits the workstation-wide safety floor defined in
-`~/.AGENTS.md`. The rules below are dotfiles-specific operational extensions.
+This file carries **traps, gates, and commands** — not architecture the agent
+can read from the tree. Restated maps go stale and cost context on every turn.
+Add a rule only when it is non-obvious, was hit more than once, and is actionable.
 
 ---
 
 ## Chezmoi Execution Model
 
-Chezmoi system management uses a **single-tier workflow**: a plain `goose session`
-operating directly in this repository. No multi-role ceremony.
+Chezmoi system management uses a **single-tier workflow**: a plain
+`goose session` operating directly in this repository. No multi-role ceremony.
 
 Native summon subagents are available via `delegate`/`load` for scoped work:
-`architect` (zero-write prompt compiler), `g-draft` (full-TDD executor),
-`g-flash` (fast/simple executor), `g-audit-a` (Phase A plan review), and
-`g-audit-b` (Phase B milestone diff audit).
+`architect`, `g-draft`, `g-flash`, `g-audit-a`, `g-audit-b`.
 
 **Not applicable here** — the heavy tripartite pipeline (execution-envelope
-ceremony, phase-gated audit gates, and exit-code checkpoints). Those belong
-**strictly to extraction projects** (`~/workspace/internal/extraction-infra` and
-similar pipeline repositories), never to chezmoi system management.
+ceremony, phase-gated audit gates, exit-code checkpoints). Those belong
+**strictly** to extraction projects (`~/workspace/internal/extraction-infra`),
+never to chezmoi system management.
 
-**The actual chezmoi safety gates are:**
-
-1. Source-first editing under `~/.local/share/chezmoi` (§2.2).
-2. Preview with `chezmoi diff` before applying (§2.1).
-3. Hook syntax checks via `bash -n` when `run_onchange_*.sh.tmpl` changes (§2.4).
-4. A clean `git diff --check` before the Operator commits (§2.8, §4).
+**The actual chezmoi safety gates are:** source-first editing (§2.2), `chezmoi
+diff` preview before apply (§2.1), `bash -n` on changed hook templates (§2.4),
+and a clean `git diff --check` before the Operator commits (§2.8, §4).
 
 ---
 
@@ -40,44 +38,31 @@ similar pipeline repositories), never to chezmoi system management.
 ### 1.1 Source State vs. Live Disk
 
 This repo is the **chezmoi source state** (`~/.local/share/chezmoi`), not the
-live system. chezmoi maps source → target:
+live system. chezmoi maps source to target:
 
-| Source path | Live target |
-|---|---|
-| `dot_config/...` | `~/.config/...` |
-| `dot_gitconfig` | `~/.gitconfig` |
-| `private_dot_ssh/config` | `~/.ssh/config` |
-| `system/keyd/default.conf` | `/etc/keyd/default.conf` (deployed by hook) |
-| `packages/*.txt`, `toolchains/*.txt` | consumed by `run_onchange_*` hooks |
+- `dot_config/...` → `~/.config/...`
+- `dot_gitconfig` → `~/.gitconfig`
+- `private_dot_ssh/config` → `~/.ssh/config`
+- `system/keyd/default.conf` → `/etc/keyd/default.conf` (deployed by hook)
+- `packages/*.txt`, `toolchains/*.txt` → consumed by `run_onchange_*` hooks
 
 - **The source tree is the single source of truth** — never treat live files as authoritative.
-- Source edits do nothing until `chezmoi apply`; live edits are **silently overwritten** by the next apply unless first pulled in with `chezmoi re-add`.
+- Source edits do nothing until `chezmoi apply`; live edits are **silently overwritten** unless first pulled in with `chezmoi re-add`.
 
 ### 1.2 Decoupling Principle: System Packages vs. Developer Toolchains
 
 Two deliberately decoupled install layers. Respect the boundary.
 
-**Layer 1 — System packages (`packages/`)**, via Pacman/AUR/Flatpak:
+**Layer 1 — system packages (`packages/`)**, fed to `pacman -S` directly and
+containing **only** official CachyOS/Arch repo packages. Custom kernel, COSMIC
+desktop, compilers, LSPs, and CLI tools by category, plus `flatpak.txt`.
 
-| Manifest | Contents |
-|---|---|
-| `packages/00-system-base.txt` | Core system, drivers, networking |
-| `packages/10-desktop-environment.txt` | COSMIC desktop, fonts, GUI apps |
-| `packages/20-dev-stacks.txt` | Compilers, distro runtimes, LSPs |
-| `packages/30-terminal-utilities.txt` | Terminals, editors, CLI tools |
-| `packages/flatpak.txt` | Flatpak applications |
-| `archive/pacman-foreign.txt` | **AUR packages only** (via `paru`/`yay`) |
+**Layer 2 — standalone toolchains (`toolchains/`)**, installed by official
+upstream installers and kept **out of Pacman** to avoid version conflicts:
+`cargo.txt`, `uv.txt`, `bun.txt`, `go.txt`, `local-bin.txt`.
 
-**Layer 2 — Standalone developer toolchains (`toolchains/`)**, via official
-upstream installers, kept **out of Pacman** to avoid version conflicts:
-
-| Manifest | Manager | Install location |
-|---|---|---|
-| `toolchains/cargo.txt` | `rustup` + `cargo install` | `~/.cargo/bin` |
-| `toolchains/uv.txt` | `uv tool install` | `~/.local/bin` |
-| `toolchains/bun.txt` | `bun install -g` | `~/.bun/bin` |
-| `toolchains/go.txt` | `go install` | `~/go/bin` |
-| `toolchains/local-bin.txt` | manual binaries | `~/.local/bin` |
+Per-file inventory, install methods, and stripping rules live in
+`packages/manifest.md`. Read it there; do not re-derive the lists here.
 
 ### 1.3 Hard Rule: Never Mix AUR into Native Manifests
 
@@ -87,126 +72,65 @@ upstream installers, kept **out of Pacman** to avoid version conflicts:
 
 ### 1.4 Repository Enforcement & Verification Gates
 
-Commit gates run through a single **global** pre-commit hook, deployed by
-chezmoi from `dot_config/git/hooks/executable_pre-commit` to
-`~/.config/git/hooks/pre-commit` and wired machine-wide through the tracked
-`~/.gitconfig` (`core.hooksPath = ~/.config/git/hooks`).
+Commit gates run through a single **global** pre-commit hook, deployed from
+`dot_config/git/hooks/executable_pre-commit` to `~/.config/git/hooks/pre-commit`
+and wired machine-wide by `~/.gitconfig` (`core.hooksPath`). It is **opt-in per
+repository**: it runs only where an `AGENTS.md` (or local `git-hooks/`) exists
+and exits 0 otherwise, so third-party clones and scratch trees are untouched.
 
-The hook is **opt-in per repository**: it runs only where an `AGENTS.md` (or a
-local `git-hooks/` directory) exists and exits 0 otherwise, so third-party
-clones and scratch trees are never touched.
-
-1. **Documentation drift** — every cross-repo `*.md` path and `##`-prefixed
-   heading cited in the repository's `AGENTS.md` must resolve (globs and
-   `<placeholders>` are skipped). Detection only; it never rewrites a document.
-2. **Floor freshness** — a repository carrying a
-   `<!-- floor-contract: sha256:… -->` marker must match the live `~/.AGENTS.md`.
-   A stale marker **blocks** a commit that stages `AGENTS.md`: re-affirm the
-   inheritance, then run `floor-stamp` to refresh the marker line.
+1. **Documentation drift** — every cross-repo `*.md` path and `##`-prefixed heading cited in the repository's `AGENTS.md` must resolve (globs and `<placeholders>` skipped). Detection only; never rewrites.
+2. **Floor freshness** — a `<!-- floor-contract: sha256:… -->` marker must match the live `~/.AGENTS.md`. A stale marker **blocks** any commit staging `AGENTS.md`: re-affirm the inheritance, then run `floor-stamp`.
 3. **`git diff --cached --check`** — whitespace errors and conflict markers.
-4. **Secret scan** — `gitleaks git --staged --redact`, with a fail-closed `rg`
-   fallback when `gitleaks` is absent.
+4. **Secret scan** — `gitleaks git --staged --redact`, fail-closed `rg` fallback when absent.
 
 The companion **pre-push** hook runs a repository's **full** verification before
-anything leaves the machine. It dispatches to the repository's `just check`
-recipe when one exists (this repository's `justfile` is the reference adapter)
-and fails closed when the entry point is present but unrunnable. Repositories
-without a `check` recipe are untouched, and partial gates must use other recipe
-names so they can never be mistaken for the full gate.
+anything leaves the machine: it dispatches to `just check` where that recipe
+exists (this repository's `justfile` is the reference adapter) and fails closed
+when the entry point is present but unrunnable. Partial gates must use other
+recipe names so they can never be mistaken for the full gate.
 
 `just check` is this repository's full gate:
 
-| Command | Purpose |
-|---|---|
-| `just check` | Full sequential gate: config invariants, recipe gate, gate self-test, lint, secret scan |
-| `just check-fast` | Same set plus the advisory drift report, **in parallel**, pinned to 3 workers |
-| `just check-commands [accept\|reject] [root]` | Structural recipe gate; `reject` runs the RED fixture self-test |
-| `just check-config` / `just lint` / `just secrets` / `just drift` | The individual stages |
+- `just check` — full sequential gate: config invariants, recipe gate, gate self-test, AGENTS.md hygiene, lint, secret scan
+- `just check-fast` — the same set plus the advisory drift report, **in parallel**, pinned to 3 workers
+- `just check-commands [accept|reject] [root]` — structural recipe gate; `reject` runs the RED fixture self-test
+- `just check-agents [accept|reject] [file]` — AGENTS.md hygiene: no tables outside code fences, Prettier-idempotent, context budget, single H1, no duplicate bullets, floor marker current
+- `just check-config`, `just check-permissions`, `just lint`, `just secrets`, `just drift` — individual stages
 
 ### 1.5 Goose Configuration Map
 
-The goose agent surface is chezmoi-managed, with one deliberate exception
-(`permission.yaml` — see the note under the table). Edit the **Source** column
-only; `chezmoi apply` deploys to the live target. The `check-config` gate enforces the
-`config.yaml` invariants (`GOOSE_MODE` non-autonomous, the `memory` family
-disabled, `GOOSE_DOCS_ROOT` an absolute populated tree, no remote recipe repo).
+Every goose surface is chezmoi-managed except `permission.yaml` (below). The full
+mapping is `chezmoi managed` output. Only four entries carry a trap:
 
-| Source (chezmoi) | Deployed to | Controls | How it reaches Goose |
-|---|---|---|---|
-| `dot_config/goose/config.yaml` | `~/.config/goose/config.yaml` | active provider, model defaults, extensions, thinking effort, context limit, telemetry | goose config loader |
-| `dot_config/goose/dot_goosehints.tmpl` | `~/.config/goose/.goosehints` | inlines `dot_AGENTS.md` (global floor) | goose "hints" auto-load into the system prompt |
-| `dot_config/goose/prompts/system.md` | `~/.config/goose/prompts/system.md` | base identity + hard shell/session-safety + extension template blocks | system-prompt template |
-| `dot_AGENTS.md` | `~/.AGENTS.md` (+ `~/AGENTS.md` symlink) | global agent floor: safety, Fish/CLI reference, pkexec, forbidden actions | inlined via `.goosehints`; read directly by home-path tools |
-| `dot_agents/agents/*.md` | `~/.agents/agents/*.md` | native summon subagents: `architect`, `g-draft`, `g-flash`, `g-audit-a`, `g-audit-b` | `delegate` / `load` (summon) |
-| `dot_agents/skills/*/SKILL.md` | `~/.agents/skills/*/SKILL.md` | on-demand skill instructions (e.g. `toolcards`: local tool conventions + verified gotchas at `~/.local/share/toolcards/`) | goose `skills` extension (description always on; body via `load_skill`) |
-| `dot_config/fish/functions/g-*.fish` | `~/.config/fish/functions/g-*.fish` | role dispatch (provider/model per session) | operator launches session |
-| `dot_config/fish/config.fish` | `~/.config/fish/config.fish` | `GOOSE_SHELL`, CLI theme env | shell startup env |
+- `dot_config/goose/dot_goosehints.tmpl` → `~/.config/goose/.goosehints` — **inlines the global floor**, so editing the floor edits goose's system prompt.
+- `dot_AGENTS.md` → `~/.AGENTS.md` (+ `~/AGENTS.md` symlink) — the floor itself; also read directly by home-path tools.
+- `dot_config/goose/prompts/system.md` → `~/.config/goose/prompts/system.md` — system-prompt template, not the floor.
+- `dot_config/fish/config.fish` → `~/.config/fish/config.fish` — `GOOSE_SHELL` and CLI theme; read at shell startup only.
+
+`just check-config` enforces the `config.yaml` invariants: `GOOSE_MODE`
+non-autonomous, `memory` family disabled, `GOOSE_DOCS_ROOT` an absolute populated
+tree, no remote recipe repo.
 
 **Tracked but not deployed — `permission.yaml`.** `dot_config/goose/private_permission.yaml`
-is the canonical tool-permission posture (`always_allow` local execution, `ask_before`
-extension management, `never_allow` apps/orchestrator) and stays in git, but it is
-**not** deployed to `~/.config/goose/permission.yaml` — see `.chezmoiignore`. goose
-serializes, locks and rewrites that file itself at runtime (comments dropped, the
-active mode's scope key repartitioned), so chezmoi can never hold a byte-identical
-copy: managing it produced permanent drift and an interactive *"has changed since
-chezmoi last wrote it"* prompt on `chezmoi apply`. The source file remains the
-`just check-permissions` gate input (that gate reads the **source** name by design,
-never the deployed file) and the reference posture for a fresh machine — seed it
-manually or re-apply it with `goose configure`.
+holds the canonical posture (`always_allow` local execution, `ask_before`
+extension management, `never_allow` apps/orchestrator). goose rewrites
+`~/.config/goose/permission.yaml` itself at runtime — comments dropped, the
+active mode's scope key repartitioned — so chezmoi can never hold a byte-identical
+copy; managing it produced permanent drift plus an interactive _"has changed
+since chezmoi last wrote it"_ prompt. It is `.chezmoiignore`d. The source file
+stays the `just check-permissions` gate input (that gate reads the **source**
+name, never the deployed file) and the fresh-machine reference posture.
+
+**Context budget trap.** goose loads **both** `AGENTS.md` and `.goosehints` at
+every hierarchy level, concatenated. Floor (~15 KB) + this file must stay under
+32 KiB (Codex `AGENTS_MD_MAX_BYTES`); `just check-agents` enforces it.
 
 ### 1.6 Syncthing (PC ↔ Android Sync)
 
-Continuous file sync between this workstation and Android. The repository
-provisions the package, the firewall holes, and session independence; the sync
-root itself is data and is deliberately **not** chezmoi-managed.
+Moved: package, firewall rules, linger, runtime layout, verified behaviour, and
+verification commands now live in `packages/manifest.md` →
 
-| Artifact | Location | Effect |
-|---|---|---|
-| native package | `packages/00-system-base.txt` → `syncthing` | v2.x, `[noupgrade]` — version follows the repo, no self-updater |
-| firewall rules | `run_onchange_after_20-setup-system.sh.tmpl` | inbound `22000/tcp` + `22000/udp` (QUIC) + `21027/udp` (local discovery) |
-| session independence | same hook | `loginctl enable-linger` keeps the user service alive with no login session |
-| manifest documentation | `packages/manifest.md` | records the package and the ports the hook opens |
-
-Runtime layout (data and key material — not managed, never tracked):
-
-| Path | Contents |
-|---|---|
-| `~/.local/state/syncthing/` | `config.xml`, `cert.pem`, `key.pem`, `https-key.pem`, `index-v2/*.db` |
-| `~/Sync/` | sync root; files are placed here manually |
-| `127.0.0.1:8384` | web UI, loopback-only and deliberately not opened in ufw |
-| `syncthing.service` (user) | run/checked with `systemctl --user` |
-
-**Never track `~/.local/state/syncthing/`** — it holds the device private keys
-and the GUI/API credentials inside `config.xml` (§3.1 secrets rule).
-
-Verified behaviour and known limits:
-
-- **Symlinks are not synced.** The scanner records a `FILE_INFO_TYPE_SYMLINK`
-  entry with `size 0`, `numBlocks 0` and no platform target, so the linked
-  content is never indexed or transferred. To sync a directory that lives
-  elsewhere, add that directory as its own Syncthing folder rather than linking
-  it into a synced one.
-- **Media settings** (recommended, not required): set the PC folder to *Send
-  Only* and the phone to *Receive Only* so a deletion on the phone cannot delete
-  the PC library; enable file versioning for recoverability; on the phone
-  restrict syncing to Wi-Fi and set battery usage to *Unrestricted* (a flapping
-  link is the symptom of the latter).
-- **Local discovery vs. the TUN proxy.** `255.255.255.255` is hijacked by the
-  Clash Verge TUN, but Syncthing announces to the per-interface broadcast
-  address (`192.168.2.255`), which routes direct — discovery and direct LAN
-  connections therefore work. If a peer ever falls back to relay, pin a static
-  `tcp://<LAN-IP>:22000` address for that device.
-
-Verification:
-
-```fish
-systemctl --user is-active syncthing.service              # active
-curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8384   # 200
-ss -lntup | rg '22000|21027|8384'                         # listeners bound
-loginctl show-user (id -un) -p Linger                     # Linger=yes
-syncthing cli show connections                            # peer state, connection.lan
-syncthing cli debug file <folder-id> <path>                # index entry for one path
-```
+`## Syncthing (PC ↔ Android Sync)`
 
 ---
 
@@ -218,50 +142,48 @@ Before modifying **any** file:
 
 ```fish
 chezmoi status    # pending source-vs-target differences
-chezmoi diff      # generated target state vs. live destination; apply preview
+chezmoi diff      # generated target vs. live destination; apply preview
 ```
 
-- Report unexpected drift; never "fix" it silently.
-- `chezmoi diff` compares generated target state with the live destination and
-  includes unapplied source-tree changes that affect managed targets.
+Report unexpected drift; never "fix" it silently. `chezmoi diff` includes
+unapplied source-tree changes that affect managed targets.
 
 ### 2.2 Editing Workflow
 
-**Flow A — Edit live files on disk** (e.g. `~/.config/fish/config.fish`):
+**Flow A — edit live files on disk** (e.g. `~/.config/fish/config.fish`):
 
 1. Edit the live file.
 2. **MUST** `chezmoi re-add <file>` — applying without `re-add` destroys the live change (§1.1).
 3. Verify with `chezmoi diff`, then `chezmoi apply`.
 
-**Flow B — Edit the source tree directly** (preferred):
+**Flow B — edit the source tree directly** (preferred):
 
 1. Edit under `~/.local/share/chezmoi`.
 2. Touched any `*.tmpl`? Render-test it first (§2.4).
-3. Verify with `chezmoi diff`, then `chezmoi apply`.
+3. `chezmoi diff` must show only the intended target change before you apply.
 
 ### 2.3 Manifest Additions (Installing Tools)
 
-Every tool an agent installs — requested or not — **must** be recorded in the correct manifest in the same change set:
+Every tool an agent installs — requested or not — **must** be recorded in the
+correct manifest in the same change set:
 
-| Tool kind | Manifest |
-|---|---|
-| Official-repo system package | matching `packages/NN-*.txt` category |
-| AUR package | `archive/pacman-foreign.txt` (never native) |
-| Python CLI | `toolchains/uv.txt` |
-| Rust crate | `toolchains/cargo.txt` |
-| JS/TS global | `toolchains/bun.txt` |
-| Go module | `toolchains/go.txt` (full module path) |
-| Manual `~/.local/bin` binary | `toolchains/local-bin.txt` |
+- Official-repo system package → matching `packages/NN-*.txt` category
+- AUR package → `archive/pacman-foreign.txt` (never a native manifest)
+- Python CLI → `toolchains/uv.txt`; Rust crate → `toolchains/cargo.txt`
+- JS/TS global → `toolchains/bun.txt`; Go module → `toolchains/go.txt` (full module path)
+- Manual `~/.local/bin` binary → `toolchains/local-bin.txt`
 
-Append one entry per line, `#` comments. Keep `packages/manifest.md` in sync if it describes the changed category.
+One entry per line, `#` for comments. Keep `packages/manifest.md` in sync.
 
 ### 2.4 Hook Safety (`run_onchange_*.sh.tmpl`)
 
-Every `run_onchange` hook runs with `set -euo pipefail` and executes real system changes (including `sudo`). Any modification must satisfy **all** of the following:
+Every `run_onchange` hook runs with `set -euo pipefail` and executes real system
+changes (including `sudo`). Any modification must satisfy **all** of the
+following:
 
 1. **Strictly idempotent** — N runs ≡ 1 run. Guard every mutation with a presence check (`command -v`, `systemctl is-enabled`, file-existence tests).
 2. **Graceful degradation** — optional steps must not abort the run: append `|| true` (e.g. `uv tool install "$tool" || true`), prefer `2>/dev/null || true` for optional systemd units.
-3. **Checksum headers** — keep `{{ include "..." | sha256sum }}` lines accurate; they trigger `run_onchange` re-execution.
+3. **Checksum headers** — keep `{{ include "..." | sha256sum }}` lines accurate; they trigger re-execution.
 4. **Syntax verification (mandatory before apply/commit)**:
 
    ```fish
@@ -276,117 +198,108 @@ Every `run_onchange` hook runs with `set -euo pipefail` and executes real system
 
 ### 2.5 Dotfiles Refinement & Maintenance Protocol
 
-Periodic, report-first audit run on request (e.g. the operator prompt "Refine & Reconcile System" below). Execute phases in order.
+Report-first audit, run on request. Execute phases in order.
 
-**Phase 1 — Surface Drift.** `chezmoi status` + `chezmoi diff` (§2.1). Report drift; never fix silently.
+**Phase 1 — Surface Drift.** `chezmoi status` + `chezmoi diff` (§2.1). Report
+drift; never fix silently.
 
-**Phase 2 — Package & Manifest Reconciliation.** Bidirectional: flag "installed but not in any manifest" **and** "in manifest but not installed".
+**Phase 2 — Package & Manifest Reconciliation.** Bidirectional: flag "installed
+but unlisted" **and** "listed but not installed".
 
-- Native: `pacman -Qqen` vs `packages/00-*.txt`–`30-*.txt` (ignore comments/blanks).
-  - **Meta-package dependencies:** ignore direct dependencies stripped by design — packages documented in `packages/manifest.md` → **Stripping Rules** are deliberately absent from `packages/*.txt` and will *always* appear as false positives in the `pacman -Qqen` comparison. Likewise, a package that is listed in a manifest but was installed as a dependency never appears in `pacman -Qqen`; check `pacman -Qi <pkg>` → *Install Reason* before flagging in either direction.
+- Native: `pacman -Qqen` vs `packages/00-*.txt`–`30-*.txt` (ignore comments/blanks). Packages documented in the **Stripping Rules** section of `packages/manifest.md` are deliberately absent and _always_ show as false positives; a package installed as a dependency never appears in `pacman -Qqen` — check `pacman -Qi <pkg>` → _Install Reason_ before flagging.
 - Foreign/AUR: `pacman -Qqem` vs `archive/pacman-foreign.txt` — a foreign package in a native manifest is **Critical** (§1.3).
 - Flatpak: `flatpak list --app --columns=application` vs `packages/flatpak.txt`.
-- Toolchains: manager-native listings over directory scans — `uv tool list`, `cargo install --list`, `bun pm ls -g`, `~/go/bin` contents vs the matching `toolchains/*.txt`. `~/.local/bin` is shared (`uv.txt` + `local-bin.txt` + unmanaged like chezmoi): cross-reference report-only; never auto-remove.
+- Toolchains: manager-native listings, not directory scans — `uv tool list`, `cargo install --list`, `bun pm ls -g`, `~/go/bin` vs the matching `toolchains/*.txt`. `~/.local/bin` is shared (`uv.txt` + `local-bin.txt` + unmanaged like chezmoi): report-only, never auto-remove.
 
-**Phase 3 — Portability & Safety.** `rg -n '/home/'` on tracked files — use `$HOME`/`~` or `{{ .chezmoi.homeDir }}` instead. `fish_variables` is intentionally untracked; `fish_user_paths` is populated via `fish_add_path` in `config.fish`. Verify no keys/tokens/credentials tracked (§3.1).
+**Phase 3 — Portability & Safety.** `rg -n '/home/'` on tracked files — use
+`$HOME`/`~` or `{{ .chezmoi.homeDir }}`. `fish_variables` is intentionally
+untracked; `fish_user_paths` is populated via `fish_add_path` in `config.fish`.
+Confirm no credentials tracked (§3).
 
-**Phase 4 — Report Before Mutate.** Executive summary grouped **Critical / Missing / Polish** with proposed fixes; **stop for confirmation** before any modification. Removals need explicit approval (`~/.AGENTS.md` forbidden actions).
+**Phase 4 — Report Before Mutate.** Summary grouped **Critical / Missing /
+Polish** with proposed fixes; **stop for confirmation** before any modification.
+Removals need explicit approval (`~/.AGENTS.md` forbidden actions).
 
-**Phase 5 — Post-Refinement Validation.** After approved changes: §2.4.4 template loop + §4 checklist.
+**Phase 5 — Post-Refinement Validation.** After approved changes: §2.4 item 4
+template loop + §4 checklist.
 
-**Operator prompt (periodic maintenance) — "Refine & Reconcile System":**
+Routine operator prompts:
 
-> "Run a complete dotfiles refinement audit per AGENTS.md §2.5. Reconcile pacman, AUR, Flatpak, and standalone toolchains with the manifests, scan for drift and portability issues, and report findings before modifying any files."
+- **"Refine & Reconcile System"** — "Run a complete dotfiles refinement audit per AGENTS.md §2.5. Reconcile pacman, AUR, Flatpak, and standalone toolchains with the manifests, scan for drift and portability issues, and report findings before modifying any files."
+- Variants on the same protocol: read-only audit ("Run `chezmoi status` and `chezmoi diff`, report drift. Change nothing."), system update + manifest reconciliation, and add-a-toolchain (install, append to the matching `toolchains/*.txt`, verify with `chezmoi status`).
 
-Other routine operator prompts:
-
-- **Audit (read-only):** "Run `chezmoi status` and `chezmoi diff`, report any drift between the source tree and the live system. Change nothing."
-- **Update packages:** "Update the system, then reconcile newly installed/removed packages with the manifests under `packages/` and `archive/pacman-foreign.txt`. Follow `AGENTS.md` and ask before removing anything."
-- **Add a toolchain:** "Install `<tool>` with the appropriate toolchain manager (uv/cargo/bun/go), append it to the matching `toolchains/*.txt` manifest, and verify with `chezmoi status`. Follow `AGENTS.md`."
-
-Rule of thumb: agents may read freely, must document every install in a manifest, and must ask before anything destructive.
+Rule of thumb: agents may read freely, must document every install in a
+manifest, and must ask before anything destructive.
 
 ### 2.6 Agent Tool Execution Preferences
 
-Workstation-wide — see `~/.AGENTS.md` (Modern CLI Tool Preferences), including the ban on interactive TUIs in agent shells. Address retained for cross-reference stability.
+Workstation-wide — see `~/.AGENTS.md` (Modern CLI Tool Preferences), including
+the ban on interactive TUIs in agent shells. Address retained for cross-reference
+stability.
 
 ### 2.7 Prompt Review & Refinement Protocol
 
-Follow the workstation-wide protocol in `~/.AGENTS.md` (Prompt Review & Refinement Protocol). Its Constraint & Protocol Audit applies this file's rules: layer boundaries (§1.3, §2.3), hook safety (§2.4), chezmoi discipline (§2.1–§2.2), and §3 below.
+Follow the workstation-wide protocol in `~/.AGENTS.md` (Prompt Review &
+Refinement Protocol). Its Constraint & Protocol Audit applies this file's rules:
+layer boundaries (§1.3, §2.3), hook safety (§2.4), chezmoi discipline
+(§2.1–§2.2), and §3.
 
-Dotfiles-specific addition: any change to a sudo-invoking hook template (`run_onchange_*.sh.tmpl`) **must** carry an explicit `[ROOT IMPACT]` tag naming the affected system services, files, and privileges — no undeclared root side effects (§2.4).
+Dotfiles-specific: any change to a sudo-invoking hook template
+(`run_onchange_*.sh.tmpl`) **must** carry an explicit `[ROOT IMPACT]` tag naming
+the affected system services, files, and privileges (§2.4).
 
 ### 2.8 Git Commit Discipline & Attribution
 
 Every agent-created or -rewritten commit:
 
-1. **Conventional Commits, scope mandatory** — `type(scope): subject`; unscoped is a defect. Narrowest accurate scope (established: `agents`, `aup`, `fcitx5`, `fish`, `git`, `helix`, `toolchains`); new scopes single-token lowercase only when none fit.
-2. **History rewrites: scripted, backed up, remote restored** — no interactive rebases (interactive TUIs hang agent sessions — `~/.AGENTS.md`); `git filter-repo` with scripted callback; `git bundle` backup *outside* the repo first (filter-repo rewrites all refs, expires reflogs, gc's — in-repo branches are not backups); restore `origin` after. The rewrite plan goes through §2.7 review.
+1. **Conventional Commits, scope mandatory** — `type(scope): subject`; unscoped is a defect. Narrowest accurate scope (established: `agents`, `aup`, `fcitx5`, `fish`, `git`, `helix`, `toolchains`); new single-token lowercase scopes only when none fit.
+2. **History rewrites: scripted, backed up, remote restored** — no interactive rebases (interactive TUIs hang agent sessions — `~/.AGENTS.md`); `git filter-repo` with a scripted callback; `git bundle` backup _outside_ the repo first (filter-repo rewrites all refs, expires reflogs, gc's — in-repo branches are not backups); restore `origin` after. The rewrite plan goes through §2.7 review.
 3. **Force-push gate** — explicit user confirmation + `git push --force-with-lease`, never bare `--force`.
 
 ### 2.9 Session Auditing
 
-**Session Auditor role.** A read-only review role inspects agent session
-history and repository state for drift. The
-goose store `~/.local/share/goose/sessions/sessions.db` is opened **only** with
-`sqlite3 -readonly`; no `DELETE`/`UPDATE`/`VACUUM` is ever issued against it.
-
-**`handoff-copy` helper.** `dot_config/fish/functions/handoff-copy.fish`
-snapshots state for a turn handoff. It opens
-`~/.local/share/goose/sessions/sessions.db` strictly with `sqlite3 -readonly`
-(no mutations), streams the latest assistant text block via
-`json_each`/`json_extract` (no newline-splitting truncation), and captures git
-context (branch, commit, working-tree status) plus the latest plan path into a
-Markdown buffer copied to the clipboard via `wl-copy`. End-to-end read-only —
-used to preserve prompt defense and invariant continuity when handing a turn to
-a fresh session or Gemini Chat.
+**Session Auditor** is a read-only role auditing session history and repository
+state for drift. The goose store
+`~/.local/share/goose/sessions/sessions.db` is opened **only** with
+`sqlite3 -readonly`; no `DELETE`/`UPDATE`/`VACUUM` is ever issued. The same rule
+covers `handoff-copy` (`dot_config/fish/functions/handoff-copy.fish`), which
+snapshots the latest assistant block, git state, and plan path via `wl-copy`.
 
 ### 2.10 Git Handoff Protocol (Operator-Executed)
 
 The agent is the sole **provider** of conventional git commands; the Operator is
 the sole **executor**. At every Operator-gated checkpoint:
 
-1. Read local git state read-only:
-   env GIT_OPTIONAL_LOCKS=0 git status --short
-   env GIT_OPTIONAL_LOCKS=0 git branch --show-current
-   env GIT_OPTIONAL_LOCKS=0 git log --oneline -1
+1. Read local git state read-only: `env GIT_OPTIONAL_LOCKS=0 git status --short`,
+   `env GIT_OPTIONAL_LOCKS=0 git branch --show-current`,
+   `env GIT_OPTIONAL_LOCKS=0 git log --oneline -1`.
 
-2. Emit exact, copy-pasteable commands (never execute them):
-   - Branch:  git checkout -b feat/<scope>
-   - Commit:  git commit -m "type(scope): subject" -m "body"
-
-3. Never run git write operations (add/commit/merge/switch/branch/tag/reset/
-   checkout -b/push). Operator is sole execution authority for
-   branch/commit/merge/push (inherited from ~/.AGENTS.md).
+2. Emit exact, copy-pasteable commands (never execute them): branch `git checkout -b feat/<scope>`; commit `git commit -m "type(scope): subject" -m "body"`.
+3. Never run git write operations (add/commit/merge/switch/branch/tag/reset/checkout -b/push). The Operator is sole execution authority for branch/commit/merge/push (inherited from `~/.AGENTS.md`).
 
 ### 2.11 Offline Goose Docs Root (`/opt/goose-docs`)
 
-`goose-doc-guide` reads documentation from `GOOSE_DOCS_ROOT`; this machine pins
-it to a local tree so documentation lookups never hit the network. Provision it
-**once, online** (the only step that needs a network):
-
-```fish
-git clone --depth 1 --branch vX.Y.Z https://github.com/aaif-goose/goose /tmp/goose-src
-cd /tmp/goose-src/documentation; and npm ci; and npm run build
-mkdir -p ~/.cache/goose-docs-build
-cp -r /tmp/goose-src/documentation/build/. ~/.cache/goose-docs-build/
-```
-
-Match `vX.Y.Z` to `goose --version`. `chezmoi apply` then installs it to
-`/opt/goose-docs` via the idempotent `run_onchange_after_30` hook, which never
-fetches by itself. `just check` (the `check-config` `docs-root` rule) fails
-closed until the tree exists.
+`goose-doc-guide` reads documentation from `GOOSE_DOCS_ROOT`, pinned to a local
+tree so lookups never hit the network. Provision it **once, online** — the only
+step that needs a network: clone the goose repo at the tag matching
+`goose --version`, run `npm ci && npm run build` in `documentation/`, and copy
+`documentation/build/` into `~/.cache/goose-docs-build/`. `chezmoi apply` then
+installs it to `/opt/goose-docs` via the idempotent `run_onchange_after_30` hook,
+which never fetches by itself. `check-config`'s `docs-root` rule fails closed
+until the tree exists.
 
 ---
 
 ## 3. Forbidden Actions
 
-Universal forbidden actions — secrets/credentials handling, destructive package operations, untrusted external content, unconstrained sudo mutations — are defined in `~/.AGENTS.md` and apply here unchanged. Dotfiles-specific:
+Universal forbidden actions — secrets/credentials, destructive package
+operations, untrusted external content, unconstrained sudo mutations — are
+defined in `~/.AGENTS.md` and apply unchanged. Dotfiles-specific:
 
 1. **Only `private_dot_ssh/config` is tracked** (its `.gitignore` excludes keys). Untracked key material in `git status`? Do **not** `git add` — warn the user.
 2. **Never track hardware-dependent `/etc` configs** — no `fstab`, `crypttab`, NetworkManager profiles, or machine-specific disk/network/boot config. The only managed root-level config is `system/keyd/default.conf` (via hook).
 3. **Never run `chezmoi apply --force` or `chezmoi purge`** unless the user explicitly requests it.
-4. **Never bypass §2 protocols** (skipping `chezmoi status`, `re-add`, template checks) "to save time".
+4. **Never bypass §2 protocols** (skipping `chezmoi status`, `re-add`, template checks, AGENTS.md hygiene checks) "to save time".
 
 ---
 
@@ -395,10 +308,12 @@ Universal forbidden actions — secrets/credentials handling, destructive packag
 After any change an agent makes, run and report:
 
 ```fish
-chezmoi status                                          # expected drift only
-chezmoi diff                                            # pending apply preview
-chezmoi execute-template < <changed-hook> | bash -n     # if hooks changed
-git status --short                                      # no secrets staged
+chezmoi status       # expected drift only
+chezmoi diff         # pending apply preview
+chezmoi execute-template < <changed-hook> | bash -n   # if hooks changed
+just check-agents    # if AGENTS.md changed
+git status --short   # no secrets staged
 ```
 
-Summarize: what changed, which manifest/hook was touched, what the user must run next (usually `chezmoi apply`), and any risks.
+Summarize: what changed, which manifest/hook was touched, what the user must run
+next (usually `chezmoi apply`), and any risks.

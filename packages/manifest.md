@@ -230,3 +230,56 @@ managed as standalone toolchains and documented above:
 
 Other tools like `fish`, `fastfetch`, `fzf`, `pkgfile`, `bat`, and `eza` are
 pulled in by `cachyos-fish-config` and do not need to be listed separately.
+
+## Syncthing (PC ↔ Android Sync)
+
+Continuous file sync between this workstation and Android. The repository
+provisions the package, the firewall holes, and session independence; the sync
+root itself is data and is deliberately **not** chezmoi-managed.
+
+Provisioned by the repository:
+
+- **Native package** — `syncthing` in `00-system-base.txt`, v2.x with
+  `[noupgrade]`, so the version follows the repo and no self-updater runs.
+- **Firewall rules** — `run_onchange_after_20-setup-system.sh.tmpl` opens
+  inbound `22000/tcp`, `22000/udp` (QUIC), and `21027/udp` (local discovery).
+- **Session independence** — the same hook runs `loginctl enable-linger`, which
+  keeps the user service alive with no login session.
+
+Runtime layout (data and key material — not managed, never tracked):
+
+- `~/.local/state/syncthing/` — `config.xml`, `cert.pem`, `key.pem`,
+  `https-key.pem`, `index-v2/*.db`. This directory holds the device private keys
+  and the GUI/API credentials, so it must never be tracked.
+- `~/Sync/` — the sync root; files are placed here manually.
+- `127.0.0.1:8384` — web UI, loopback-only and deliberately not opened in ufw.
+- `syncthing.service` (user) — run and checked with `systemctl --user`.
+
+Verified behaviour and known limits:
+
+- **Symlinks are not synced.** The scanner records a `FILE_INFO_TYPE_SYMLINK`
+  entry with `size 0`, `numBlocks 0` and no platform target, so the linked
+  content is never indexed or transferred. To sync a directory that lives
+  elsewhere, add that directory as its own Syncthing folder rather than linking
+  it into a synced one.
+- **Media settings** (recommended, not required) — set the PC folder to
+  *Send Only* and the phone to *Receive Only* so a deletion on the phone cannot
+  delete the PC library; enable file versioning for recoverability; on the phone
+  restrict syncing to Wi-Fi and set battery usage to *Unrestricted* (a flapping
+  link is the symptom of the latter).
+- **Local discovery vs. the TUN proxy** — `255.255.255.255` is hijacked by the
+  Clash Verge TUN, but Syncthing announces to the per-interface broadcast
+  address (`192.168.2.255`), which routes direct. Discovery and direct LAN
+  connections therefore work. If a peer ever falls back to relay, pin a static
+  `tcp://<LAN-IP>:22000` address for that device.
+
+Verification:
+
+```fish
+systemctl --user is-active syncthing.service              # active
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8384   # 200
+ss -lntup | rg '22000|21027|8384'                         # listeners bound
+loginctl show-user (id -un) -p Linger                     # Linger=yes
+syncthing cli show connections                            # peer state, connection.lan
+syncthing cli debug file <folder-id> <path>               # index entry for one path
+```

@@ -625,6 +625,157 @@ check-config-redteam:
 	just --justfile "{{justfile()}}" check-permissions accept tests/goose/green
 	or exit 1
 
+# AGENTS.md hygiene gate (AGENTS.md §1.4). Fail-closed.
+# Usage: just check-agents [file]
+#
+# Seven rules, each rejecting a concrete regression:
+#   table     no Markdown table outside fenced code blocks — tables are not
+#             Prettier-stable, and ~/.config/helix/languages.toml auto-formats
+#             markdown with prettier on save, so a padded table rewrites the
+#             file and produces a whole-block diff
+#   prettier  the file must be Prettier-idempotent, so an editor save is a no-op
+#   budget    floor (~/.AGENTS.md) + this file must stay under 32768 B, the
+#             Codex AGENTS_MD_MAX_BYTES cap for the combined AGENTS.md chain
+#             (goose loads AGENTS.md + .goosehints at every hierarchy level)
+#   h1        exactly one level-1 heading
+#   dupe      no duplicated bullet line (>= 40 chars) — drift signal
+#   fence     balanced ``` code fences
+#   floor     a floor-contract marker must match the live ~/.AGENTS.md sha256
+check-agents file="AGENTS.md":
+	#!/usr/bin/env python3
+	import hashlib
+	import os
+	import re
+	import subprocess
+	import sys
+
+	PATH = "{{file}}"
+	TOTAL_MAX = 32768
+	TOTAL_WARN = TOTAL_MAX * 9 // 10
+	FLOOR = os.path.expanduser("~/.AGENTS.md")
+
+	violations = []
+
+
+	def add(rule, msg):
+	    violations.append((rule, msg))
+
+
+	def sha256(path):
+	    with open(path, "rb") as fh:
+	        return hashlib.sha256(fh.read()).hexdigest()
+
+
+	try:
+	    with open(PATH, "rb") as fh:
+	        raw = fh.read()
+	except OSError as exc:
+	    print("check-agents: file: cannot read " + PATH + ": " + str(exc), file=sys.stderr)
+	    sys.exit(1)
+
+	text = raw.decode("utf-8", "replace")
+	lines = text.splitlines()
+
+	# Table detection must ignore fenced code blocks, and fence balance decides
+	# whether the scan is trustworthy at all.
+	in_fence = False
+	fences = 0
+	table_sep = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$")
+	for n, line in enumerate(lines, 1):
+	    if line.lstrip().startswith("```"):
+	        fences += 1
+	        in_fence = not in_fence
+	        continue
+	    if not in_fence and table_sep.match(line):
+	        add("table", "Markdown table at line " + str(n) + " (use a list; tables are not Prettier-stable)")
+	if fences % 2:
+	    add("fence", "unbalanced code fences (" + str(fences) + " ``` markers)")
+
+	h1 = [line for line in lines if re.match(r"^#\s", line)]
+	if len(h1) != 1:
+	    add("h1", "expected exactly one level-1 heading, found " + str(len(h1)))
+
+	seen = {}
+	for line in lines:
+	    m = re.match(r"^\s*(?:[-*]|\d+\.)\s+(\S.*)$", line)
+	    if not m:
+	        continue
+	    body = m.group(1).strip()
+	    if len(body) >= 40:
+	        seen[body] = seen.get(body, 0) + 1
+	for body in seen:
+	    if seen[body] > 1:
+	        add("dupe", "duplicated bullet " + str(seen[body]) + "x: " + body[:60])
+
+	total = len(raw)
+	if os.path.exists(FLOOR):
+	    total += os.path.getsize(FLOOR)
+	if total > TOTAL_MAX:
+	    add("budget", str(total) + " B combined with the floor exceeds " + str(TOTAL_MAX) + " B; move enumerable detail to packages/manifest.md and keep only traps here")
+	elif total > TOTAL_WARN:
+	    print("check-agents: budget: warning: " + str(total) + " B combined with the floor (cap " + str(TOTAL_MAX) + ")", file=sys.stderr)
+
+	marker = re.search(r"floor-contract: sha256:([0-9a-f]{64})", text)
+	if marker and os.path.exists(FLOOR):
+	    if marker.group(1) != sha256(FLOOR):
+	        add("floor", "floor-contract marker is stale; run floor-stamp")
+
+	try:
+	    proc = subprocess.run(["prettier", "--parser", "markdown", PATH], capture_output=True)
+	except FileNotFoundError:
+	    add("tool", "prettier not found; refusing to pass without the formatter check")
+	else:
+	    if proc.returncode != 0:
+	        add("prettier", "prettier failed: " + proc.stderr.decode("utf-8", "replace").strip()[:160])
+	    elif proc.stdout != raw:
+	        delta = len(proc.stdout) - len(raw)
+	        if delta == 0:
+	            where = "same size, different bytes"
+	        else:
+	            where = ("+" if delta > 0 else "") + str(delta) + " B"
+	        add("prettier", "not Prettier-idempotent (" + where + "); run prettier --write")
+
+	if violations:
+	    for rule, msg in violations:
+	        print("check-agents: " + rule + ": " + PATH + ": " + msg, file=sys.stderr)
+	    print("check-agents: " + str(len(violations)) + " violation(s) in " + PATH, file=sys.stderr)
+	    sys.exit(1)
+
+	print("check-agents: " + PATH + " ok (" + str(len(raw)) + " B, +" + str(total - len(raw)) + " B floor = " + str(total) + " B)")
+
+# Gate self-test: every rule must reject its fixture, and the real file must pass.
+# A gate only ever observed passing is untested.
+check-agents-redteam:
+	#!/usr/bin/env fish
+	set -l tmp (mktemp -d)
+	set -l failed 0
+	printf '# T\n\n| a | b |\n|---|---|\n| 1 | 2 |\n' > $tmp/table.md
+	printf '# A\n\n# B\n\nbody\n' > $tmp/h1.md
+	set -l b '- this duplicated bullet line is long enough to count for the rule'
+	printf '# T\n\n%s\n%s\n' $b $b > $tmp/dupe.md
+	printf '# T\n\n```\nx\n```\n\n```\ny\n' > $tmp/fence.md
+	printf '# T\n\n<!-- floor-contract: sha256:%s -->\n' (string repeat -n 64 0) > $tmp/floor.md
+	printf '# T\n\n- *emphasis* is normalised by prettier\n' > $tmp/prettier.md
+	printf '# T\n\n' > $tmp/budget.md
+	string repeat -n 40000 x >> $tmp/budget.md
+	for c in table h1 dupe fence floor prettier budget
+	    set -l out (just --justfile "{{justfile()}}" check-agents $tmp/$c.md 2>&1)
+	    if test $status -eq 0
+	        echo "check-agents-redteam: $c was accepted; expected rejection" >&2
+	        set failed 1
+	    else if not string match -q "*check-agents: $c:*" -- "$out"
+	        echo "check-agents-redteam: $c -- rule '$c' did not fire" >&2
+	        echo "$out" >&2
+	        set failed 1
+	    end
+	end
+	if not just --justfile "{{justfile()}}" check-agents AGENTS.md
+	    echo "check-agents-redteam: the real AGENTS.md was rejected" >&2
+	    set failed 1
+	end
+	rm -rf $tmp
+	test $failed -eq 0
+
 # Static/structural lint: hook templates, git hooks, tool cards, whitespace.
 lint:
 	#!/usr/bin/env fish
@@ -718,7 +869,7 @@ secrets:
 
 # Internal parallel aggregator. Invoke `check-fast`, not this.
 [parallel]
-_check-fast: check-config check-permissions check-commands check-commands-redteam check-config-redteam lint secrets drift
+_check-fast: check-config check-permissions check-commands check-commands-redteam check-config-redteam check-agents check-agents-redteam lint secrets drift
 
 # Parallel fast gate, pinned to 3 workers for reproducible interleaving.
 check-fast:
@@ -729,4 +880,4 @@ check-fast:
 # Body-less by design; the work lives in its prerequisites.
 
 # Full gate (contract entry point for the global pre-push hook).
-check: check-config check-permissions check-commands check-commands-redteam check-config-redteam lint secrets drift
+check: check-config check-permissions check-commands check-commands-redteam check-config-redteam check-agents check-agents-redteam lint secrets drift
