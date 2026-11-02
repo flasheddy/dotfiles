@@ -85,14 +85,16 @@ On the first fix → retry loop (same failure reappears), stop and apply in orde
 
 ### Context Hygiene & Boundary Rules
 
+`/context`, `/compact`, `/clear`, and `/plan` are agent chat/UI commands, not shell commands — never emit them in a shell invocation.
+
 - `/context` — inspect context before acting.
 - `/compact` (with retention priorities) — task incomplete; compress and name what to keep (completed work, open problems, next task).
 - `/clear` / new session — task complete; wipe context, never carry stale state.
 - One session = one objective; tangential ideas go to a fork or separate thread.
 
-### Task Execution Contract (Goose Task Schema)
+### Task Execution Contract (Universal / Agent Schema)
 
-Every `g-draft` execution envelope MUST declare all four fields before any write or state change:
+Every task execution envelope MUST declare all four fields before any write or state change:
 
 | Field | Required content |
 |---|---|
