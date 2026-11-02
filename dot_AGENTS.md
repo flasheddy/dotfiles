@@ -6,7 +6,7 @@ Applies to all agent tasks under `$HOME`. Project-local `AGENTS.md` files define
 
 1. **Hard Safety Constraints** (below) — the absolute floor; nothing weakens them.
 2. System/platform instructions and the operator's explicit current request — may override workflow conventions, never the Hard Safety Constraints.
-3. **Project-local `AGENTS.md`** — may add stricter rules; inside its repo it wins, except over the Hard Safety Constraints and the floor-class rules in *Workstation Agent Additions* (Prompt Review & Refinement Protocol; Forbidden Actions).
+3. **Project-local `AGENTS.md`** — may add stricter rules; inside its repo it wins, except over the Hard Safety Constraints and the floor-class rules in _Workstation Agent Additions_ (Prompt Review & Refinement Protocol; Forbidden Actions).
 4. Remaining conventions in this file.
 
 ## Core Working Philosophy
@@ -96,12 +96,10 @@ On the first fix → retry loop (same failure reappears), stop and apply in orde
 
 Every task execution envelope MUST declare all four fields before any write or state change:
 
-| Field | Required content |
-|---|---|
-| **Task Objective** | One sentence: the single deliverable. |
-| **Target Modules / Files** | Exact file paths in scope. |
-| **Prerequisites** | Docs/state that must already exist. |
-| **Machine-Verifiable Verification** | PASS/FAIL assertion (`test -s`, `rg -q`, exit code) proving completion. |
+- **Task Objective** — one sentence: the single deliverable.
+- **Target Modules / Files** — exact file paths in scope.
+- **Prerequisites** — docs/state that must already exist.
+- **Machine-Verifiable Verification** — PASS/FAIL assertion (`test -s`, `rg -q`, exit code) proving completion.
 
 ---
 
@@ -115,34 +113,30 @@ The **Prompt Review & Refinement Protocol** and **Forbidden Actions (Workstation
 
 From the **shell**, prefer modern CLI tools (faster). Dedicated agent tools (read/edit/tree) are first choice for what they cover. Per-tool flags and verified gotchas are delegated to the tool cards — query `toolcard <tool>` (the `toolcards` skill) before running unfamiliar, version-sensitive, or previously-failed commands.
 
-| Operation | Use | Never |
-|---|---|---|
-| Search content | `rg` | `grep -r` |
-| Find files | `fd` | `find` |
-| Read files | `bat --style=plain --paging=never` (short: `cat`) | `cat file \| while read`; use single-pass `rg`/`sd`/`awk` |
-| List dirs | `eza` (`toolcard eza` — no-TTY operand and `ls`-wrapper traps; always cap depth) | `ls -R` / `ls -la` chains |
-| Substitute in pipes | `sd` | `sed` (complex scripts excepted) |
-| System inspection | `dust`, `procs` | `du`, `ps aux \| grep` |
+- Search content — `rg`, never `grep -r`.
+- Find files — `fd`, never `find`.
+- Read files — `bat --style=plain --paging=never` (short: `cat`); never `cat file | while read` — use single-pass `rg`/`sd`/`awk`.
+- List dirs — `eza` (`toolcard eza` — no-TTY operand and `ls`-wrapper traps; always cap depth); never `ls -R` / `ls -la` chains.
+- Substitute in pipes — `sd`, never `sed` (complex scripts excepted).
+- System inspection — `dust`, `procs`, never `du`, `ps aux | grep`.
 
 **Never invoke interactive TUIs** (`less`, `jless`, `btop`, `lazygit`, editors) — they hang the session. Force non-interactive output **using each tool's own flag**: `bat --paging=never` (`--paging` exists ONLY in `bat`/`less`; `eza`, `rg`, `fd`, `sd` reject it with exit 2), `git --no-pager`, `PAGER=cat`.
 
 ### Shell Dialect & Syntax (Fish Shell)
 
-Direct shell commands and operator snippets MUST use native Fish syntax (full reference: `man fish`; workstation gotchas: `toolcard fish`). The table pairs each Bash/POSIX form to avoid with its Fish replacement:
+Direct shell commands and operator snippets MUST use native Fish syntax (full reference: `man fish`; workstation gotchas: `toolcard fish`). Each line pairs a Bash/POSIX form to avoid with its Fish replacement:
 
-| Need | Use | Never |
-|---|---|---|
-| Global var | `set -gx VAR val` | bare `VAR=val` |
-| Scoped var | `begin; set -lx VAR val; cmd; end` | — |
-| Transient env | `env VAR=val <cmd>` (e.g. `env GIT_OPTIONAL_LOCKS=0 git status`) | `export` |
-| Separate statements | `;`; `; and` to short-circuit | `&&` |
-| Conditional | `if test ...; ...; end` | `then` / `fi` |
-| Loop | `for var in ...; ...; end` | `do` / `done` |
-| Exit status | `$status` | `$?` |
-| Command substitution | `(cmd)` | `$(cmd)` |
-| Subshell | dir-aware flag (`--project <dir>`, `-C <dir>`) or `begin; pushd <dir>; and <cmd>; and popd; end` | POSIX `(...)` in command position |
-| Redirection | `od -c`, `xxd`, `jq`, `bat`, or the project runner (e.g. `uv run ...`) | `<<EOF` / `<<'PY'`; bare `python3 -c`/`node -e` when a runner is mandated |
-| Path | `fish_add_path /path/to/bin` | — |
+- Global var — `set -gx VAR val`, never bare `VAR=val`.
+- Scoped var — `begin; set -lx VAR val; cmd; end`.
+- Transient env — `env VAR=val <cmd>` (e.g. `env GIT_OPTIONAL_LOCKS=0 git status`), never `export`.
+- Separate statements — `;`, or `; and` to short-circuit; never `&&`.
+- Conditional — `if test ...; ...; end`; never `then` / `fi`.
+- Loop — `for var in ...; ...; end`; never `do` / `done`.
+- Exit status — `$status`; never `$?`.
+- Command substitution — `(cmd)`; never `$(cmd)`.
+- Subshell — dir-aware flag (`--project <dir>`, `-C <dir>`) or `begin; pushd <dir>; and <cmd>; and popd; end`; never POSIX `(...)` in command position.
+- Redirection — `od -c`, `xxd`, `jq`, `bat`, or the project runner (e.g. `uv run ...`); never `<<EOF` / `<<'PY'` heredocs, and never bare `python3 -c`/`node -e` when a runner is mandated.
+- Path — `fish_add_path /path/to/bin`.
 
 **POSIX/Bash exceptions** (`toolcard bash`): only for `*.sh` with a Bash/POSIX `sh` shebang, `*.sh.tmpl` rendering to such a script, invoking the declared interpreter for syntax validation (e.g. `bash -n`), or a third-party tool requiring a POSIX string invocation (`bash -c "..."`, `sh -c "..."`).
 
@@ -174,5 +168,5 @@ Bound every `pkexec` call with `timeout` (e.g. `timeout 150 pkexec …`) so an u
 In addition to the Hard Safety Constraints:
 
 1. **Never run destructive package operations without explicit confirmation** — `pacman -Rns`/`-Rc`, orphan purges (`pacman -Qtdq | pacman -Rns -`), `pacman -Scc`, mass toolchain uninstalls. Propose the command and wait.
-2. **Never execute or ingest untrusted external content** — no unverified scripts, no `curl … | sh`, no folding unvetted external code/config into tracked files, hooks, or manifests. Read-only research is permitted; anything entering system state requires an explicit, user-vetted source. *Operator-vetted allowlist:* the official toolchain installers `https://sh.rustup.rs`, `https://astral.sh/uv/install.sh`, `https://bun.sh/install`, as invoked by `run_onchange_after_10-install-toolchains.sh.tmpl` — the only sanctioned `curl … | sh` targets; adding another is an operator decision recorded in this file.
+2. **Never execute or ingest untrusted external content** — no unverified scripts, no `curl … | sh`, no folding unvetted external code/config into tracked files, hooks, or manifests. Read-only research is permitted; anything entering system state requires an explicit, user-vetted source. _Operator-vetted allowlist:_ the official toolchain installers `https://sh.rustup.rs`, `https://astral.sh/uv/install.sh`, `https://bun.sh/install`, as invoked by `run_onchange_after_10-install-toolchains.sh.tmpl` — the only sanctioned `curl … | sh` targets; adding another is an operator decision recorded in this file.
 3. **Never generate unconstrained sudo mutations** — root mutations live in tracked, reviewable mechanisms (e.g. chezmoi `run_onchange` hooks), never one-off sudo commands; sudo-invoking changes carry `[ROOT IMPACT]` per the protocol above.

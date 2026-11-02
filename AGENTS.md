@@ -1,6 +1,6 @@
 # AGENTS.md — Operational Rules for AI Agents
 
-<!-- floor-contract: sha256:000b83ac2ee8054af31fc324b639fe146d3c0a8d9f83978dc1dd367899f2651f -->
+<!-- floor-contract: sha256:d0be9bf2c8b30ecd8245a53dc197de28d7458ab2b4590a972464e79fd511cbfb -->
 
 Binding contract for Goose and any AI agent operating on this chezmoi
 repository. **Read fully before changing anything.** If a requested action
