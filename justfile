@@ -680,18 +680,23 @@ check-agents file="AGENTS.md":
 	# whether the scan is trustworthy at all.
 	in_fence = False
 	fences = 0
+	h1 = []
 	table_sep = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$")
 	for n, line in enumerate(lines, 1):
 	    if line.lstrip().startswith("```"):
 	        fences += 1
 	        in_fence = not in_fence
 	        continue
+	    if not in_fence and re.match(r"^#\s", line):
+	        h1.append(line)
 	    if not in_fence and table_sep.match(line):
 	        add("table", "Markdown table at line " + str(n) + " (use a list; tables are not Prettier-stable)")
 	if fences % 2:
 	    add("fence", "unbalanced code fences (" + str(fences) + " ``` markers)")
 
-	h1 = [line for line in lines if re.match(r"^#\s", line)]
+	# Level-1 headings are only meaningful outside fenced code: a `#` line in a
+	# shell block is a comment, not a heading. Counting it made every file with
+	# a commented command fail, so the scan shares the fence state above.
 	if len(h1) != 1:
 	    add("h1", "expected exactly one level-1 heading, found " + str(len(h1)))
 
