@@ -19,6 +19,8 @@
 extend-ignore-re = [
   # sha256 / sha1 / git object hashes (floor-contract markers, grammar revs)
   "\\b[0-9a-f]{40,64}\\b",
+  # 6-character hex color codes (e.g. f38ba8 in fish theme)
+  "\\b[0-9a-f]{6}\\b",
 ]
 
 # --- Workstation vocabulary: technical identifiers that are not typos ---

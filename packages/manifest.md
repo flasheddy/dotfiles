@@ -201,11 +201,7 @@ Go modules installed with `go install`:
 ### `toolchains/local-bin.txt`
 
 Standalone binaries placed directly in `~/.local/bin` and not managed by any
-toolchain manager above:
-
-- `goose`
-- `zed` — manual bundle at `~/.local/zed.app` (CLI entry `~/.local/bin/zed`,
-  symlink managed as `dot_local/bin/symlink_zed.tmpl`)
+toolchain manager above. Managed symlinks live in `dot_local/bin/`.
 
 Previously this file also contained symlinks for `uv`/`uvx` (standalone
 toolchain), `python3.12` (uv-managed Python), and

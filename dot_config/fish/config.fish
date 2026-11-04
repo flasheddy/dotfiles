@@ -31,10 +31,6 @@ set -gx BAT_THEME "Catppuccin Mocha"
 
 # fzf: match BAT_THEME (hexes taken from ~/.config/bat/themes/Catppuccin Mocha.tmTheme)
 set -gx FZF_DEFAULT_OPTS "--height=60% --layout=reverse --border --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8,fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc,marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
-set -gx GOOSE_CLI_THEME dark
-set -gx GOOSE_CLI_DARK_THEME "Catppuccin Mocha"
-set -gx GOOSE_SHELL /usr/bin/fish
-
 # Editor (hx is the strict default)
 set -gx EDITOR hx
 set -gx VISUAL hx
@@ -70,10 +66,6 @@ if status is-interactive
     # Copy chezmoi diff and git diff to clipboard with labels
     abbr --add --global ddc '{ echo "=== chezmoi diff ==="; chezmoi diff; echo; echo "=== git diff ==="; chezmoi git -- diff; } | wl-copy'
 
-    # Goose session management
-    abbr --add --global gsl 'goose session list'
-    abbr --add --global gsw 'rm -f ~/.local/share/goose/sessions/sessions.db*'
-
     # Python tooling
     abbr --add --global uvs 'uv sync'
     abbr --add --global uvr 'uv run'
@@ -85,7 +77,7 @@ if status is-interactive
     abbr --add --global jl jless
     abbr --add --global tsv 'csvlens -t'
 
-    # Add the abberviation for focus-timer
+    # Add the abbreviation for focus-timer
     abbr --add --global ft focus-timer
 
     # Fuzzy finder: Ctrl-R history, Ctrl-T file picker, Alt-C fuzzy cd.

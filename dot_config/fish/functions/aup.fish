@@ -1,13 +1,13 @@
-function aup --description 'Update system packages and developer toolchains'
-    argparse 't/toolchains' 'no-sys' 's/sys-only' 'f/force' 'h/help' -- $argv
+function aup --description 'Update developer toolchains and system packages'
+    argparse t/toolchains no-sys s/sys-only f/force h/help -- $argv
     or return 2
 
     if set -q _flag_help
-        echo "aup — update system packages and developer toolchains"
+        echo "aup — update developer toolchains and system packages"
         echo
         echo "usage: aup [options]"
         echo
-        echo "  (no options)      update system packages AND all toolchains"
+        echo "  (no options)      update all toolchains AND system packages"
         echo "  -t, --toolchains  toolchains only, skip the system update"
         echo "      --no-sys      alias for --toolchains"
         echo "  -s, --sys-only    system packages only (cachy-update)"
@@ -17,8 +17,6 @@ function aup --description 'Update system packages and developer toolchains'
         echo "Each stage runs in isolation: one failure never aborts the rest."
         echo "Stages that succeeded within the last 2 hours are skipped"
         echo "automatically (cache: ~/.cache/aup; bypass with --force)."
-        echo "The goose stage additionally probes the upstream stable release"
-        echo "and skips the re-download while that artifact is unchanged."
         echo "A summary of OK / SKIP / FAIL stages is printed at the end."
         echo "Exit status is 1 if any stage failed, 0 otherwise."
         return 0
@@ -57,12 +55,6 @@ function aup --description 'Update system packages and developer toolchains'
     set -g __aup_failed
     set -g __aup_skipped
 
-    if test $want_sys -eq 1
-        __aup_run system cachy-update
-    else
-        set -a __aup_skipped "system (disabled)"
-    end
-
     if test $want_tools -eq 1
         __aup_run rustup rustup update
         __aup_run cargo cargo install-update -a
@@ -72,20 +64,14 @@ function aup --description 'Update system packages and developer toolchains'
         __aup_run bun-globals __aup_bun_globals
         __aup_run go gup update
         __aup_run tldr tldr --update
-        # `goose update` has no version check: it unconditionally re-downloads
-        # the rolling `stable` asset (~300 MB). Probe the upstream fingerprint
-        # first and only re-download when it actually changed.
-        if __aup_goose_unchanged
-            set -a __aup_skipped "goose (upstream stable unchanged)"
-        else if not command -v goose >/dev/null 2>&1
-            # Wrapper command bypasses __aup_run's own `type -q` check, so keep
-            # the documented "missing tool → SKIP, never FAIL" contract here.
-            set -a __aup_skipped "goose (goose not installed)"
-        else
-            __aup_run goose __aup_goose_update
-        end
     else
         set -a __aup_skipped "toolchains (disabled)"
+    end
+
+    if test $want_sys -eq 1
+        __aup_run system cachy-update
+    else
+        set -a __aup_skipped "system (disabled)"
     end
 
     echo
@@ -151,36 +137,4 @@ function __aup_bun_globals --description 'internal: update bun global packages'
     # `bun update --global` operates on ~/.bun/install/global directly;
     # no cd needed (flag confirmed via `bun update --help`)
     bun update --global --latest
-end
-
-function __aup_goose_remote --description 'internal: fingerprint of the upstream goose stable asset'
-    # `goose update` fetches .../releases/download/stable/<asset> and has no
-    # version check, so it re-downloads the ~300 MB archive on every run.
-    # A HEAD request (a few hundred bytes) returns the asset's ETag /
-    # Last-Modified, which changes exactly when the artifact changes.
-    curl -sIL --max-time 10 \
-        https://github.com/aaif-goose/goose/releases/download/stable/goose-x86_64-unknown-linux-gnu.tar.bz2 \
-        | string match --ignore-case --regex '^(?:etag|last-modified):.*' \
-        | string collect
-end
-
-function __aup_goose_unchanged --description 'internal: true when upstream goose stable matches the installed one'
-    command -v goose >/dev/null 2>&1; or return 1
-    set -q __aup_force[1]; and return 1
-    set -q __aup_cache_dir[1]; or return 1
-    set -l stamp $__aup_cache_dir[1]/goose.asset
-    test -f $stamp; or return 1
-    set -l remote (__aup_goose_remote)
-    test -n "$remote"; or return 1   # probe failed → fail open, run the updater
-    test "$remote" = (cat $stamp | string collect)
-end
-
-function __aup_goose_update --description 'internal: update goose, then record the installed upstream fingerprint'
-    goose update; or return $status
-    # Only reached on success: remember what was just installed, so the next
-    # run can prove the artifact is unchanged without downloading it again.
-    if set -q __aup_cache_dir[1]
-        set -l remote (__aup_goose_remote)
-        test -n "$remote"; and printf '%s\n' "$remote" > $__aup_cache_dir[1]/goose.asset
-    end
 end

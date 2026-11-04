@@ -54,7 +54,6 @@ sudo keyd list-keys
 rustup show; uv --version; bun --version; go version
 printf '%s\n' $PATH                      # toolchain bins on PATH
 chezmoi status                           # no unexpected drift
-test -f ~/.config/goose/permission.yaml; or install -m 600 -D ~/.local/share/chezmoi/dot_config/goose/private_permission.yaml ~/.config/goose/permission.yaml   # seed goose posture if absent (runtime-owned, not chezmoi-managed)
 ```
 
 ---
@@ -63,157 +62,67 @@ test -f ~/.config/goose/permission.yaml; or install -m 600 -D ~/.local/share/che
 
 ### Fish Abbreviations
 
-Defined in `~/.config/fish/config.fish`:
-
-| Abbreviation | Expands To | Purpose |
-|---|---|---|
-| `cm` | `cd ~/.local/share/chezmoi` | jump to the chezmoi source directory (native `cd` — no wrapper process) |
-| `cma` | `chezmoi apply` | apply source changes to the live system |
-| `cms` | `chezmoi status` | show pending changes |
-| `jl` | `jless` | read-only JSON pager with tree folding & vi keybindings |
-| `tsv` | `csvlens -t` | read-only column-aligned TSV/dataset viewer |
-
-### Document Readers
-
-Document review is separated from editing to prevent accidental buffer changes.
-Markdown and dataset reader workflow bifurcates based on complexity:
-
-| Reader | Target File Types | Invocation | Highlights |
-|---|---|---|---|
-| `zed` | Complex Markdown (SDD plans, tables) | `zed <file>` | GUI sidecar previewer. Bypasses terminal width limits; soft-wraps dense cells. |
-| `bat` | Simple Markdown (inline CLI) | `bat <file>` | Fast, non-interactive syntax highlighting for standard CLI reads. |
-| `jless` | JSON | `jl` | Interactive pager with tree folding and Helix/vi keybindings. |
-| `csvlens` | TSV, Anki exports & datasets | `tsv` | Column-aligned viewer (`-t` = tab-separated). |
-
-### Agent Turn Checkpoint Handoff
-
-`handoff-copy` (Fish function → `~/.config/fish/functions/handoff-copy.fish`)
-snapshots the latest Goose session for a turn handoff: it streams the latest
-assistant text block, session ID, git context (branch, commit, working-tree
-status), and plan path into a Markdown buffer, then copies it to the Wayland
-clipboard via `wl-copy` for pasting into Gemini Chat.
+```fish
+abbr --show # Show all abbreviations in the terminal
+```
 
 ### Dictation
 
-Fully local speech-to-text: `dictate` records from the default PipeWire source,
-transcribes with whisper.cpp on the CPU, and types the result into the focused
-window via `dotool` (`/dev/uinput` — no X11 and no compositor-specific protocol).
-
-**One-time model fetch.** The `ggml` weights are data, not a package, and are
-deliberately untracked. `huggingface.co` is unreachable from some networks;
-`hf-mirror.com` serves the identical blob — verify the hash before trusting it:
-
-```fish
-set -l dir ~/.local/share/whisper/models
-mkdir -p $dir
-curl -fL -o $dir/ggml-base.en.bin \
-    https://hf-mirror.com/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin
-sha256sum $dir/ggml-base.en.bin
-# must print a03779c86df3323075f5e796cb2ce5029f00ec8869eee3fdfb897afe36c6d002
-# (147,964,211 bytes)
-```
-
-**Shortcut.** COSMIC settings are intentionally not chezmoi-managed, so bind it
-once by hand: Settings → Keyboard Shortcuts → Custom Shortcuts → add
-`dictate toggle` on `Super+Alt+D`. (`Ctrl+Space` is left alone — fcitx5 owns it
-for input-method switching.)
-
-**Usage**
-
-| Command | Effect |
-|---|---|
-| `dictate toggle` | start recording; press again to stop, transcribe and type |
-| `dictate start` / `dictate stop` | explicit start / stop-and-type |
-| `dictate last` | re-transcribe the most recent recording |
-| `dictate status` | report whether a recording is in progress |
-| `dictate last --print` | print the transcript instead of typing it |
-| `dictate last --copy` | copy the transcript to the clipboard instead of typing |
-| `dictate --model small.en` | use another model (fetch `ggml-small.en.bin` the same way) |
-
-Notes:
-
-- Runtime state lives in `$XDG_RUNTIME_DIR/dictate/` (tmpfs) — nothing survives a reboot.
-- Recording is 16 kHz mono `s16`, whisper's native format, so there is no resampling.
-- The packaged `whisper-cpp` is a **CPU** build; the RTX 5060 stays idle. GPU
-  inference would need a from-source CUDA build (`ggml-cuda` is packaged, but the
-  Blackwell/sm_120 path is untested here).
-- Silent or sub-0.4 s recordings are discarded without typing anything.
+Add `dictate toggle` on `Super+Alt+D` in COSMIC Settings.
 
 ### PATH Symlinks
 
-Managed via `dot_local/bin/symlink_*` (tracked in `toolchains/local-bin.txt`): `hx` → `/usr/bin/helix`, `zed` → `~/.local/zed.app/bin/zed`.
+Managed via `dot_local/bin/symlink_*` (tracked in `toolchains/local-bin.txt`): `hx` → `/usr/bin/helix`.
 
 ### Editing Files
 
 **Flow A — via the source directory (safest; chezmoi always knows about the changes):**
 
 ```fish
-cm
+cd ~/.local/share/chezmoi
 hx dot_config/fish/config.fish
-cma
+chezmoi apply
 ```
 
 **Flow B — edit the live file directly:**
 
 ```fish
 hx ~/.config/fish/config.fish
-chezmoi re-add ~/.config/fish/config.fish   # mandatory before applying
-cma
+chezmoi re-add ~/.config/fish/config.fish
+chezmoi apply
 ```
-
-> **⚠️ Warning:** `cma` without `chezmoi re-add` overwrites your live edits with the source-tree version. Always `re-add` first when editing live files.
 
 ### Adding New Software
 
-**System / AUR package:** append to the manifest matching its origin, then `cma` — hook 00 detects the changed checksum and installs it (native via `pacman`, AUR via `paru`/`yay`).
+**System / AUR package:** append to the manifest matching its origin, then `chezmoi apply` — hook 00 detects the changed checksum and installs it (native via `pacman`, AUR via `paru`/`yay`).
 
 - **Native** (official CachyOS/Arch repos) → `packages/00-system-base.txt` (core/drivers/networking), `10-desktop-environment.txt` (desktop/fonts/GUI), `20-dev-stacks.txt` (compilers/runtimes/dev tools), or `30-terminal-utilities.txt` (terminals/editors/CLI).
-- **AUR-only** → `archive/pacman-foreign.txt`. **Never** add AUR names to `packages/*.txt`: they feed `pacman -S` directly, and an unknown name aborts the whole run (AGENTS.md §1.3). Verify origin: `pacman -Si <pkg>` (native) vs `paru -Si <pkg>` (AUR).
+- **AUR-only** → `archive/pacman-foreign.txt`. **Never** add AUR names to `packages/*.txt`: they feed `pacman -S` directly, and an unknown name aborts the whole run ([AGENTS.md §1.2](AGENTS.md)). Verify origin: `pacman -Si <pkg>` (native) vs `paru -Si <pkg>` (AUR).
 
-**Language CLI tool:** append to `toolchains/uv.txt` (Python), `cargo.txt` (Rust), `bun.txt` (JS/TS), or `go.txt` (Go), then `cma` — hook 10 installs it.
+**Language CLI tool:** append to `toolchains/uv.txt` (Python), `cargo.txt` (Rust), `bun.txt` (JS/TS), or `go.txt` (Go), then `chezmoi apply` — hook 10 installs it.
 
 ### Updating Standalone Toolchains
 
-The primary update workflow is the `aup` Fish function (`dot_config/fish/functions/aup.fish`): per-stage isolation (one failure never aborts the rest), missing tools reported as `SKIP (not installed)`, a 2-hour per-stage success cache in `~/.cache/aup/` (user-local, unmanaged; `--force` bypasses), and an OK/SKIP/FAIL summary. Exits 1 if any stage failed. The **goose** stage additionally HEAD-probes the upstream `stable` release asset and skips the re-download while its ETag/Last-Modified fingerprint is unchanged (`~/.cache/aup/goose.asset`).
-
-| Stage | Command | Notes |
-|---|---|---|
-| **system** | `cachy-update` | pacman + AUR via arch-update (prompts for sudo) |
-| **rustup** | `rustup update` | Rust toolchain manager |
-| **cargo** | `cargo install-update -a` | all cargo-installed crates |
-| **uv-self** | `uv self update` | uv itself |
-| **uv-tools** | `uv tool upgrade --all` | all uv-managed Python tools |
-| **bun-self** | `bun upgrade` | bun itself |
-| **bun-globals** | `bun update --global --latest` | global npm packages, no `cd` needed |
-| **go** | `gup update` | all `go install`ed binaries |
-| **tldr** | `tldr --update` | tldr page cache |
-| **goose** | `goose update` | goose CLI self-update (stable channel); skipped while the upstream `stable` asset is unchanged (HEAD probe, no download) |
-
-| Flag | Effect |
-|---|---|
-| *(none)* | run the system stage and all toolchain stages |
-| `-t`, `--toolchains` (alias `--no-sys`) | skip the system stage — retry toolchains only |
-| `-s`, `--sys-only` | run only the system stage |
-| `-f`, `--force` | ignore the success cache and re-run every stage |
-| `-h`, `--help` | show usage |
-
-Manual per-manager equivalents (debugging fallback, or single-manager updates): `rustup update` + `cargo install-update -a` · `uv self update` + `uv tool upgrade --all` · `bun upgrade` + `bun update --global --latest` · `gup update` · `tldr --update` · `goose update`.
+```fish
+aup --help # for more info
+aup # update toolchains before system packages
+```
 
 ### Modifying Root Settings
 
 ```fish
-cm
+cd ~/.local/share/chezmoi
 hx system/keyd/default.conf
-cma    # hook 20 deploys to /etc/keyd/default.conf and restarts keyd.service
+chezmoi apply # restart keyd.service
 ```
 
 ---
 
-## Agentic System Management (Goose / AI Agents)
+## Agentic System Management (AI Agents)
 
-This workstation is maintained with AI agents (e.g. [Goose](https://github.com/aaif-goose/goose)) working directly in the chezmoi source directory: drift audits, config edits, package/toolchain manifest maintenance, hook updates — always under strict operating rules.
+This workstation is maintained with AI agents (Antigravity CLI, OpenCode) working directly in the chezmoi source directory: drift audits, config edits, package/toolchain manifest maintenance, hook updates — always under strict operating rules.
 
-**The binding contract for all agents is [`AGENTS.md`](AGENTS.md).** Point any agent at it before letting it touch this repository or the live system. It carries the chezmoi execution model (§1–§2), the repository enforcement and verification gates (§1.4), the goose configuration map (§1.5), the refinement/maintenance protocol and operator prompts (§2.5), and the offline goose-docs root (§2.11).
+**The binding contract for all agents is [`AGENTS.md`](AGENTS.md).** Point any agent at it before letting it touch this repository or the live system. It carries the chezmoi execution model (§1–§2), the repository enforcement and verification gates ([§1.3](AGENTS.md)), the refinement and maintenance protocol ([§2.3](AGENTS.md)), and the operator git workflow ([§2.4](AGENTS.md)).
 
 ---
 
@@ -227,18 +136,13 @@ managed targets. Use it with `chezmoi status`; the source of truth remains
 `~/.local/share/chezmoi`. If you edited a live file and want to keep it, run
 `chezmoi re-add <file>` before applying.
 
-### Testing Templates Before Push
+### Testing Templates & Linters Before Push
 
-All `run_onchange_*.sh.tmpl` files use Go templates for checksums. Render-test
-before committing; `bash -n` intentionally invokes the rendered hooks' declared
-shell for syntax validation:
+All `run_onchange_*.sh.tmpl` files use Go templates for checksums. Validate templates and all configs with the repository linter before pushing:
 
 ```fish
-cd ~/.local/share/chezmoi
-for f in run_onchange_*.sh.tmpl
-    chezmoi execute-template < "$f" | bash -n
-    or echo "FAIL: $f"
-end
+just lint    # checks hook templates, git hooks, fish syntax, TOML, typos, and whitespace
+just check   # full pre-push verification gate (hygiene, lint, secrets, drift)
 ```
 
 ### Re-Running a Single Hook
@@ -254,7 +158,7 @@ Or temporarily rename the file to `run_once_after_...`, apply, then rename it ba
 ### Recovering From a Bad Apply
 
 1. Fix the manifest/template that caused the failure.
-2. Re-run `cma`.
+2. Re-run `chezmoi apply`.
 3. If needed, run the rendered hook manually with `bash` to see the exact error.
 
 ### Private Keys

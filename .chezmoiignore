@@ -11,28 +11,6 @@ justfile
 # Local-only SSH host definitions (cloud servers/VPS): never manage or deploy.
 .ssh/config.local
 
-# Goose: OAuth token caches, secret stores, and lockfiles hold credentials and
-# must never be tracked in the source state or deployed (§3.1 secrets rule).
-# Managed by chezmoi: dot_config/goose/config.yaml, dot_goosehints,
-# prompts/system.md.
-.config/goose/secrets.yaml
-.config/goose/secrets.yaml.lock
-.config/goose/chatgpt_codex
-.config/goose/chatgpt_codex/**
-.config/goose/gemini_oauth
-.config/goose/gemini_oauth/**
-.config/goose/xai_oauth
-.config/goose/xai_oauth/**
-
-# Goose permission.yaml is deliberately NOT deployed: goose serializes, locks and
-# rewrites that file itself at runtime (verified 2026-10-15: the comment block is
-# dropped and the active mode's scope key is repartitioned, so chezmoi can never
-# hold a byte-identical copy). Managing it produced permanent drift plus an
-# interactive "has changed since chezmoi last wrote it" prompt on `chezmoi apply`.
-# The source file (dot_config/goose/private_permission.yaml) stays tracked as the
-# `just check-permissions` gate input and the fresh-machine reference posture.
-.config/goose/permission.yaml
-
 # Repository metadata and package manifests
 archive
 archive/**
@@ -46,8 +24,3 @@ toolchains/**
 # Repo-enforcement artifacts: tracked in git for the source repo only and
 # never deployed into $HOME by chezmoi apply.
 .gitignore
-
-# Gate self-test fixtures: tracked in git for red/green coverage of the
-# recipe gate; never deployed into $HOME by chezmoi apply.
-tests
-tests/**

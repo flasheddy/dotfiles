@@ -40,6 +40,6 @@ function floor-stamp --description 'Refresh the floor-contract marker in ./AGENT
         return 1
     end
 
-    printf '%s\n' $updated > $file
+    printf '%s\n' $updated >$file
     echo "floor-stamp: refreshed "(pwd)"/AGENTS.md -> "(string sub -l 12 $hex)
 end

@@ -1,5 +1,5 @@
 function focus-timer --description 'Focus timer: hard-locks the session (loginctl lock-session) on expiry'
-    argparse 'h/help' -- $argv
+    argparse h/help -- $argv
     or return 1
 
     if set -q _flag_help
@@ -43,7 +43,7 @@ function focus-timer --description 'Focus timer: hard-locks the session (loginct
             set -l seconds (math "$minutes * 60")
             fish -c "sleep $seconds; loginctl lock-session" >/dev/null 2>&1 &
             disown $last_pid
-            echo $last_pid > $pid_file
+            echo $last_pid >$pid_file
             echo "focus-timer: $minutes-minute timer started (pid $last_pid)."
             return 0
 

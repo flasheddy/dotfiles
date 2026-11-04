@@ -111,12 +111,12 @@ The **Prompt Review & Refinement Protocol** and **Forbidden Actions (Workstation
 
 ### Modern CLI Tool Preferences
 
-From the **shell**, prefer modern CLI tools (faster). Dedicated agent tools (read/edit/tree) are first choice for what they cover. Per-tool flags and verified gotchas are delegated to the tool cards — query `toolcard <tool>` (the `toolcards` skill) before running unfamiliar, version-sensitive, or previously-failed commands.
+From the **shell**, prefer modern CLI tools (faster). Dedicated agent tools (read/edit/tree) are first choice for what they cover.
 
 - Search content — `rg`, never `grep -r`.
 - Find files — `fd`, never `find`.
 - Read files — `bat --style=plain --paging=never` (short: `cat`); never `cat file | while read` — use single-pass `rg`/`sd`/`awk`.
-- List dirs — `eza` (`toolcard eza` — no-TTY operand and `ls`-wrapper traps; always cap depth); never `ls -R` / `ls -la` chains.
+- List dirs — `eza` (always cap depth); never `ls -R` / `ls -la` chains.
 - Substitute in pipes — `sd`, never `sed` (complex scripts excepted).
 - System inspection — `dust`, `procs`, never `du`, `ps aux | grep`.
 
@@ -124,21 +124,9 @@ From the **shell**, prefer modern CLI tools (faster). Dedicated agent tools (rea
 
 ### Shell Dialect & Syntax (Fish Shell)
 
-Direct shell commands and operator snippets MUST use native Fish syntax (full reference: `man fish`; workstation gotchas: `toolcard fish`). Each line pairs a Bash/POSIX form to avoid with its Fish replacement:
+Direct shell commands and operator snippets MUST use native Fish syntax (`set -gx VAR val`, `begin; set -lx VAR val; cmd; end`, `test`, `$status`, `(cmd)`, `fish_add_path`). Never emit Bash/POSIX constructs (no bare `VAR=val`, no `export`, no `&&`, no `$?`, no `then/fi`, no `do/done`, no `$(cmd)`, and no bare `(...)` subshells).
 
-- Global var — `set -gx VAR val`, never bare `VAR=val`.
-- Scoped var — `begin; set -lx VAR val; cmd; end`.
-- Transient env — `env VAR=val <cmd>` (e.g. `env GIT_OPTIONAL_LOCKS=0 git status`), never `export`.
-- Separate statements — `;`, or `; and` to short-circuit; never `&&`.
-- Conditional — `if test ...; ...; end`; never `then` / `fi`.
-- Loop — `for var in ...; ...; end`; never `do` / `done`.
-- Exit status — `$status`; never `$?`.
-- Command substitution — `(cmd)`; never `$(cmd)`.
-- Subshell — dir-aware flag (`--project <dir>`, `-C <dir>`) or `begin; pushd <dir>; and <cmd>; and popd; end`; never POSIX `(...)` in command position.
-- Redirection — `od -c`, `xxd`, `jq`, `bat`, or the project runner (e.g. `uv run ...`); never `<<EOF` / `<<'PY'` heredocs, and never bare `python3 -c`/`node -e` when a runner is mandated.
-- Path — `fish_add_path /path/to/bin`.
-
-**POSIX/Bash exceptions** (`toolcard bash`): only for `*.sh` with a Bash/POSIX `sh` shebang, `*.sh.tmpl` rendering to such a script, invoking the declared interpreter for syntax validation (e.g. `bash -n`), or a third-party tool requiring a POSIX string invocation (`bash -c "..."`, `sh -c "..."`).
+**POSIX/Bash exceptions:** only for scripts with a Bash/POSIX `sh` shebang, `*.sh.tmpl` rendering to such a script, invoking the declared interpreter for syntax validation (e.g. `bash -n`), or a third-party tool requiring a POSIX string invocation (`bash -c "..."`, `sh -c "..."`).
 
 ### Prompt Review & Refinement Protocol
 
