@@ -38,68 +38,19 @@ Applies to all agent tasks under `$HOME`. Project-local `AGENTS.md` files define
 
 ## Verification & Execution
 
-- Take build, test, lint, and scan commands from project docs (`AGENTS.md`, README, CI config, justfile/Makefile); never invent toolchain commands.
-- For non-trivial code changes, run the documented verification; if none, use judgment, keep it local and offline.
-- Report pre-existing failures separately; do not fix unrelated issues unless asked.
+- Take build, test, lint, and scan commands from project docs (`AGENTS.md`, `README.md`, `justfile`/`Makefile`); never invent toolchain commands.
+- **Feedback-loop bootstrap:** on new or unharnessed projects, proactively recommend establishing fast, deterministic feedback loops (compiler/typechecker, linter, formatter, test runner, or unified task runner) before writing extensive application logic.
+- For non-trivial code changes, run documented verification; keep it local and offline. Report pre-existing failures separately; do not fix unrelated issues unless asked.
+- **Artifact & gate validation (floor-class):**
+  - Exit code 0 is not evidence alone. Where an artifact matters, assert on the artifact: byte identity, content hashes, or idempotency across repeated runs.
+  - When introducing a new gate, hook, or assertion, verify that it rejects deliberately broken input before trusting it.
+  - If a probe returns an empty or implausible result, verify the probe itself before concluding.
 
-### Red-Green Verification (floor-class)
+## Task Execution & Anti-Loop Discipline
 
-No gate, check, hook, assertion, or query is trusted until the operator has seen its **failure state**.
-
-- Demonstrate **rejecting a deliberately broken input** (RED), then **passing the real input** (GREEN).
-- A check only ever observed passing is untested — report it as such, never as evidence.
-- **Exit code 0 is not evidence alone.** Where the artifact matters, assert on the artifact: byte identity, content hashes, idempotency across repeated runs.
-- **Empty or implausible probe result → suspect the probe.** Rerun it or verify a second way.
-- **Classify every failure** as induced, pre-existing, or environmental before concluding.
-- Record a gotcha in documentation only after reproducing its failure.
-
-Floor-class: project-local `AGENTS.md` may make this stricter, never weaker.
-
-- **Dual-model single-pass review (optional):** single-bounded passes against an explicit invariant checklist; never recursive self-review. Enforce the full gate set (pytest, contract validators, frontend, locks, secret scans), never a shorthand. Leave pre-existing baseline failures untouched unless separately authorized. Refer to roles ("drafting model"/"reviewing model"), not vendor names. Commit authority and branch rules stay operator-controlled.
-
-## SDD Invariant & Anti-Loop Harness
-
-Floor-class: project-local `AGENTS.md` may add stricter workflow, never weaken or skip these four rules.
-
-### Spec-Driven Development (SDD) Invariant Sync Order
-
-On any mid-task requirement, contract, or design change, apply in order — never patch ad hoc:
-
-1. `Spec` — requirements + acceptance criteria first.
-2. `Plan` — assess impact; adjust the plan.
-3. `Tasks` — re-derive affected tasks.
-4. `Implement` — only then touch code.
-
-- Requirements live in the Spec, never in chat history. New features go into a "to-do later" section, not silently into scope.
-- Every requirement carries a machine-checkable acceptance criterion (PASS/FAIL). "Works well" or "improve X" is not one.
-
-### 5-Step Anti-Loop Debugging Protocol
-
-On the first fix → retry loop (same failure reappears), stop and apply in order:
-
-1. **Write Freeze** — stop editing; read-only symptom analysis.
-2. **Minimal Diff / Symptom Isolation** — one failing test + `git diff -U3` only; smallest reproducible failure; discard unrelated changes.
-3. **Spec/Docs Injection** — re-read the authoritative contract/signature (`AGENTS.md`, spec, schema) before hypothesizing.
-4. **Context Kill on ≥3 loops** — after 3 failed attempts on one symptom, write an audit summary, end the session, restart clean.
-5. **Role Escalation** — if the symptom survives a clean restart, escalate `g-draft` → `architect` re-specification (or Operator); stop patching the same hypothesis.
-
-### Context Hygiene & Boundary Rules
-
-`/context`, `/compact`, `/clear`, and `/plan` are agent chat/UI commands, not shell commands — never emit them in a shell invocation.
-
-- `/context` — inspect context before acting.
-- `/compact` (with retention priorities) — task incomplete; compress and name what to keep (completed work, open problems, next task).
-- `/clear` / new session — task complete; wipe context, never carry stale state.
-- One session = one objective; tangential ideas go to a fork or separate thread.
-
-### Task Execution Contract (Universal / Agent Schema)
-
-Every task execution envelope MUST declare all four fields before any write or state change:
-
-- **Task Objective** — one sentence: the single deliverable.
-- **Target Modules / Files** — exact file paths in scope.
-- **Prerequisites** — docs/state that must already exist.
-- **Machine-Verifiable Verification** — PASS/FAIL assertion (`test -s`, `rg -q`, exit code) proving completion.
+- **Plan before writing:** outline deliverable, target files, and verification criteria before modifying files.
+- **Anti-loop freeze:** on repeated failure (≥2 attempts on the same symptom), stop editing. Do not apply blind variations. Conduct read-only diagnosis, re-read authoritative contracts/specs, or ask the Operator.
+- **Single objective:** keep changes bounded to the requested scope; track tangential ideas or follow-ups separately.
 
 ---
 
@@ -130,20 +81,12 @@ Direct shell commands and operator snippets MUST use native Fish syntax (`set -g
 
 ### Prompt Review & Refinement Protocol
 
-Applies to every prompt requesting any write, state change, or instruction execution — source-code edits, tests, documentation, CI/build files, dependency changes, repository file creation/modification, and system state, package sets, hooks, or tracked configuration. Only purely read-only questions and already-approved steps execute directly.
+Applies to prompts requesting write, state change, or instruction execution (code edits, system state, package sets, hooks, tracked config). Read-only questions execute directly.
 
-**Checkpoint Halt Invariant:** on a `STOP CHECKPOINT` directive (e.g. `STOP CHECKPOINT 1`), the agent MUST immediately stop and yield the turn at that checkpoint; proceeding into the next turn's implementation in the same response is prohibited.
-
-For in-scope prompts, **do not execute immediately** — act as defensive reviewer:
-
-1. **Ground-Truth Validation (read-only probes, batched):** treat every factual claim as unverified — check package origins and install state (`pacman -Si`/`paru -Si`, `pacman -Qq`/`-Qi`), `command -v`, and read the full current content of every file to be modified. Check ownership/permissions before trusting shell tests: unprivileged `[ -f … ]`/`[ -d … ]` on a mode-700 directory silently returns false — privilege-sensitive checks need `sudo -n test …`; if authentication is required, follow the GUI Privilege Escalation Protocol.
-2. **Constraint & Protocol Audit:** verify the proposal obeys project-local `AGENTS.md`, the Hard Safety Constraints, and the Forbidden Actions — if it requests one, **stop and flag it; do not refine around it.**
-   - **Allowlist Reachability:** if satisfying task invariants strictly requires modifying files outside the allowlist (specs, data definitions, test assertions, config manifests) and any required file is missing, **HALT in Step 3** and report the required allowlist expansion before editing code.
-3. **Output a Refined Prompt (then stop):**
-   - Verdict line + numbered findings with probe evidence.
-   - Fenced refined-prompt block: exact edits/commands, verification steps, and post-apply consequences.
-   - Sudo-invoking template/script changes **must** carry an explicit `[ROOT IMPACT]` tag naming affected services, files, and privileges.
-   - **Wait for explicit confirmation** before any write or state change. On approval, execute as written — no re-review or mid-flight scope expansion.
+- **Checkpoint Halt Invariant:** on a `STOP CHECKPOINT` directive (e.g. `STOP CHECKPOINT 1`), the agent MUST immediately stop and yield the turn at that checkpoint; proceeding into the next turn's implementation in the same response is prohibited.
+- **Ground-Truth Validation:** treat factual claims as hypotheses — check package origins/state (`pacman -Si`/`paru -Si`, `pacman -Qq`/`-Qi`), `command -v`, and read the full current content of every file before editing. Check ownership and permissions before trusting unprivileged tests (`[ -f ... ]` on mode-700 dirs silently fails; privilege-sensitive checks require `sudo -n test ...` or GUI Privilege Escalation).
+- **Root Impact Disclosure:** sudo-invoking template or script changes must carry an explicit `[ROOT IMPACT]` disclosure naming affected services, files, and privileges.
+- **Confirmation Gate:** present findings and proposed changes; obtain operator confirmation before any state mutation. On approval, execute as agreed without mid-flight scope expansion.
 
 ### GUI Privilege Escalation Protocol
 

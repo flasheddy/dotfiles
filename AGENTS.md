@@ -1,6 +1,6 @@
 # AGENTS.md — Operational Rules for AI Agents
 
-<!-- floor-contract: sha256:b376700147a55cf358d11da5d3f017aaf3689d885c840d70cbed31814b2bfa04 -->
+<!-- floor-contract: sha256:c8cc6975ecd639a665f9d349ad93a91277f38118327097f5c5f110bca70c1fd3 -->
 
 Binding contract for AI agents (Antigravity CLI, OpenCode) in this repository.
 Inherits the workstation-wide safety floor in `~/.AGENTS.md`.
