@@ -1,7 +1,8 @@
 # Bun global packages
 # Installed via: bun install -g <name>
 # Generated from toolchains/raw-bun.txt
-prettier
+bash-language-server
+dockerfile-language-server-nodejs
 fish-lsp
 typescript
 typescript-language-server

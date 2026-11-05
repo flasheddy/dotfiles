@@ -1,6 +1,6 @@
 # AGENTS.md — Operational Rules for AI Agents
 
-<!-- floor-contract: sha256:c8cc6975ecd639a665f9d349ad93a91277f38118327097f5c5f110bca70c1fd3 -->
+<!-- floor-contract: sha256:cdeb6f92d0948419c1a36387e1675722f37256186f4996d1a1d83479c1ad59ae -->
 
 Binding contract for AI agents (Antigravity CLI, OpenCode) in this repository.
 Inherits the workstation-wide safety floor in `~/.AGENTS.md`.
@@ -35,14 +35,7 @@ Carries only non-obvious traps, verification gates, and mandatory workflows.
 
 ### 2.1 Preview Before Apply
 
-Before modifying or applying managed state:
-
-```fish
-chezmoi status    # check uncommitted drift
-chezmoi diff      # preview pending changes against live disk
-```
-
-Never overwrite unexpected live drift without operator confirmation.
+Before modifying or applying managed state, inspect uncommitted drift via `chezmoi status` and preview diffs with `chezmoi diff`. Never overwrite unexpected live drift.
 
 ### 2.2 Hook Template Safety (`run_onchange_*.sh.tmpl`)
 
@@ -63,18 +56,8 @@ Run on request ("Refine & Reconcile"):
 1. **Surface drift**: `chezmoi status` and `chezmoi diff`.
 2. **Reconcile packages**: Native (`pacman -Qqen` vs `packages/`), AUR (`pacman -Qqem` vs `archive/pacman-foreign.txt`), and toolchains (`uv tool list`, `cargo install --list`, etc.). Stripping exceptions live in `packages/manifest.md` → `## Stripping Rules`.
 3. **Safety**: No hardcoded `/home/username` paths (use `$HOME` or `{{ .chezmoi.homeDir }}`).
-4. **Report-first**: Present findings (Critical / Missing / Polish); obtain confirmation before any mutation or removal.
-
-### 2.4 Git Discipline & Operator Handoff
-
-The Operator is the sole execution authority for Git writes; agents provide commands only.
-
-1. **Unstaged review first**: Never stage or commit changes automatically. Leave modified files unstaged so the Operator can review with `git diff`.
-2. **Read-only inspection**: Prefix git status with `env GIT_OPTIONAL_LOCKS=0 git status --short`.
-3. **Short Conventional Commits**: Use `type(scope): subject` as a single, short sentence. Never emit multiline `-m` body blocks (avoids terminal copy-paste and line-wrapping errors). Scopes: `agents`, `aup`, `fcitx5`, `fish`, `git`, `helix`, `toolchains`.
-4. **Feature branches & rebasing**: If on `main`, branch off first (`git checkout -b feat/<scope>`). Rebase feature branches against `main` before pushing. Inspect `git log` post-rebase and squash interim "wip" or "fixup" commits.
-5. **No unsolicited PRs**: Never run or suggest `gh pr create` without being asked.
-6. **Force-push safety**: Explicit confirmation required + `git push --force-with-lease`.
+4. **Report-first**: Present findings (Critical / Missing / Polish) before proposing mutations or removals.
+5. **Prune directives**: Audit `AGENTS.md` against current model capabilities; delete obsolete reminders to keep instructions minimal and traps-only.
 
 ---
 
@@ -82,7 +65,7 @@ The Operator is the sole execution authority for Git writes; agents provide comm
 
 Inherits workstation-wide forbidden actions in `~/.AGENTS.md`. Dotfiles-specific:
 
-1. **Never track credentials or keys**: Only `private_dot_ssh/config` is tracked (its `.gitignore` excludes keys).
+1. **SSH scope**: Only `private_dot_ssh/config` is tracked (keys are strictly excluded via its `.gitignore`).
 2. **Never track hardware `/etc` configs**: No `fstab`, `crypttab`, or NetworkManager configs. The only managed root file is `system/keyd/default.conf` (deployed via hook).
 3. **Never run `chezmoi apply --force` or `chezmoi purge`** without explicit operator request.
 
@@ -95,6 +78,7 @@ After changes, run:
 ```fish
 chezmoi status       # clean or expected drift only
 chezmoi diff         # verify diff preview
+just fmt             # format fish functions, toml, and markdown
 just check           # full verification gate (hygiene, lint, secrets, drift)
 git status --short   # clean working tree, no secrets staged
 ```

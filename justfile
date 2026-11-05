@@ -17,18 +17,17 @@ set shell := ["fish", "-c"]
 #
 # Seven rules, each rejecting a concrete regression:
 #   table     no Markdown table outside fenced code blocks — tables are not
-#             Prettier-stable, and ~/.config/helix/languages.toml auto-formats
-#             markdown with prettier on save, so a padded table rewrites the
+#             formatter-stable, and ~/.config/helix/languages.toml auto-formats
+#             markdown with bun fmt on save, so a padded table rewrites the
 #             file and produces a whole-block diff
-#   prettier  the file must be Prettier-idempotent, so an editor save is a no-op
-#   budget    floor (~/.AGENTS.md) + this file must stay under 32768 B, the
-#             Codex AGENTS_MD_MAX_BYTES cap for the combined AGENTS.md chain
-#             (agents load AGENTS.md at every hierarchy level)
+#   formatter the file must be bun fmt-idempotent, so an editor save is a no-op
+#   budget    combined agent rules must stay under 32768 B, the Codex
+#             AGENTS_MD_MAX_BYTES cap for the agent context chain
 #   h1        exactly one level-1 heading
 #   dupe      no duplicated bullet line (>= 40 chars) — drift signal
 #   fence     balanced ``` code fences
 #   floor     a floor-contract marker must match the live ~/.AGENTS.md sha256
-check-agents file="AGENTS.md":
+check-agents file="":
 	#!/usr/bin/env python3
 	import hashlib
 	import os
@@ -36,104 +35,91 @@ check-agents file="AGENTS.md":
 	import subprocess
 	import sys
 
-	PATH = "{{file}}"
 	TOTAL_MAX = 32768
-	TOTAL_WARN = TOTAL_MAX * 9 // 10
 	FLOOR = os.path.expanduser("~/.AGENTS.md")
 
+	arg = "{{file}}".strip()
+	FILES = [arg] if arg else [f for f in ["dot_AGENTS.md", "AGENTS.md"] if os.path.exists(f)]
+
 	violations = []
+	total = 0
 
 
-	def add(rule, msg):
-	    violations.append((rule, msg))
+	for path in FILES:
+	    try:
+	        with open(path, "rb") as fh:
+	            raw = fh.read()
+	    except OSError as exc:
+	        print("check-agents: cannot read " + path + ": " + str(exc), file=sys.stderr)
+	        sys.exit(1)
 
+	    total += len(raw)
+	    text = raw.decode("utf-8", "replace")
+	    lines = text.splitlines()
 
-	def sha256(path):
-	    with open(path, "rb") as fh:
-	        return hashlib.sha256(fh.read()).hexdigest()
+	    in_fence = False
+	    fences = 0
+	    h1 = []
+	    table_sep = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$")
+	    for n, line in enumerate(lines, 1):
+	        if line.lstrip().startswith("```"):
+	            fences += 1
+	            in_fence = not in_fence
+	            continue
+	        if not in_fence and re.match(r"^#\s", line):
+	            h1.append(line)
+	        if not in_fence and table_sep.match(line):
+	            violations.append(("table", path, "Markdown table at line " + str(n) + " (use a list; tables are not Prettier-stable)"))
+	    if fences % 2:
+	        violations.append(("fence", path, "unbalanced code fences (" + str(fences) + " ``` markers)"))
 
+	    if len(h1) != 1:
+	        violations.append(("h1", path, "expected exactly one level-1 heading, found " + str(len(h1))))
 
-	try:
-	    with open(PATH, "rb") as fh:
-	        raw = fh.read()
-	except OSError as exc:
-	    print("check-agents: file: cannot read " + PATH + ": " + str(exc), file=sys.stderr)
-	    sys.exit(1)
+	    seen = {}
+	    for line in lines:
+	        m = re.match(r"^\s*(?:[-*]|\d+\.)\s+(\S.*)$", line)
+	        if not m:
+	            continue
+	        body = m.group(1).strip()
+	        if len(body) >= 40:
+	            seen[body] = seen.get(body, 0) + 1
+	    for body in seen:
+	        if seen[body] > 1:
+	            violations.append(("dupe", path, "duplicated bullet " + str(seen[body]) + "x: " + body[:60]))
 
-	text = raw.decode("utf-8", "replace")
-	lines = text.splitlines()
+	    marker = re.search(r"floor-contract: sha256:([0-9a-f]{64})", text)
+	    if marker and os.path.exists(FLOOR):
+	        with open(FLOOR, "rb") as fh:
+	            actual = hashlib.sha256(fh.read()).hexdigest()
+	        if marker.group(1) != actual:
+	            violations.append(("floor", path, "floor-contract marker is stale; run floor-stamp"))
 
-	# Table detection must ignore fenced code blocks, and fence balance decides
-	# whether the scan is trustworthy at all.
-	in_fence = False
-	fences = 0
-	h1 = []
-	table_sep = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$")
-	for n, line in enumerate(lines, 1):
-	    if line.lstrip().startswith("```"):
-	        fences += 1
-	        in_fence = not in_fence
-	        continue
-	    if not in_fence and re.match(r"^#\s", line):
-	        h1.append(line)
-	    if not in_fence and table_sep.match(line):
-	        add("table", "Markdown table at line " + str(n) + " (use a list; tables are not Prettier-stable)")
-	if fences % 2:
-	    add("fence", "unbalanced code fences (" + str(fences) + " ``` markers)")
+	    try:
+	        proc = subprocess.run(["bun", "fmt", "--stdin-filepath", path], input=raw, capture_output=True)
+	    except FileNotFoundError:
+	        violations.append(("tool", path, "bun not found; refusing to pass without the formatter check"))
+	    else:
+	        if proc.returncode != 0:
+	            violations.append(("formatter", path, "bun fmt failed: " + proc.stderr.decode("utf-8", "replace").strip()[:160]))
+	        elif proc.stdout != raw:
+	            delta = len(proc.stdout) - len(raw)
+	            if delta == 0:
+	                where = "same size, different bytes"
+	            else:
+	                where = ("+" if delta > 0 else "") + str(delta) + " B"
+	            violations.append(("formatter", path, "not bun fmt-idempotent (" + where + "); run bun fmt"))
 
-	# Level-1 headings are only meaningful outside fenced code: a `#` line in a
-	# shell block is a comment, not a heading. Counting it made every file with
-	# a commented command fail, so the scan shares the fence state above.
-	if len(h1) != 1:
-	    add("h1", "expected exactly one level-1 heading, found " + str(len(h1)))
-
-	seen = {}
-	for line in lines:
-	    m = re.match(r"^\s*(?:[-*]|\d+\.)\s+(\S.*)$", line)
-	    if not m:
-	        continue
-	    body = m.group(1).strip()
-	    if len(body) >= 40:
-	        seen[body] = seen.get(body, 0) + 1
-	for body in seen:
-	    if seen[body] > 1:
-	        add("dupe", "duplicated bullet " + str(seen[body]) + "x: " + body[:60])
-
-	total = len(raw)
-	if os.path.exists(FLOOR):
-	    total += os.path.getsize(FLOOR)
 	if total > TOTAL_MAX:
-	    add("budget", str(total) + " B combined with the floor exceeds " + str(TOTAL_MAX) + " B; move enumerable detail to packages/manifest.md and keep only traps here")
-	elif total > TOTAL_WARN:
-	    print("check-agents: budget: warning: " + str(total) + " B combined with the floor (cap " + str(TOTAL_MAX) + ")", file=sys.stderr)
-
-	marker = re.search(r"floor-contract: sha256:([0-9a-f]{64})", text)
-	if marker and os.path.exists(FLOOR):
-	    if marker.group(1) != sha256(FLOOR):
-	        add("floor", "floor-contract marker is stale; run floor-stamp")
-
-	try:
-	    proc = subprocess.run(["prettier", "--parser", "markdown", PATH], capture_output=True)
-	except FileNotFoundError:
-	    add("tool", "prettier not found; refusing to pass without the formatter check")
-	else:
-	    if proc.returncode != 0:
-	        add("prettier", "prettier failed: " + proc.stderr.decode("utf-8", "replace").strip()[:160])
-	    elif proc.stdout != raw:
-	        delta = len(proc.stdout) - len(raw)
-	        if delta == 0:
-	            where = "same size, different bytes"
-	        else:
-	            where = ("+" if delta > 0 else "") + str(delta) + " B"
-	        add("prettier", "not Prettier-idempotent (" + where + "); run prettier --write")
+	    violations.append(("budget", "rules", str(total) + " B exceeds " + str(TOTAL_MAX) + " B cap"))
 
 	if violations:
-	    for rule, msg in violations:
-	        print("check-agents: " + rule + ": " + PATH + ": " + msg, file=sys.stderr)
-	    print("check-agents: " + str(len(violations)) + " violation(s) in " + PATH, file=sys.stderr)
+	    for rule, path, msg in violations:
+	        print("check-agents: " + rule + ": " + path + ": " + msg, file=sys.stderr)
+	    print("check-agents: " + str(len(violations)) + " violation(s)", file=sys.stderr)
 	    sys.exit(1)
 
-	print("check-agents: " + PATH + " ok (" + str(len(raw)) + " B, +" + str(total - len(raw)) + " B floor = " + str(total) + " B)")
+	print("check-agents: rules ok (" + str(total) + " B / " + str(TOTAL_MAX) + " B)")
 
 # Gate self-test: every rule must reject its fixture, and the real file must pass.
 # A gate only ever observed passing is untested.
@@ -150,10 +136,10 @@ fmt:
 		for t in (git ls-files "*.toml")
 			test -f $t; and set -a tomls $t
 		end
-		test -n "$tomls"; and taplo format $tomls
+		test -n "$tomls"; and taplo format --config dot_taplo.toml $tomls
 	end
-	if command -v prettier >/dev/null
-		prettier --write AGENTS.md dot_AGENTS.md README.md
+	if command -v bun >/dev/null
+		bun fmt AGENTS.md dot_AGENTS.md README.md
 	end
 	echo "fmt: formatted fish functions, toml, and markdown files"
 
@@ -186,7 +172,7 @@ lint:
 			test -f $t; and set -a tomls $t
 		end
 		if test -n "$tomls"
-			taplo format --check $tomls; or set failed 1
+			taplo format --config dot_taplo.toml --check $tomls; or set failed 1
 		end
 	end
 	if command -v typos >/dev/null

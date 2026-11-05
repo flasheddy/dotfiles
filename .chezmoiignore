@@ -1,6 +1,6 @@
 # Repository-meta files: tracked in git for documentation, but must not be
 # deployed into $HOME by chezmoi apply.
-# - AGENTS.md would overwrite the pre-existing global ~/AGENTS.md (Codex).
+# - AGENTS.md would overwrite the global ~/.AGENTS.md floor.
 # - README.md would create an unwanted ~/README.md.
 # - justfile is this repository's own verification entry point; the global
 #   pre-push hook runs it here in the source tree, not from $HOME.

@@ -53,18 +53,22 @@ Compilers, language runtimes, language servers, build/test/linters, and database
 
 Key groups:
 
-- Language runtimes: Go, Node.js LTS (+ `npm`), Perl, Python
+- Language runtimes: Go, Perl, Python (Node.js runtime and tooling are decoupled and managed via Bun)
 - Go toolchain (`delve`, `golangci-lint`, `gopls`)
 - Build/test/linters (`bats*`, `shellcheck`, `shfmt`, `taplo-cli`)
-- Language servers and documentation tools (`bash-language-server`, `gdb`,
-  `lldb`, `markdown-oxide`, `typos-lsp`, `zola`). `gdb` is Helix's C/C++ debug
-  adapter (`gdb --interpreter=dap`, see `dot_config/helix/languages.toml`);
-  `lldb`'s `lldb-dap` is unusable with Helix 25.07 (handshake deadlock).
+- TOML formatter (`taplo-cli`). Its global config is `~/.taplo.toml` (chezmoi
+  source: `dot_taplo.toml`), setting `column_width = 100`,
+  `align_comments = false`, and `array_auto_collapse = false` to preserve
+  single-line arrays and prevent Helix auto-format-on-save drift.
+- Language servers and documentation tools (`gdb`, `lldb`, `markdown-oxide`,
+  `typos-lsp`, `zola`). Node/TypeScript-based language servers
+  (`bash-language-server`, `dockerfile-language-server-nodejs`, etc.) are
+  managed in `toolchains/bun.txt`.
 - Spelling/typo gate (`typos`, standalone CLI). Its global config is
   `~/.typos.toml` (chezmoi source: `dot_typos.toml`) — typos walks up from the
   working directory and does **not** read `$XDG_CONFIG_HOME`.
 
-**Note:** Rust (`rustup`/`cargo`) and `uv` are intentionally omitted from this
+**Note:** Rust (`rustup`/`cargo`), Bun, and `uv` are intentionally omitted from this
 file. They are managed as standalone toolchains (see the `toolchains/`
 directory).
 
@@ -144,13 +148,13 @@ lists have been removed to avoid redundancy. Only packages that were actually
 present in the original `archive/pacman-native.txt` / `archive/pacman-foreign.txt`
 lists are shown here:
 
-| Meta-package | Stripped direct dependencies |
-|--------------|------------------------------|
-| `base-devel` | `sudo`, `texinfo`, `which` |
-| `cachyos-fish-config` | `fastfetch`, `pkgfile` |
-| `cachyos-kernel-manager` | `chwd` |
-| `cachyos-plymouth-bootanimation` / `cachyos-plymouth-theme` | `plymouth` |
-| `cosmic-session` | `noto-fonts`, `ttf-opensans`, `xorg-xwayland` |
+| Meta-package                                                | Stripped direct dependencies                  |
+| ----------------------------------------------------------- | --------------------------------------------- |
+| `base-devel`                                                | `sudo`, `texinfo`, `which`                    |
+| `cachyos-fish-config`                                       | `fastfetch`, `pkgfile`                        |
+| `cachyos-kernel-manager`                                    | `chwd`                                        |
+| `cachyos-plymouth-bootanimation` / `cachyos-plymouth-theme` | `plymouth`                                    |
+| `cosmic-session`                                            | `noto-fonts`, `ttf-opensans`, `xorg-xwayland` |
 
 `cachyos-fish-config` also pulls in `bat`, `eza`, `fish`, `fish-autopair`,
 `fish-pure-prompt`, `fisher`, `fzf`, `tealdeer`, and `ttf-fantasque-nerd`, but
@@ -163,13 +167,13 @@ Several language runtimes and developer tools are **not** managed by pacman/AUR.
 They are installed via their official installers and tracked separately in
 `toolchains/`:
 
-| Toolchain | Install method | Manifest |
-|-----------|----------------|----------|
-| Rust (`rustup`, `cargo`, `rustc`) | [rustup.rs](https://rustup.rs) | `toolchains/cargo.txt` |
-| Python tools (`uv`, `uvx`) | [astral.sh/uv](https://docs.astral.sh/uv/getting-started/installation/) | `toolchains/uv.txt` |
-| Bun (`bun`, `bunx`) | [bun.sh](https://bun.sh) | `toolchains/bun.txt` |
-| Go tools (`go install`) | Built from module paths | `toolchains/go.txt` |
-| Manual `~/.local/bin` binaries | downloaded manually | `toolchains/local-bin.txt` |
+| Toolchain                         | Install method                                                          | Manifest                   |
+| --------------------------------- | ----------------------------------------------------------------------- | -------------------------- |
+| Rust (`rustup`, `cargo`, `rustc`) | [rustup.rs](https://rustup.rs)                                          | `toolchains/cargo.txt`     |
+| Python tools (`uv`, `uvx`)        | [astral.sh/uv](https://docs.astral.sh/uv/getting-started/installation/) | `toolchains/uv.txt`        |
+| Bun (`bun`, `bunx`)               | [bun.sh](https://bun.sh)                                                | `toolchains/bun.txt`       |
+| Go tools (`go install`)           | Built from module paths                                                 | `toolchains/go.txt`        |
+| Manual `~/.local/bin` binaries    | downloaded manually                                                     | `toolchains/local-bin.txt` |
 
 ### `toolchains/cargo.txt`
 
@@ -186,10 +190,13 @@ Python CLI tools installed with `uv tool install`:
 
 Global JavaScript/TypeScript packages installed with `bun install -g`:
 
-- `prettier`
+- `bash-language-server`
+- `dockerfile-language-server-nodejs`
+- `fish-lsp`
 - `typescript`
 - `typescript-language-server`
 - `vscode-langservers-extracted`
+- `yaml-language-server`
 
 ### `toolchains/go.txt`
 
@@ -201,7 +208,7 @@ Go modules installed with `go install`:
 ### `toolchains/local-bin.txt`
 
 Standalone binaries placed directly in `~/.local/bin` and not managed by any
-toolchain manager above. Managed symlinks live in `dot_local/bin/`.
+toolchain manager above. Managed symlinks live in `dot_local/bin/` (`hx` → `/usr/bin/helix`, `node` → `~/.bun/bin/bun`).
 
 Previously this file also contained symlinks for `uv`/`uvx` (standalone
 toolchain), `python3.12` (uv-managed Python), and
@@ -210,15 +217,8 @@ because they are covered by the standalone toolchain manifests.
 
 ## Additions Based on Tracked Configs
 
-The following packages are not in the original `archive/pacman-native.txt` /
-`archive/pacman-foreign.txt` dumps but are referenced by tracked configs
-(`dot_config/fish/`, `dot_config/helix/`) and have been added to the appropriate
-modular list:
-
-- `npm` → `20-dev-stacks.txt` (separate pacman package required for Node.js tooling)
-
-The following tools are also referenced by configs but are intentionally
-managed as standalone toolchains and documented above:
+The following tools are referenced by configs and are managed as standalone
+toolchains and documented above:
 
 - `rustup` / `cargo` / `rustc` (referenced by `dot_config/fish/conf.d/rustup.fish`)
 - `uv` / `uvx` (referenced by `dot_config/fish/conf.d/uv.env.fish`)
@@ -259,9 +259,9 @@ Verified behaviour and known limits:
   elsewhere, add that directory as its own Syncthing folder rather than linking
   it into a synced one.
 - **Media settings** (recommended, not required) — set the PC folder to
-  *Send Only* and the phone to *Receive Only* so a deletion on the phone cannot
+  _Send Only_ and the phone to _Receive Only_ so a deletion on the phone cannot
   delete the PC library; enable file versioning for recoverability; on the phone
-  restrict syncing to Wi-Fi and set battery usage to *Unrestricted* (a flapping
+  restrict syncing to Wi-Fi and set battery usage to _Unrestricted_ (a flapping
   link is the symptom of the latter).
 - **Local discovery vs. the TUN proxy** — `255.255.255.255` is hijacked by the
   Clash Verge TUN, but Syncthing announces to the per-interface broadcast

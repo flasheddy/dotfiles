@@ -1,7 +1,7 @@
 # 20-dev-stacks.txt
-# Compilers, language runtimes (Go, Node, Java, Python), language servers,
+# Compilers, language runtimes (Go, Java, Python), language servers,
 # build/test/linters, databases.
-# Rust (rustup/cargo) and uv are managed as standalone toolchains; see toolchains/.
+# Rust (rustup/cargo), Bun, and uv are managed as standalone toolchains; see toolchains/.
 #
 # Stripped packages (direct dependencies of base-devel kept here that were
 # present in the original package lists):
@@ -9,8 +9,6 @@
 
 # Compilers and language runtimes
 go
-nodejs-lts-jod
-npm
 perl
 python
 
@@ -28,8 +26,6 @@ shfmt
 taplo-cli
 
 # Language servers and documentation tools
-bash-language-server
-dockerfile-language-server
 gdb
 gobject-introspection
 just-lsp

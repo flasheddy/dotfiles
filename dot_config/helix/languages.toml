@@ -32,7 +32,7 @@ args = ["--stdio"]
 [language-server.basedpyright.config.basedpyright.analysis]
 typeCheckingMode = "recommended"
 autoImportCompletions = true
-disableOrganizeImports = true    # ruff owns import sorting
+disableOrganizeImports = true # ruff owns import sorting
 
 # ruff native server: lint diagnostics + organize imports
 [language-server.ruff]
@@ -127,7 +127,7 @@ name = "typescript"
 auto-format = true
 roots = ["package.json", "tsconfig.json", ".git"]
 language-servers = ["typescript-language-server"]
-formatter = { command = "prettier", args = ["--parser", "typescript"] }
+formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "file.ts"] }
 
 # --- JavaScript (scripts / SDKs) ---
 [[language]]
@@ -135,7 +135,7 @@ name = "javascript"
 auto-format = true
 roots = ["package.json", "jsconfig.json", ".git"]
 language-servers = ["typescript-language-server"]
-formatter = { command = "prettier", args = ["--parser", "babel"] }
+formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "file.js"] }
 
 # tsserver inlay hints (applies to both TS and JS buffers)
 [language-server.typescript-language-server.config]
@@ -151,7 +151,7 @@ name = "markdown"
 auto-format = true
 roots = [".git", "mkdocs.yml", ".obsidian"]
 language-servers = ["markdown-oxide", "typos-lsp"]
-formatter = { command = "prettier", args = ["--parser", "markdown"] }
+formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "file.md"] }
 
 [language-server.typos-lsp]
 command = "typos-lsp"
@@ -161,14 +161,23 @@ command = "typos-lsp"
 name = "html"
 auto-format = true
 language-servers = ["vscode-html-language-server"]
-formatter = { command = "prettier", args = ["--parser", "html"] }
+formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "file.html"] }
 
 # --- TOML (configs) ---
 [[language]]
 name = "toml"
 auto-format = true
 language-servers = ["taplo"]
-formatter = { command = "taplo", args = ["format", "-"] }
+formatter = { command = "taplo", args = [
+  "format",
+  "-o",
+  "column_width=100",
+  "-o",
+  "align_comments=false",
+  "-o",
+  "array_auto_collapse=false",
+  "-",
+] }
 
 [language-server.taplo]
 command = "taplo"
@@ -179,20 +188,24 @@ args = ["lsp", "stdio"]
 name = "json"
 auto-format = true
 language-servers = ["vscode-json-language-server"]
-formatter = { command = "prettier", args = ["--parser", "json"] }
+formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "file.json"] }
 
 [[language]]
 name = "jsonc"
 auto-format = true
 language-servers = ["vscode-json-language-server"]
-formatter = { command = "prettier", args = ["--parser", "jsonc"] }
+formatter = { command = "bun", args = [
+  "fmt",
+  "--stdin-filepath",
+  "file.jsonc",
+] }
 
 # --- YAML (CI pipelines / Compose) ---
 [[language]]
 name = "yaml"
 auto-format = true
 language-servers = ["yaml-language-server"]
-formatter = { command = "prettier", args = ["--parser", "yaml"] }
+formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "file.yaml"] }
 
 [language-server.yaml-language-server]
 command = "yaml-language-server"

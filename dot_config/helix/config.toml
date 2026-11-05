@@ -75,7 +75,7 @@ C-u = [
   "align_view_center",
 ] # Centered cursor half-page up
 
-"]" = { b = "goto_next_buffer" }     # Buffer cycling: ]b / [b
+"]" = { b = "goto_next_buffer" } # Buffer cycling: ]b / [b
 "[" = { b = "goto_previous_buffer" }
 
 [keys.normal.space]

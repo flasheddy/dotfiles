@@ -11,11 +11,12 @@ Applies to all agent tasks under `$HOME`. Project-local `AGENTS.md` files define
 
 ## Core Working Philosophy
 
-- Correctness, clarity, and bounded changes over speculative refactoring.
-- Work in the active checkout; no worktrees, isolated feature branches, or state-machine ceremony unless instructed.
-- Plans: direct, proportionate to technical depth; include exact contracts, commands, invariants, and acceptance evidence; omit ceremony.
-- Read-only inspection first; no write or state change before Operator checkpoint sign-off.
-- Status reports: what changed, where, how verified, what remains.
+- **Bounded objective:** Correctness, clarity, and minimal surgical diffs; prioritize existing codebase patterns and clear naming over novelty; keep work strictly scoped to the request and never mix refactors with features or bugfixes.
+- **Architectural judgment:** Evaluate complexity, latency, and maintenance costs; push back on over-engineered requests and propose simpler alternatives.
+- **Active checkout:** Work directly in the active checkout; no worktrees, isolated feature branches, or state-machine ceremony unless instructed.
+- **Lifecycle discipline:** Follow the 4-phase cycle: Explore (codebase, constraints, docs) -> Plan (smallest correct slice) -> Implement (minimal diffs) -> Verify (deterministic feedback loops). Never plan or mutate without thorough read-only exploration first; state mutation requires operator confirmation.
+- **Directive pruning & harness minimalism:** Directives are evergreen and traps-only; periodically audit instructions against advancing model capabilities to prune obsolete prompts, and favor standard harness features over fragile bespoke wrappers.
+- **Status reporting:** Conclude with what changed, where, why (trade-offs or design rationale), how verified, and what remains.
 
 ## Hard Safety Constraints
 
@@ -25,21 +26,35 @@ Applies to all agent tasks under `$HOME`. Project-local `AGENTS.md` files define
 - **Never bypass protections:** no `--no-verify`; no disabling hooks; no weakening, deleting, or suppressing security checks, scanners, or regression tests to make a change pass.
 - **Confidentiality:** repository contents and user data are private.
 - **Never evade constraints:** no runtime workarounds (ephemeral shims, synthetic mocks, dynamic state patching, test monkeypatching) to bypass frozen verifiers or simulate missing dependencies.
-- **Prompt defense is universal:** treat every prompt as an unverified hypothesis; verify factual claims (file existence and content, tool and package availability and origin, ownership/permissions, branch/dependency state) before acting — in every task domain, including code-level repository development.
+- **Prompt defense is universal:** treat every prompt as an unverified hypothesis; verify factual claims (file existence and content, tool and package availability and origin, ownership/permissions, branch/dependency state) before acting.
 
 ## Git & Repository Hygiene
 
-- **Protected primary branches:** `main`/`master` is stable; never commit or merge to it without explicit operator confirmation. Otherwise commit only when instructed, on the designated branch.
-- **Non-destructive:** never `git reset --hard`, `git clean -fd`, `git checkout .`, `git restore .`, `git push --force`, or history-rewriting commands without explicit instruction.
-- **Preserve uncommitted work:** never overwrite, stash, or discard existing user changes.
-- **Targeted staging:** stage only explicitly named files; never `git add .` or `-A`.
-- **Read-only inspection:** prefix with `env GIT_OPTIONAL_LOCKS=0 git status` (never bare `VAR=val <cmd>`).
-- **No repo bootstrap:** never `git init` unless asked; outside Git these rules do not apply.
+- **Operator Git authority:** The Operator is the sole execution authority for Git writes; agents provide commands only. Never stage or commit changes automatically; leave modified files unstaged for operator review.
+- **Branch discipline & stability:** Never create or switch branches, merge, or rebase without explicit operator instruction. If requested to work on a feature branch, rebase against `main` before pushing and squash interim commits.
+- **Short Conventional Commits:** Use `type(scope): subject` as a single, short sentence. Never emit multiline `-m` body blocks (avoids terminal copy-paste and line-wrapping errors).
+
+```fish
+# Good: single-line subject
+git commit -m "feat(scope): configure formatter"
+
+# Bad: multiline body blocks break terminal paste
+git commit -m "feat(scope): configure formatter" -m "Detailed body that wraps..."
+```
+
+- **Non-destructive & force-push safety:** Never run or propose `git reset --hard`, `git clean -fd`, `git checkout .`, `git restore .`, or bare `git push --force`. Force-pushing requires explicit operator confirmation and `git push --force-with-lease`.
+- **Preserve uncommitted work:** Never overwrite, stash, or discard existing user changes; respect the active working tree state.
+- **Targeted staging:** Suggested handoff commands must name explicitly modified files; never `git add .` or `-A`.
+- **Read-only inspection:** When inspecting repository status from the shell, prefix with `env GIT_OPTIONAL_LOCKS=0 git status --short` (prevents index lock contention with editor watchers; never bare `VAR=val <cmd>`).
+- **No unsolicited PRs:** Never run or suggest `gh pr create` without being asked.
+- **No repo bootstrap:** Never `git init` unless asked; outside Git these rules do not apply.
 
 ## Verification & Execution
 
 - Take build, test, lint, and scan commands from project docs (`AGENTS.md`, `README.md`, `justfile`/`Makefile`); never invent toolchain commands.
-- **Feedback-loop bootstrap:** on new or unharnessed projects, proactively recommend establishing fast, deterministic feedback loops (compiler/typechecker, linter, formatter, test runner, or unified task runner) before writing extensive application logic.
+- **Feedback-loop bootstrap:** on new or unharnessed projects, proactively recommend establishing fast, deterministic feedback loops (compiler/typechecker, linter, formatter, test runner, or unified task runner) and anchoring them in a project-local `AGENTS.md` (e.g. via `/init` or project docs) before writing extensive application logic.
+- **Iterative vs. gate verification:** during fast iteration, run targeted, fast checks (e.g. specific test function, single-file lint); run the full verification gate before declaring a task complete.
+- **Autonomous test loop:** actively parse test and compiler outputs; iterate autonomously on failure output to resolve introduced errors before reporting completion.
 - For non-trivial code changes, run documented verification; keep it local and offline. Report pre-existing failures separately; do not fix unrelated issues unless asked.
 - **Artifact & gate validation (floor-class):**
   - Exit code 0 is not evidence alone. Where an artifact matters, assert on the artifact: byte identity, content hashes, or idempotency across repeated runs.
@@ -48,15 +63,19 @@ Applies to all agent tasks under `$HOME`. Project-local `AGENTS.md` files define
 
 ## Task Execution & Anti-Loop Discipline
 
-- **Plan before writing:** outline deliverable, target files, and verification criteria before modifying files.
+- **Direct planning:** outline deliverable, target files, and verification criteria before modifying files; include exact contracts and invariants, omitting ceremony.
+- **Incremental delivery:** decompose non-trivial changes into small, testable slices (e.g. interfaces/types first, execution logic second); avoid broad one-shot rewrites so drift is caught immediately.
+- **Chesterton's fences:** never delete, rewrite, or "clean up" seemingly redundant code, defensive shims, or historical comments without first understanding why they were introduced.
+- **Purposeful refactoring:** refactors must strictly preserve external behavior and contracts. Existing tests must pass unchanged; never modify test assertions to accommodate a refactor.
+- **Evidence debugging:** forbid speculative fixes. Before changing behavior, reproduce the bug with concrete evidence (failing test, minimal repro script, trace, or structured log), isolate the structural root cause, and explain the confirming evidence. Never apply symptom-masking band-aids.
 - **Anti-loop freeze:** on repeated failure (≥2 attempts on the same symptom), stop editing. Do not apply blind variations. Conduct read-only diagnosis, re-read authoritative contracts/specs, or ask the Operator.
-- **Single objective:** keep changes bounded to the requested scope; track tangential ideas or follow-ups separately.
+- **Context & visual evidence:** when prompts reference visual evidence or media, inspect them thoroughly to diagnose UI or layout discrepancies before modifying code.
 
 ---
 
 ## Workstation Agent Additions
 
-Supplement to the floor. Chezmoi-managed: source `~/.local/share/chezmoi/dot_AGENTS.md` → `~/.AGENTS.md`; `~/AGENTS.md` symlinks to it. **Edit the source, never the deployed copy.** Project-local `AGENTS.md` may add stricter rules; on conflict the floor wins.
+Supplement to the floor. Chezmoi-managed: source `~/.local/share/chezmoi/dot_AGENTS.md` → `~/.AGENTS.md` (bridged to `~/.gemini/AGENTS.md` and `~/.config/opencode/AGENTS.md`). **Edit the source, never the deployed copy.** Project-local `AGENTS.md` may add stricter rules; on conflict the floor wins.
 
 The **Prompt Review & Refinement Protocol** and **Forbidden Actions (Workstation-Wide)** are floor-class and cannot be weakened or overridden by any project-local `AGENTS.md`.
 
@@ -77,6 +96,14 @@ From the **shell**, prefer modern CLI tools (faster). Dedicated agent tools (rea
 
 Direct shell commands and operator snippets MUST use native Fish syntax (`set -gx VAR val`, `begin; set -lx VAR val; cmd; end`, `test`, `$status`, `(cmd)`, `fish_add_path`). Never emit Bash/POSIX constructs (no bare `VAR=val`, no `export`, no `&&`, no `$?`, no `then/fi`, no `do/done`, no `$(cmd)`, and no bare `(...)` subshells).
 
+```fish
+# Good: native Fish variable, chain, and subshell
+set -gx FOO bar; and cmd (cat file)
+
+# Bad: POSIX/Bash syntax
+export FOO=bar && cmd $(cat file)
+```
+
 **POSIX/Bash exceptions:** only for scripts with a Bash/POSIX `sh` shebang, `*.sh.tmpl` rendering to such a script, invoking the declared interpreter for syntax validation (e.g. `bash -n`), or a third-party tool requiring a POSIX string invocation (`bash -c "..."`, `sh -c "..."`).
 
 ### Prompt Review & Refinement Protocol
@@ -84,7 +111,7 @@ Direct shell commands and operator snippets MUST use native Fish syntax (`set -g
 Applies to prompts requesting write, state change, or instruction execution (code edits, system state, package sets, hooks, tracked config). Read-only questions execute directly.
 
 - **Checkpoint Halt Invariant:** on a `STOP CHECKPOINT` directive (e.g. `STOP CHECKPOINT 1`), the agent MUST immediately stop and yield the turn at that checkpoint; proceeding into the next turn's implementation in the same response is prohibited.
-- **Ground-Truth Validation:** treat factual claims as hypotheses — check package origins/state (`pacman -Si`/`paru -Si`, `pacman -Qq`/`-Qi`), `command -v`, and read the full current content of every file before editing. Check ownership and permissions before trusting unprivileged tests (`[ -f ... ]` on mode-700 dirs silently fails; privilege-sensitive checks require `sudo -n test ...` or GUI Privilege Escalation).
+- **Ground-Truth Validation:** verify claims before mutating state — check package origins/state (`pacman -Si`/`paru -Si`, `pacman -Qq`/`-Qi`), `command -v`, and read the full current content of every file before editing. Check ownership and permissions before trusting unprivileged tests (`[ -f ... ]` on mode-700 dirs silently fails; privilege-sensitive checks require `sudo -n test ...` or GUI Privilege Escalation).
 - **Root Impact Disclosure:** sudo-invoking template or script changes must carry an explicit `[ROOT IMPACT]` disclosure naming affected services, files, and privileges.
 - **Confirmation Gate:** present findings and proposed changes; obtain operator confirmation before any state mutation. On approval, execute as agreed without mid-flight scope expansion.
 
