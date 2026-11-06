@@ -82,7 +82,7 @@ if status is-interactive
 
     # Fuzzy finder: Ctrl-R history, Ctrl-T file picker, Alt-C fuzzy cd.
     # Its widget binds are user binds, so they survive preset application and can
-    # live here with the other tool initialisation instead of inside
+    # live here with the other tool initialization instead of inside
     # fish_user_key_bindings (that hook runs last and binds only Ctrl-F).
     type -q fzf; and fzf --fish | source
 

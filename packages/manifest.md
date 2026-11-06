@@ -251,7 +251,7 @@ Runtime layout (data and key material — not managed, never tracked):
 - `127.0.0.1:8384` — web UI, loopback-only and deliberately not opened in ufw.
 - `syncthing.service` (user) — run and checked with `systemctl --user`.
 
-Verified behaviour and known limits:
+Verified behavior and known limits:
 
 - **Symlinks are not synced.** The scanner records a `FILE_INFO_TYPE_SYMLINK`
   entry with `size 0`, `numBlocks 0` and no platform target, so the linked

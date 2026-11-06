@@ -60,7 +60,7 @@ function __dictate_start
     rm -f $wav
     pw-record --rate 16000 --channels 1 --format s16 --container wav $wav &
     set -l pid $last_pid
-    printf '%s' $pid > $dir/rec.pid
+    printf '%s' $pid >$dir/rec.pid
 
     # Give pw-record a moment to fail loudly (no default source, bad format).
     sleep 0.3
@@ -190,7 +190,7 @@ function __dictate_usage
     echo "  -h, --help         show this help"
 end
 
-argparse 'm/model=' 'p/print' 'c/copy' 'h/help' -- $argv
+argparse 'm/model=' p/print c/copy h/help -- $argv
 or exit 2
 
 set -g __dictate_model base.en

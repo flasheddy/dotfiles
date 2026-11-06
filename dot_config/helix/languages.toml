@@ -116,6 +116,12 @@ name = "dockerfile"
 auto-format = true
 formatter = { command = "dockerfmt" }
 
+# --- Justfile (task runner) ---
+[[language]]
+name = "just"
+auto-format = true
+formatter = { command = "just", args = ["--fmt", "-f", "-"] }
+
 
 # ============================================================================
 # 4. Frontend, APIs & Data Feeds

@@ -16,6 +16,7 @@
 
 # --- Machine-generated digests are not prose ---
 [default]
+locale = "en-us"
 extend-ignore-re = [
   # sha256 / sha1 / git object hashes (floor-contract markers, grammar revs)
   "\\b[0-9a-f]{40,64}\\b",
