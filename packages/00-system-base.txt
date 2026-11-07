@@ -8,7 +8,6 @@
 #   - cachyos-fish-config: fastfetch, pkgfile
 #   - cachyos-kernel-manager: chwd
 #   - cachyos-plymouth-*: plymouth
-#   - cosmic-session: noto-fonts, ttf-opensans, xorg-xwayland
 #
 # Meta-package pulls (informational; pulled automatically as dependencies —
 # do NOT add these components explicitly):

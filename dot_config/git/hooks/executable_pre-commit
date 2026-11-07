@@ -1,54 +1,44 @@
 #!/usr/bin/env bash
-#
-# Global pre-commit gate — shared across every opted-in repository.
-#
-# Source (chezmoi): dot_config/git/hooks/executable_pre-commit
-# Deployed target:  ~/.config/git/hooks/pre-commit
-# Wired by:         ~/.gitconfig -> [core] hooksPath = ~/.config/git/hooks
-#
-# OPT-IN GUARD
-#   This hook is installed machine-wide. It runs its gates ONLY in repositories
-#   that opt in by carrying an `AGENTS.md` or a local `git-hooks/` directory.
-#   Every other repository (third-party clones, scratch trees) exits 0 untouched,
-#   so the operator's personal gate never leaks into unrelated repositories.
-#
-# GATES (opted-in repositories only)
-#   B. documentation drift -> cross-repo `*.md` paths and `## headings` cited in
-#                             AGENTS.md must resolve (detect-only, never rewrites)
-#   C. floor freshness     -> the `floor-contract` marker in AGENTS.md must match
-#                             the live global floor ~/.AGENTS.md (opt-in per repo)
-#   1. git diff --cached --check  -> whitespace errors / conflict markers
-#   2. secret scan                -> gitleaks, with a fail-closed rg fallback
-#
-# Idempotent, degrades gracefully, never prints secret material, and never
-# weakens or bypasses existing checks (no --no-verify anywhere).
+# Global pre-commit gate: whitespace, secrets, and AGENTS.md verification.
 set -euo pipefail
 
-# --- Opt-in guard -----------------------------------------------------------
-# git runs hooks with the working directory set to the repository root for
-# non-bare repositories (and $GIT_DIR for bare repositories).
+# Opt-in: only run in repositories carrying AGENTS.md or git-hooks/
 if [ ! -f AGENTS.md ] && [ ! -d git-hooks ]; then
   exit 0
 fi
 
-# --- Gate B — cross-repository documentation drift --------------------------
-# Deterministic, offline, PASS/FAIL validation of the references a repository's
-# AGENTS.md makes to other Markdown documents:
-#   1. every cited `*.md` path must exist;
-#   2. every cited `## heading` must exist verbatim in the document it follows.
-# Globs (`*`) and placeholders (`<...>`) are patterns, not paths, so they are
-# skipped. A heading counts as a citation only when it directly follows a cited
-# path (up to two consecutive headings), which keeps prose mentions of a heading
-# from being mistaken for pointers. Detection only: this gate reports and blocks,
-# it never rewrites a document — repair stays an operator-gated source edit.
-docs_drift() {
-  local file="$1"
-  local status=0 prev="" chain=0 token resolved
+# Fast exit if nothing is staged
+if git diff --cached --quiet; then
+  exit 0
+fi
 
+# 1. Whitespace and merge conflict markers
+if ! git diff --cached --check; then
+  printf '%s\n' "pre-commit: git diff --cached --check FAILED (whitespace errors or conflict markers)." >&2
+  exit 1
+fi
+
+# 2. Secret scan
+if command -v gitleaks >/dev/null 2>&1; then
+  if ! gitleaks git --staged --no-banner --redact --log-level warn; then
+    printf '%s\n' "pre-commit: gitleaks detected staged secret material; commit blocked." >&2
+    exit 1
+  fi
+else
+  if git diff --cached --no-color -U0 | rg -n -e '-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----' \
+    -e '(password|passwd|secret|api[-_]?key|access[-_]?key|client[-_]?secret|auth[-_]?token)[[:space:]]*[:=][[:space:]]*[^[:space:]]{8,}' ||
+    git diff --cached --name-only | rg -i '(^|/)(id_(rsa|ed25519|ecdsa|dsa)|[^/]*\.(pem|key|ppk|p12|pfx))$'; then
+    printf '%s\n' "pre-commit: potential secret material found in staged diff; commit blocked." >&2
+    exit 1
+  fi
+fi
+
+# 3. Documentation drift in AGENTS.md
+docs_drift() {
+  local file="$1" status=0 prev="" chain=0 token resolved
   [ -f "$file" ] || return 0
 
   while IFS= read -r token; do
-    # Heading citation: `## Something` (two or more hashes).
     if [[ "$token" =~ ^#{2,6}[[:space:]] ]]; then
       if [[ -n "$prev" && "$chain" -lt 2 ]]; then
         if ! rg -q -x -F -- "$token" "$prev"; then
@@ -61,23 +51,25 @@ docs_drift() {
     fi
 
     case "$token" in
+      *'*'* | *'<'* | *'>'*)
+        prev=""
+        chain=0
+        ;;
       *.md)
-        # Globs and <placeholders> are patterns, not resolvable paths.
-        case "$token" in
-          *'*'*|*'<'*|*'>'*) prev=""; chain=0; continue ;;
-        esac
         resolved="${token/#\~/$HOME}"
         if [[ -e "$resolved" ]]; then
-          prev="$resolved"; chain=0
+          prev="$resolved"
+          chain=0
         else
           printf 'docs-drift: %s: cited path does not exist: %s\n' "$file" "$token" >&2
           status=1
-          prev=""; chain=0
+          prev=""
+          chain=0
         fi
         ;;
       *)
-        # Any other token breaks a path -> heading chain.
-        prev=""; chain=0
+        prev=""
+        chain=0
         ;;
     esac
   done < <(rg -o --no-filename '`[^`]+`' "$file" 2>/dev/null | tr -d '`' || true)
@@ -86,23 +78,11 @@ docs_drift() {
 }
 
 if ! docs_drift AGENTS.md; then
-  printf '%s\n' "pre-commit: documentation drift detected; commit blocked (repair the references listed above)." >&2
+  printf '%s\n' "pre-commit: documentation drift detected; commit blocked." >&2
   exit 1
 fi
 
-# --- Gate C — global floor contract freshness -------------------------------
-# A repository opts in by carrying a marker line in its AGENTS.md:
-#
-#   <!-- floor-contract: sha256:<64 hex> -->
-#
-# The marker records which revision of the global floor (~/.AGENTS.md) this
-# repository's inheritance was last reviewed against. Calibrated semantics:
-#   * marker matches, or is absent  -> silent, pass (absent = opt-out);
-#   * marker stale + AGENTS.md staged -> blocking (this is the commit that must
-#     re-affirm the repository's inheritance);
-#   * marker stale + AGENTS.md not staged -> advisory warning only, pass.
-# Without a marker the gate is inert, so repositories that do not inherit the
-# floor are unaffected.
+# 4. Floor contract freshness
 floor_freshness() {
   local file="$1" declared actual
   [ -f "$file" ] || return 0
@@ -111,72 +91,23 @@ floor_freshness() {
   [ -n "$declared" ] || return 0
 
   actual="$(sha256sum "$HOME/.AGENTS.md" 2>/dev/null | cut -d' ' -f1 || true)"
-  if [ -z "$actual" ]; then
-    printf '%s\n' "floor-freshness: global floor unreadable; skipping check." >&2
-    return 0
-  fi
+  [ -n "$actual" ] || return 0
 
-  if [ "${declared,,}" = "${actual,,}" ]; then
-    return 0
-  fi
+  [ "${declared,,}" = "${actual,,}" ] && return 0
 
   if git diff --cached --name-only | rg -q '^(AGENTS|dot_AGENTS)\.md$'; then
     printf 'floor-freshness: %s: declared floor %s, live ~/.AGENTS.md is %s\n' \
-      "$file" "$(printf '%.12s' "$declared")" "$(printf '%.12s' "$actual")" >&2
-    printf '%s\n' "floor-freshness: AGENTS.md is part of this commit — re-affirm this repository's inheritance, then run 'floor-stamp'." >&2
+      "$file" "${declared:0:12}" "${actual:0:12}" >&2
+    printf '%s\n' "floor-freshness: AGENTS.md is staged — re-affirm and run 'floor-stamp'." >&2
     return 1
   fi
 
-  printf 'floor-freshness: advisory: %s declares floor %s, live ~/.AGENTS.md is %s\n' \
-    "$file" "$(printf '%.12s' "$declared")" "$(printf '%.12s' "$actual")" >&2
-  printf '%s\n' "floor-freshness: not blocking (AGENTS.md is not staged); run 'floor-stamp' when convenient." >&2
+  printf 'floor-freshness: advisory: %s declares floor %s, live is %s (run floor-stamp)\n' \
+    "$file" "${declared:0:12}" "${actual:0:12}" >&2
   return 0
 }
 
 if ! floor_freshness AGENTS.md; then
-  printf '%s\n' "pre-commit: stale global floor contract; commit blocked (re-affirm and re-stamp)." >&2
+  printf '%s\n' "pre-commit: stale global floor contract; commit blocked." >&2
   exit 1
 fi
-
-# --- Gate 1 — whitespace / conflict markers in the staged diff --------------
-# This is the hook-context equivalent of the documented `git diff --check`
-# gate, applied to the index that will actually be committed.
-if ! git diff --cached --check; then
-  printf '%s\n' "pre-commit: git diff --cached --check FAILED (whitespace errors or conflict markers)." >&2
-  exit 1
-fi
-
-# Nothing staged -> nothing to scan.
-if git diff --cached --quiet; then
-  exit 0
-fi
-
-# --- Gate 2 — secret scan on staged content ---------------------------------
-if command -v gitleaks >/dev/null 2>&1; then
-  # Primary scanner (native pkg; tracked in packages/30-terminal-utilities.txt).
-  # `git --staged` is the documented form (replaces legacy `protect --staged`).
-  # Honors `# gitleaks:allow`; default rules cover private-key + credential
-  # shapes. --redact prevents findings from leaking into the terminal.
-  # --log-level warn keeps the hook quiet on success.
-  if ! gitleaks git --staged --no-banner --redact --log-level warn; then
-    printf '%s\n' "pre-commit: gitleaks detected staged secret material; commit blocked." >&2
-    exit 1
-  fi
-else
-  # Fallback (gitleaks absent): dependency-light, fail-closed scan. Never a
-  # silent downgrade — a hit still blocks the commit.
-  if git diff --cached --no-color -U0 | rg -n -- '-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----'; then
-    printf '%s\n' "pre-commit: private-key material found in staged diff; commit blocked." >&2
-    exit 1
-  fi
-  if git diff --cached --no-color -U0 | rg -n -i -e '(password|passwd|secret|api[-_]?key|access[-_]?key|client[-_]?secret|auth[-_]?token)[[:space:]]*[:=][[:space:]]*[^[:space:]]{8,}'; then
-    printf '%s\n' "pre-commit: credential-shaped string found in staged diff; commit blocked." >&2
-    exit 1
-  fi
-  if git diff --cached --name-only | rg -i '(^|/)(id_(rsa|ed25519|ecdsa|dsa)|[^/]*\.(pem|key|ppk|p12|pfx))$'; then
-    printf '%s\n' "pre-commit: private-key filename staged; commit blocked." >&2
-    exit 1
-  fi
-fi
-
-exit 0

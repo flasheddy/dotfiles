@@ -6,7 +6,16 @@
 [[language]]
 name = "python"
 auto-format = true
-roots = ["pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git"]
+roots = [
+  ".git",
+  "requirements.txt",
+  "poetry.lock",
+  "Pipfile",
+  "pyproject.toml",
+  "setup.cfg",
+  "setup.py",
+  "uv.lock",
+]
 language-servers = ["basedpyright", "ruff"]
 formatter = { command = "ruff", args = ["format", "-"] }
 
@@ -19,9 +28,7 @@ args = ["-m", "debugpy.adapter"]
 [[language.debugger.templates]]
 name = "source"
 request = "launch"
-completion = [
-  { name = "entrypoint", completion = "filename", default = "main.py" },
-]
+completion = [{ name = "entrypoint", completion = "filename", default = "main.py" }]
 args = { program = "{0}" }
 
 # basedpyright: fast type checking + auto-imports
@@ -68,10 +75,7 @@ command = "golangci-lint-langserver"
 [[language]]
 name = "c"
 auto-format = true
-formatter = { command = "clang-format", args = [
-  "--style=file",
-  "--fallback-style=LLVM",
-] }
+formatter = { command = "clang-format", args = ["--style=file", "--fallback-style=LLVM"] }
 
 # GDB's built-in DAP server (gdb >= 14).
 [language.debugger]
@@ -133,7 +137,7 @@ name = "typescript"
 auto-format = true
 roots = ["package.json", "tsconfig.json", ".git"]
 language-servers = ["typescript-language-server"]
-formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "file.ts"] }
+formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "%{buffer_name}"] }
 
 # --- JavaScript (scripts / SDKs) ---
 [[language]]
@@ -141,7 +145,7 @@ name = "javascript"
 auto-format = true
 roots = ["package.json", "jsconfig.json", ".git"]
 language-servers = ["typescript-language-server"]
-formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "file.js"] }
+formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "%{buffer_name}"] }
 
 # tsserver inlay hints (applies to both TS and JS buffers)
 [language-server.typescript-language-server.config]
@@ -157,7 +161,7 @@ name = "markdown"
 auto-format = true
 roots = [".git", "mkdocs.yml", ".obsidian"]
 language-servers = ["markdown-oxide", "typos-lsp"]
-formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "file.md"] }
+formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "%{buffer_name}"] }
 
 [language-server.typos-lsp]
 command = "typos-lsp"
@@ -167,7 +171,14 @@ command = "typos-lsp"
 name = "html"
 auto-format = true
 language-servers = ["vscode-html-language-server"]
-formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "file.html"] }
+formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "%{buffer_name}"] }
+
+# --- CSS (styling / selector fixtures) ---
+[[language]]
+name = "css"
+auto-format = true
+language-servers = ["vscode-css-language-server"]
+formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "%{buffer_name}"] }
 
 # --- TOML (configs) ---
 [[language]]
@@ -181,7 +192,7 @@ formatter = { command = "taplo", args = [
   "-o",
   "align_comments=false",
   "-o",
-  "array_auto_collapse=false",
+  "array_auto_collapse=true",
   "-",
 ] }
 
@@ -194,25 +205,38 @@ args = ["lsp", "stdio"]
 name = "json"
 auto-format = true
 language-servers = ["vscode-json-language-server"]
-formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "file.json"] }
+formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "%{buffer_name}"] }
 
 [[language]]
 name = "jsonc"
 auto-format = true
 language-servers = ["vscode-json-language-server"]
-formatter = { command = "bun", args = [
-  "fmt",
-  "--stdin-filepath",
-  "file.jsonc",
-] }
+formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "%{buffer_name}"] }
 
 # --- YAML (CI pipelines / Compose) ---
 [[language]]
 name = "yaml"
 auto-format = true
 language-servers = ["yaml-language-server"]
-formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "file.yaml"] }
+formatter = { command = "bun", args = ["fmt", "--stdin-filepath", "%{buffer_name}"] }
 
 [language-server.yaml-language-server]
 command = "yaml-language-server"
 args = ["--stdio"]
+
+# --- SQL (SQLite / DuckDB extraction schemas) ---
+[[language]]
+name = "sql"
+auto-format = true
+language-servers = ["sqls"]
+formatter = { command = "bun", args = [
+  "x",
+  "sql-formatter",
+  "--language",
+  "postgresql",
+  "--config",
+  '{"keywordCase":"upper","dataTypeCase":"upper"}',
+] }
+
+[language-server.sqls]
+command = "sqls"

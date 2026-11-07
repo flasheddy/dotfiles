@@ -1,52 +1,37 @@
-# CachyOS shell defaults (guarded: path exists only on CachyOS)
+# CachyOS base config
 if test -f /usr/share/cachyos-fish-config/cachyos-config.fish
     source /usr/share/cachyos-fish-config/cachyos-config.fish
 end
 
-# Override greeting
+# core shell functions
+# disable greeting
 function fish_greeting
-    # smth smth
 end
-
+# set vim mode
 function fish_user_key_bindings
-    # Set Vim Mode
     set -g fish_key_bindings fish_vi_key_bindings
-
-    # Accept the autosuggestion with Ctrl-F, mirroring Right Arrow: forward-char
-    # accepts the suggestion at end-of-line and moves one character mid-line.
-    # Alt-C is deliberately left unbound here, so it falls through to fzf's
-    # fuzzy-cd widget (sourced with the other tools in the interactive section).
+    # Accept autosuggestion with Ctrl-F
     bind -M insert \cf forward-char
     bind -M default \cf forward-char
 end
 
-# Environment variables
-# Guard bat pager on interactive shell
-if status is-interactive
-    set -gx BAT_PAGING auto
-else
-    set -gx BAT_PAGING never
-end
-set -gx BAT_THEME "Catppuccin Mocha"
-
-# fzf: match BAT_THEME (hexes taken from ~/.config/bat/themes/Catppuccin Mocha.tmTheme)
-set -gx FZF_DEFAULT_OPTS "--height=60% --layout=reverse --border --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8,fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc,marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
-# Editor (hx is the strict default)
+# global environment variables
+# editor
 set -gx EDITOR hx
 set -gx VISUAL hx
 set -gx SUDO_EDITOR /usr/bin/helix
 
-# Input method (fcitx5)
-set -gx GTK_IM_MODULE fcitx
-set -gx QT_IM_MODULE fcitx
-set -gx XMODIFIERS @im=fcitx
-set -gx IMMODULE fcitx
+# theme
+# bat
+set -gx BAT_PAGING auto
+set -gx BAT_THEME "Catppuccin Mocha"
+# fzf: match BAT_THEME
+set -gx FZF_DEFAULT_OPTS "--height=60% --layout=reverse --border --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8,fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc,marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
 
-# Toolchain and user binary paths (portable: $HOME expands per machine;
-# ~/.cargo/bin is handled by conf.d/rustup.fish)
+# paths
+# user binary and toolchain
 fish_add_path -P -m $HOME/.local/bin $HOME/.bun/bin $HOME/go/bin
-
-# Deduplicate $PATH preserving priority order
+# deduplicate $PATH preserving priority order
 set -l _unique_path
 for _entry in $PATH
     if not contains -- $_entry $_unique_path
@@ -55,43 +40,30 @@ for _entry in $PATH
 end
 set -gx PATH $_unique_path
 
+# interactive guard
 if status is-interactive
-    # Interactive command-line abbreviations
-    # Chezmoi
-    # native cd: `chezmoi cd` wraps a subshell in a chezmoi process that pkill cleanup kills, taking the terminal with it
+    # fast abbreviations
+    # chezmoi
     abbr --add --global cm 'cd ~/.local/share/chezmoi'
     abbr --add --global cma 'chezmoi apply'
     abbr --add --global cmd 'chezmoi diff'
     abbr --add --global cms 'chezmoi status'
-    # Copy chezmoi diff and git diff to clipboard with labels
-    abbr --add --global ddc '{ echo "=== chezmoi diff ==="; chezmoi diff; echo; echo "=== git diff ==="; chezmoi git -- diff; } | wl-copy'
-
-    # Python tooling
+    # uv
     abbr --add --global uvs 'uv sync'
     abbr --add --global uvr 'uv run'
-
-    # Copy raw git diff to clipboard
-    abbr --add --global gdc 'git --no-pager diff | wl-copy'
-
-    # Add convenient abbreviations for terminal document readers
+    # doc readers
     abbr --add --global jl jless
     abbr --add --global tsv 'csvlens -t'
-
-    # Add the abbreviation for focus-timer
+    # focus timer
     abbr --add --global ft focus-timer
 
-    # Fuzzy finder: Ctrl-R history, Ctrl-T file picker, Alt-C fuzzy cd.
-    # Its widget binds are user binds, so they survive preset application and can
-    # live here with the other tool initialization instead of inside
-    # fish_user_key_bindings (that hook runs last and binds only Ctrl-F).
+    # tool initializations
+    # fuzzy finder
     type -q fzf; and fzf --fish | source
-
-    # Prompt
+    # prompt engine
     type -q starship; and starship init fish | source
-
-    # Smarter cd
+    # smarter cd
     type -q zoxide; and zoxide init fish | source
-
-    # LS_COLORS generator
+    # file listing palette generator
     type -q vivid; and set -gx LS_COLORS (vivid generate catppuccin-mocha)
 end

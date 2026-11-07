@@ -5,7 +5,6 @@
 # Stripped packages (direct dependencies of meta-packages kept here that were
 # present in the original package lists):
 #   - cosmic-session: noto-fonts, ttf-opensans, xorg-xwayland
-#   - cachyos-plymouth-*: plymouth
 
 # COSMIC desktop
 # cosmic-session pulls: cosmic-applets, cosmic-app-library, cosmic-bg, cosmic-comp,
@@ -38,13 +37,7 @@ pipewire-pulse
 playerctl
 wireplumber
 
-# Input methods and key remapping
-fcitx5
-fcitx5-configtool
-fcitx5-gtk
-fcitx5-mozc
-fcitx5-qt
-fcitx5-rime
+# Key remapping
 keyd
 
 # Fonts
@@ -61,8 +54,6 @@ ttf-jetbrains-mono
 ttf-jetbrains-mono-nerd
 ttf-liberation
 ttf-meslo-nerd
-
-# Theming, cursors, and wallpapers
 
 # Web browsers
 firefox

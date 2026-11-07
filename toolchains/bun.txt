@@ -1,9 +1,9 @@
 # Bun global packages
-# Installed via: bun install -g <name>
-# Generated from toolchains/raw-bun.txt
+# Installed via: bun add -g <name>
 bash-language-server
 dockerfile-language-server-nodejs
 fish-lsp
+sql-formatter
 typescript
 typescript-language-server
 vscode-langservers-extracted

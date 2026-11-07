@@ -61,8 +61,9 @@ function aup --description 'Update developer toolchains and system packages'
         __aup_run uv-self uv self update
         __aup_run uv-tools uv tool upgrade --all
         __aup_run bun-self bun upgrade
-        __aup_run bun-globals __aup_bun_globals
+        __aup_run bun-globals bun update --global --latest
         __aup_run go gup update
+        __aup_run agy agy update
         __aup_run tldr tldr --update
     else
         set -a __aup_skipped "toolchains (disabled)"
@@ -107,15 +108,11 @@ function __aup_run --description 'internal: run one aup stage in isolation'
     end
 
     # Auto-skip: succeeded within the last 2h (bypass with --force).
-    # Uses the fish builtin `path mtime --relative` (integer seconds).
     if set -q __aup_cache_dir[1]; and not set -q __aup_force[1]
-        set -l marker $__aup_cache_dir[1]/$label.ok
-        if test -f $marker
-            set -l age (path mtime --relative $marker 2>/dev/null)
-            if test -n "$age"; and test $age -lt 7200 2>/dev/null
-                set -ga __aup_skipped "$label (recently completed)"
-                return 0
-            end
+        set -l age (path mtime --relative $__aup_cache_dir[1]/$label.ok 2>/dev/null)
+        if test -n "$age"; and test $age -lt 7200 2>/dev/null
+            set -ga __aup_skipped "$label (recently completed)"
+            return 0
         end
     end
 
@@ -124,17 +121,8 @@ function __aup_run --description 'internal: run one aup stage in isolation'
     if $cmd
         set -ga __aup_passed $label
         # Mark success for the auto-skip cache (never on failure)
-        if set -q __aup_cache_dir[1]
-            touch $__aup_cache_dir[1]/$label.ok 2>/dev/null
-            or true
-        end
+        set -q __aup_cache_dir[1]; and touch $__aup_cache_dir[1]/$label.ok 2>/dev/null
     else
         set -ga __aup_failed "$label (exit $status)"
     end
-end
-
-function __aup_bun_globals --description 'internal: update bun global packages'
-    # `bun update --global` operates on ~/.bun/install/global directly;
-    # no cd needed (flag confirmed via `bun update --help`)
-    bun update --global --latest
 end

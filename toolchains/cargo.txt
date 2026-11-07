@@ -1,10 +1,5 @@
 # cargo-installed Rust crates
 # Installed via: cargo install <crate>
-# Generated from toolchains/raw-cargo.txt
-# Provided binaries:
-#   cargo-binstall -> cargo-binstall
-#   cargo-update -> cargo-install-update, cargo-install-update-config
-#   xleak -> xleak
 cargo-binstall
 cargo-update
 xleak

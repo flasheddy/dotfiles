@@ -1,20 +1,5 @@
-# typos — global configuration.
-# chezmoi source: dot_typos.toml  ->  live target: ~/.typos.toml
-# The `typos` package is recorded in packages/20-dev-stacks.txt (AGENTS.md §2.3).
-#
-# Scope discipline: this file only ADDS vocabulary and ignore patterns. It never
-# disables a check, never excludes a path from scanning, and weakens nothing.
-#
-# Discovery (VERIFIED on typos-cli 1.50.3): typos walks up from the working
-# directory looking for typos.toml / _typos.toml / .typos.toml. $XDG_CONFIG_HOME
-# is NOT consulted — ~/.config/typos.toml is invisible to typos; the ~/. prefix
-# here is what makes it apply to every path under $HOME.
-#
-# Only `jod` is load-bearing for the dotfiles tree (it silences the false
-# positive on the AUR package `nodejs-lts-jod`); the remaining entries are
-# inert-but-intentional vocabulary for other trees under $HOME.
+# typos — global configuration (~/.typos.toml)
 
-# --- Machine-generated digests are not prose ---
 [default]
 locale = "en-us"
 extend-ignore-re = [
@@ -24,11 +9,10 @@ extend-ignore-re = [
   "\\b[0-9a-f]{6}\\b",
 ]
 
-# --- Workstation vocabulary: technical identifiers that are not typos ---
+# Workstation vocabulary
 [default.extend-words]
 cachyos = "cachyos"
 chezmoi = "chezmoi"
-fcitx5 = "fcitx5"
 golangci = "golangci"
 jod = "jod"
 keyd = "keyd"

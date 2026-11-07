@@ -1,15 +1,5 @@
-# Verification entry point for the dotfiles repository.
-# Canonical commands come from AGENTS.md §2.4 (hook template syntax) and §4
-# (standard verification checklist) — this file invents nothing.
-#
-# `check` is the FULL gate and is what the global pre-push hook dispatches to.
-# Partial checks must use other recipe names.
-#
-# Concurrency: a justfile cannot set its own worker count (`set jobs` is not a
-# just setting — verified on just 1.58), so `check-fast` is a thin wrapper that
-# re-execs `just --jobs 3 _check-fast`. `check` stays sequential.
-
 set shell := ["fish", "-c"]
+export RUST_LOG := "warn"
 
 # AGENTS.md hygiene gate (AGENTS.md §1.4). Fail-closed.
 # Usage: just check-agents [file]
@@ -122,14 +112,17 @@ check-agents file="":
 
     print("check-agents: rules ok (" + str(total) + " B / " + str(TOTAL_MAX) + " B)")
 
-# Gate self-test: every rule must reject its fixture, and the real file must pass.
-# A gate only ever observed passing is untested.
-# Auto-format supported files (Fish functions, TOML configs, Markdown).
+# Auto-format supported files (Fish functions, git hooks, TOML, Markdown, justfile).
 fmt:
     #!/usr/bin/env fish
     if command -v fish_indent >/dev/null
         for f in (git ls-files "dot_config/fish/functions/*.fish")
             test -f $f; and fish_indent -w $f
+        end
+    end
+    if command -v shfmt >/dev/null
+        for h in dot_config/git/hooks/*
+            test -f $h; and shfmt -w -i 2 -ci $h
         end
     end
     if command -v taplo >/dev/null
@@ -147,7 +140,7 @@ fmt:
         test -n "$mds"; and bun fmt $mds
     end
     just --fmt
-    echo "fmt: formatted fish functions, toml, markdown, and justfile"
+    echo "fmt: formatted fish functions, git hooks, toml, markdown, and justfile"
 
 # Static/structural lint: hook templates, git hooks, fish syntax, TOML, typos, whitespace.
 lint:
@@ -160,8 +153,17 @@ lint:
         end
     end
     for h in dot_config/git/hooks/*
+        test -f $h; or continue
         if not bash -n $h
             echo "FAIL: $h (hook syntax)" >&2
+            set failed 1
+        end
+        if command -v shellcheck >/dev/null; and not shellcheck $h
+            echo "FAIL: $h (shellcheck)" >&2
+            set failed 1
+        end
+        if command -v shfmt >/dev/null; and not shfmt -d -i 2 -ci $h
+            echo "FAIL: $h (shfmt; run 'just fmt')" >&2
             set failed 1
         end
     end
@@ -177,9 +179,7 @@ lint:
         for t in (git ls-files "*.toml")
             test -f $t; and set -a tomls $t
         end
-        if test -n "$tomls"
-            taplo format --config dot_taplo.toml --check $tomls; or set failed 1
-        end
+        test -n "$tomls"; and begin taplo format --config dot_taplo.toml --check $tomls; or set failed 1; end
     end
     if command -v typos >/dev/null
         set -l typos_args
@@ -196,14 +196,6 @@ lint:
         exit 1
     end
     echo "lint: templates, git hooks, fish, toml, typos, whitespace"
-
-# Why `status` and not `diff`: `chezmoi diff` exits 0 even with real drift
-# present (verified 2026-10-11: 41-line diff, exit 0); non-zero means error.
-# Drift gate (HARD): any externally-modified or unapplied managed file fails the
-# build; pending `run_` scripts are warned about, not failed on.
-# No exclusions: the status report is evaluated verbatim. The former permission.yaml
-# filter is gone — that target is deliberately unmanaged (see .chezmoiignore), so
-# re-adding a filter here would silently mute a real gate.
 
 # Drift gate: verify deployed state matches chezmoi source state.
 drift:
@@ -238,31 +230,29 @@ drift:
     echo "drift: clean (no unapplied or externally-modified managed files)"
     exit 0
 
-# Secret scan: mirrors the pre-commit gate's tooling (gitleaks, with a fail-closed
-# rg fallback) over the working tree. Never a silent downgrade. Baseline verified
-# clean read-only before this stage was added.
-
 # Secret scan (gitleaks, fail-closed rg fallback).
 secrets:
     #!/usr/bin/env fish
     if command -v gitleaks >/dev/null
-        if not gitleaks dir . --no-banner --redact --log-level warn
+        gitleaks dir . --no-banner --redact --log-level warn; or begin
             echo "secrets: gitleaks detected secret material in the working tree." >&2
             exit 1
         end
-    else
-        if git ls-files -z | xargs -0 -r rg -l -- '-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----'
-            echo "secrets: private-key material found in tracked files." >&2
-            exit 1
-        end
-        if git ls-files -z | xargs -0 -r rg -l -i -E '(password|passwd|secret|api[-_]?key|access[-_]?key|client[-_]?secret|auth[-_]?token)[[:space:]]*[:=][[:space:]]*[^[:space:]]{8,}'
-            echo "secrets: credential-shaped string found in tracked files." >&2
-            exit 1
-        end
-        if git ls-files | rg -i '(^|/)(id_(rsa|ed25519|ecdsa|dsa)|[^/]*\.(pem|key|ppk|p12|pfx))$'
-            echo "secrets: private-key filename tracked." >&2
-            exit 1
-        end
+        echo "secrets: no secret material detected"
+        exit 0
+    end
+
+    if git ls-files -z | xargs -0 -r rg -l -- '-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----'
+        echo "secrets: private-key material found in tracked files." >&2
+        exit 1
+    end
+    if git ls-files -z | xargs -0 -r rg -l -i -E '(password|passwd|secret|api[-_]?key|access[-_]?key|client[-_]?secret|auth[-_]?token)[[:space:]]*[:=][[:space:]]*[^[:space:]]{8,}'
+        echo "secrets: credential-shaped string found in tracked files." >&2
+        exit 1
+    end
+    if git ls-files | rg -i '(^|/)(id_(rsa|ed25519|ecdsa|dsa)|[^/]*\.(pem|key|ppk|p12|pfx))$'
+        echo "secrets: private-key filename tracked." >&2
+        exit 1
     end
     echo "secrets: no secret material detected"
 
@@ -274,9 +264,6 @@ _check-fast: check-agents lint secrets drift
 check-fast:
     #!/usr/bin/env fish
     exec just --justfile "{{ justfile() }}" --jobs 3 _check-fast
-
-# Full gate: the contract entry point dispatched by the global pre-push hook.
-# Body-less by design; the work lives in its prerequisites.
 
 # Full gate (contract entry point for the global pre-push hook).
 check: check-agents lint secrets drift

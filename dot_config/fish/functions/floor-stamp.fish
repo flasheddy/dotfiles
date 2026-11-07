@@ -1,7 +1,5 @@
 function floor-stamp --description 'Refresh the floor-contract marker in ./AGENTS.md against the live global floor'
-    # Layer C helper. Rewrites ONLY the marker line; the operator still has to
-    # have re-affirmed the repository's inheritance against the floor first —
-    # this is a mechanical refresh, not a substitute for reading the diff.
+    # Refreshes the floor-contract marker line against ~/.AGENTS.md
     set -l floor $HOME/.AGENTS.md
     set -l file AGENTS.md
 

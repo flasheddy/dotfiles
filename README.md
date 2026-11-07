@@ -1,10 +1,6 @@
 # CachyOS Dotfiles
 
-A declarative, reproducible CachyOS workstation managed with [chezmoi](https://www.chezmoi.io/): system packages, COSMIC desktop applications, developer toolchains, shell/editor configuration, and root-level system services.
-
-> Architecture, enforcement, agentic-system, and security documentation lives in
-> **[`AGENTS.md`](AGENTS.md)** (the binding agent contract) and in the long-form
-> posts on [Dev Journal Blogs](https://hech.dev/blog/).
+A declarative, reproducible CachyOS workstation managed with [chezmoi](https://www.chezmoi.io/): system packages, COSMIC desktop applications, developer toolchains, shell/editor configuration, and root-level system services. Operational rules and verification gates for AI agents are defined in **[`AGENTS.md`](AGENTS.md)**.
 
 ---
 
@@ -43,7 +39,7 @@ chezmoi init --apply https://github.com/flasheddy/dotfiles.git   # replace with 
 
 This copies all dotfiles to `~/.config/`, `~/.ssh/config`, `~/.gitconfig`, etc., then runs the repository's `run_onchange` lifecycle hooks in order: packages → toolchains → system services.
 
-> **Note:** The first run can take a long time — AUR builds, Flatpak downloads, and toolchain bootstrapping all happen sequentially. Keep the machine plugged in and online.
+The first run can take a long time — AUR builds, Flatpak downloads, and toolchain bootstrapping all happen sequentially. Keep the machine plugged in and online.
 
 ### Post-Install Checks
 
@@ -68,7 +64,7 @@ abbr --show # Show all abbreviations in the terminal
 
 ### Dictation
 
-Add `dictate toggle` on `Super+Alt+D` in COSMIC Settings.
+Add `dictate toggle` on `Super+Space` in COSMIC Settings.
 
 ### PATH Symlinks
 

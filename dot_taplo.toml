@@ -1,4 +1,4 @@
 [formatting]
 column_width = 100
 align_comments = false
-array_auto_collapse = false
+array_auto_collapse = true

@@ -30,9 +30,7 @@ install_native() {
   local manifest="$CHEZMOI_SOURCE_DIR/$1"
   [ -f "$manifest" ] || return 0
 
-  # Strip inline/full-line comments and trim whitespace, then feed pure
-  # package names to pacman via stdin. Clean up the temp file directly:
-  # a trap on EXIT would reference this local out of scope under `set -u`.
+  # Strip comments and whitespace before passing package list to pacman
   local filtered
   filtered=$(mktemp)
   sed -e 's/#.*//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "$manifest" | grep -v '^$' > "$filtered"

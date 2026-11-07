@@ -34,28 +34,24 @@ Key groups:
 - COSMIC desktop components (`cosmic-session` pulls the rest)
 - Display manager (`sddm`) and display utilities
 - Audio stack (PipeWire, ALSA, JACK, Pavucontrol)
-- Input methods (`fcitx5*` + Mozc/Rime, `keyd`)
+- Key remapping (`keyd`)
 - Fonts (including `ttf-jetbrains-mono-nerd` for terminal glyph rendering)
   and cursor/wallpaper themes
 - Web browsers (`firefox`, `ungoogled-chromium-bin`)
 - Email client (`thunderbird`)
 - Media players/codecs and document libraries
 - Wayland/desktop integration tools (`grim`, `wl-clipboard`, `xdg-*`)
-- GUI applications (`clash-verge-rev-bin`, etc.)
-
-> **Note:** `clash-verge-rev-bin` requires the companion `clash-verge-service`
-> system service for TUN mode. The service is installed and enabled by the
-> `run_onchange_after_20-setup-system.sh.tmpl` hook.
+- GUI applications (`solaar`, etc.)
 
 ### `20-dev-stacks.txt`
 
-Compilers, language runtimes, language servers, build/test/linters, and databases.
+Compilers, language runtimes, language servers, and build/test/linters.
 
 Key groups:
 
-- Language runtimes: Go, Perl, Python (Node.js runtime and tooling are decoupled and managed via Bun)
+- Language runtimes: Go, Perl, Python (`python-debugpy` for Helix DAP debugging; Node.js runtime and tooling are decoupled and managed via Bun)
 - Go toolchain (`delve`, `golangci-lint`, `gopls`)
-- Build/test/linters (`bats*`, `shellcheck`, `shfmt`, `taplo-cli`)
+- Build/test/linters (`bats*`, `shfmt`, `taplo-cli`; `shellcheck-bin` is in `archive/pacman-foreign.txt`)
 - TOML formatter (`taplo-cli`). Its global config is `~/.taplo.toml` (chezmoi
   source: `dot_taplo.toml`), setting `column_width = 100`,
   `align_comments = false`, and `array_auto_collapse = false` to preserve
@@ -100,10 +96,7 @@ Currently managed:
 
 - `com.remnote.RemNote`
 
-> **Note:** the hook installs into the **user** installation (`--user flathub`).
-> `com.remnote.RemNote` is currently present as a **system** installation.
-> `flatpak info` matches either, so the hook skips it today, but a fresh machine
-> would receive it as a per-user install.
+The hook installs into the user installation (`--user flathub`). If `com.remnote.RemNote` is already present as a system installation, `flatpak info` matches either, ensuring idempotent execution.
 
 ### `archive/pacman-native.txt` / `archive/pacman-foreign.txt` (source/legacy)
 
@@ -113,16 +106,19 @@ These are the original explicitly-installed package dumps, now archived under
 - `archive/pacman-native.txt`: packages from official repositories.
 - `archive/pacman-foreign.txt`: packages from the AUR or other non-official sources.
   This is also the **live** AUR manifest that hook 00 consumes (§1.3), so new AUR
-  entries go here. Added beyond the original dump: `dotool` (compositor-agnostic
-  text injection through `/dev/uinput`, used by `dictate`) and `docker-desktop`
-  (AUR — runs its own QEMU/KVM VM and **provides** `docker-compose`,
-  `docker-buildx`, `docker-debug`, `docker-mcp` and `docker-scout`, so those must
-  never be added as standalone packages while it is installed). Its dependencies
-  (`docker`, `qemu*`, `pass`, `nftables`, …) are deliberately left transitive;
-  `w3m` is a makedep and is not tracked. `pass` is unusable as Desktop's
-  credential store until a GPG secret key exists (`pass init <key-id>`). The
-  root `docker.service` stays **disabled** — Desktop drives its own VM through
-  the per-user `docker-desktop.service`.
+  entries go here. Notable packages:
+  - `dotool`: compositor-agnostic text injection through `/dev/uinput`, used by `dictate`.
+  - `clash-verge-rev-bin`: GUI proxy client. Requires the companion `clash-verge-service`
+    system service for TUN mode (installed and enabled by the
+    `run_onchange_after_20-setup-system.sh.tmpl` hook).
+  - `docker-desktop`: runs its own QEMU/KVM VM and **provides** `docker-compose`,
+    `docker-buildx`, `docker-debug`, `docker-mcp` and `docker-scout`, so those must
+    never be added as standalone packages while it is installed. Its dependencies
+    (`docker`, `qemu*`, `pass`, `nftables`, …) are deliberately left transitive;
+    `w3m` is a makedep and is not tracked. `pass` is unusable as Desktop's
+    credential store until a GPG secret key exists (`pass init <key-id>`). The
+    root `docker.service` stays **disabled** — Desktop drives its own VM through
+    the per-user `docker-desktop.service`.
 
 They were used as the source for the modular lists above. Several packages
 appear in both files; in practice those overlapping packages are AUR builds.
@@ -183,16 +179,19 @@ Rust crates installed with `cargo install`, plus the binaries they provide.
 
 Python CLI tools installed with `uv tool install`:
 
+- `basedpyright`
+- `git-filter-repo`
 - `litecli`
 - `ruff`
 
 ### `toolchains/bun.txt`
 
-Global JavaScript/TypeScript packages installed with `bun install -g`:
+Global JavaScript/TypeScript packages installed with `bun add -g`:
 
 - `bash-language-server`
 - `dockerfile-language-server-nodejs`
 - `fish-lsp`
+- `sql-formatter`
 - `typescript`
 - `typescript-language-server`
 - `vscode-langservers-extracted`
@@ -204,6 +203,8 @@ Go modules installed with `go install`:
 
 - `github.com/nametake/golangci-lint-langserver`
 - `github.com/nao1215/gup`
+- `github.com/reteps/dockerfmt`
+- `github.com/sqls-server/sqls`
 
 ### `toolchains/local-bin.txt`
 

@@ -1,16 +1,13 @@
 # 20-dev-stacks.txt
-# Compilers, language runtimes (Go, Java, Python), language servers,
-# build/test/linters, databases.
+# Compilers, language runtimes (Go, Python, Perl), language servers,
+# build/test/linters.
 # Rust (rustup/cargo), Bun, and uv are managed as standalone toolchains; see toolchains/.
-#
-# Stripped packages (direct dependencies of base-devel kept here that were
-# present in the original package lists):
-#   - sudo, texinfo, which
 
 # Compilers and language runtimes
 go
 perl
 python
+python-debugpy
 
 # Go toolchain
 delve

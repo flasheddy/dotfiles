@@ -48,23 +48,21 @@ function focus-timer --description 'Focus timer: hard-locks the session (loginct
             return 0
 
         case cancel done stop
-            if test -f $pid_file
-                set -l pid (cat $pid_file)
-                if kill -0 $pid 2>/dev/null
-                    kill $pid 2>/dev/null
-                end
-                rm -f $pid_file
-                switch "$action"
-                    case cancel
-                        echo "focus-timer: timer cancelled."
-                    case done
-                        echo "focus-timer: timer cleared."
-                    case stop
-                        echo "focus-timer: timer stopped."
-                end
-            else
+            if not test -f $pid_file
                 echo "focus-timer: no active timer." >&2
                 return 1
+            end
+
+            set -l pid (cat $pid_file)
+            kill $pid 2>/dev/null
+            rm -f $pid_file
+            switch "$action"
+                case cancel
+                    echo "focus-timer: timer cancelled."
+                case done
+                    echo "focus-timer: timer cleared."
+                case stop
+                    echo "focus-timer: timer stopped."
             end
             return 0
 
