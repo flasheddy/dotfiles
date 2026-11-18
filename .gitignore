@@ -1,9 +1,6 @@
 # Repo-enforcement ignore rules for the chezmoi SOURCE repository.
 # Tracked here and kept in the source repo only (guarded by .chezmoiignore).
 
-# Local research and private notes
-notes/
-
 # Defense-in-depth: private-key material and credential-shaped files.
 # Do NOT add *.pub here — private_dot_ssh/.gitignore deliberately allowlists
 # *.pub (public keys) and config within that directory.
