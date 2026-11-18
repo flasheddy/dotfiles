@@ -12,6 +12,7 @@
 # cosmic-notifications, cosmic-osd, cosmic-panel, cosmic-randr, cosmic-screenshot,
 # cosmic-settings, cosmic-settings-daemon, cosmic-workspaces, switcheroo-control, ...
 cosmic-initial-setup
+cosmic-osk
 cosmic-player
 cosmic-session
 cosmic-store
