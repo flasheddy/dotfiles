@@ -52,8 +52,8 @@ if [ -x /usr/bin/clash-verge-service-install ]; then
   if [ ! -f /etc/systemd/system/clash-verge-service.service ]; then
     sudo /usr/bin/clash-verge-service-install
   fi
-  systemctl is-active --quiet clash-verge-service \
-    || sudo systemctl enable --now clash-verge-service
+  systemctl is-active --quiet clash-verge-service ||
+    sudo systemctl enable --now clash-verge-service
 fi
 
 # -----------------------------------------------------------------------------

@@ -33,10 +33,12 @@ install_native() {
   # Strip comments and whitespace before passing package list to pacman
   local filtered
   filtered=$(mktemp)
-  sed -e 's/#.*//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "$manifest" | grep -v '^$' > "$filtered"
+  sed -e 's/#.*//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "$manifest" | grep -v '^$' >"$filtered"
 
   if [ -s "$filtered" ]; then
-    sudo pacman -S --needed --noconfirm - < "$filtered" || \
+    # The redirect is intentional: the invoking shell reads the manifest.
+    # shellcheck disable=SC2024
+    sudo pacman -S --needed --noconfirm - <"$filtered" ||
       echo ":: Warning: Some native packages from $1 failed to install; proceeding to AUR step..."
   fi
   rm -f "$filtered"
@@ -78,9 +80,9 @@ if command -v flatpak >/dev/null 2>&1 && [ -f "$FLATPAK_MANIFEST" ]; then
   mapfile -t flatpaks < <(sed -e 's/#.*//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "$FLATPAK_MANIFEST" | grep -v '^$')
   for app in "${flatpaks[@]}"; do
     if flatpak info "$app" >/dev/null 2>&1; then
-      continue  # already installed — idempotent skip
+      continue # already installed — idempotent skip
     fi
-    flatpak install -y --noninteractive --user flathub "$app" || \
+    flatpak install -y --noninteractive --user flathub "$app" ||
       echo ":: Warning: Flatpak app $app failed to install; continuing..."
   done
 fi
