@@ -10,9 +10,6 @@ end
 # set vim mode
 function fish_user_key_bindings
     set -g fish_key_bindings fish_vi_key_bindings
-    # Accept autosuggestion with Ctrl-F
-    bind -M insert \cf forward-char
-    bind -M default \cf forward-char
 end
 
 # global environment variables
