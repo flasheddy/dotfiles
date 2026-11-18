@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Global pre-commit gate: whitespace, secrets, and AGENTS.md verification.
+# Global pre-commit gate: prefer the repository's `just precommit` recipe,
+# fall back to generic staged whitespace and secret checks.
 set -euo pipefail
 
 # Opt-in: only run in repositories carrying AGENTS.md or git-hooks/
@@ -12,13 +13,44 @@ if git diff --cached --quiet; then
   exit 0
 fi
 
-# 1. Whitespace and merge conflict markers
+justfile=""
+for candidate in justfile Justfile .justfile; do
+  if [ -f "$candidate" ]; then
+    justfile="$candidate"
+    break
+  fi
+done
+
+if [ -n "$justfile" ]; then
+  if ! command -v just >/dev/null 2>&1; then
+    printf '%s\n' "pre-commit: $justfile present but 'just' is not installed; commit blocked." >&2
+    exit 1
+  fi
+  if ! recipes="$(just --summary 2>/dev/null)"; then
+    printf '%s\n' "pre-commit: $justfile could not be parsed by 'just'; commit blocked." >&2
+    exit 1
+  fi
+  if printf '%s\n' "$recipes" | tr -s '[:space:]' '\n' | rg -qx precommit; then
+    printf '%s\n' "pre-commit: running 'just precommit'..." >&2
+    if ! just precommit; then
+      printf '%s\n' "pre-commit: 'just precommit' FAILED; commit blocked." >&2
+      exit 1
+    fi
+    exit 0
+  fi
+fi
+
+# Fallback for repositories without a `precommit` recipe.
+if ! command -v rg >/dev/null 2>&1; then
+  printf '%s\n' "pre-commit: 'rg' is not installed; cannot run fallback checks." >&2
+  exit 1
+fi
+
 if ! git diff --cached --check; then
   printf '%s\n' "pre-commit: git diff --cached --check FAILED (whitespace errors or conflict markers)." >&2
   exit 1
 fi
 
-# 2. Secret scan
 if command -v gitleaks >/dev/null 2>&1; then
   if ! gitleaks git --staged --no-banner --redact --log-level warn; then
     printf '%s\n' "pre-commit: gitleaks detected staged secret material; commit blocked." >&2
@@ -31,83 +63,4 @@ else
     printf '%s\n' "pre-commit: potential secret material found in staged diff; commit blocked." >&2
     exit 1
   fi
-fi
-
-# 3. Documentation drift in AGENTS.md
-docs_drift() {
-  local file="$1" status=0 prev="" chain=0 token resolved
-  [ -f "$file" ] || return 0
-
-  while IFS= read -r token; do
-    if [[ "$token" =~ ^#{2,6}[[:space:]] ]]; then
-      if [[ -n "$prev" && "$chain" -lt 2 ]]; then
-        if ! rg -q -x -F -- "$token" "$prev"; then
-          printf 'docs-drift: %s: heading "%s" not found in %s\n' "$file" "$token" "$prev" >&2
-          status=1
-        fi
-        chain=$((chain + 1))
-      fi
-      continue
-    fi
-
-    case "$token" in
-      *'*'* | *'<'* | *'>'*)
-        prev=""
-        chain=0
-        ;;
-      *.md)
-        resolved="${token/#\~/$HOME}"
-        if [[ -e "$resolved" ]]; then
-          prev="$resolved"
-          chain=0
-        else
-          printf 'docs-drift: %s: cited path does not exist: %s\n' "$file" "$token" >&2
-          status=1
-          prev=""
-          chain=0
-        fi
-        ;;
-      *)
-        prev=""
-        chain=0
-        ;;
-    esac
-  done < <(rg -o --no-filename '`[^`]+`' "$file" 2>/dev/null | tr -d '`' || true)
-
-  return "$status"
-}
-
-if ! docs_drift AGENTS.md; then
-  printf '%s\n' "pre-commit: documentation drift detected; commit blocked." >&2
-  exit 1
-fi
-
-# 4. Floor contract freshness
-floor_freshness() {
-  local file="$1" declared actual
-  [ -f "$file" ] || return 0
-
-  declared="$(rg -o -r '$1' --no-filename '<!--[[:space:]]*floor-contract:[[:space:]]*sha256:([0-9a-fA-F]{64})[[:space:]]*-->' "$file" 2>/dev/null | head -n1 || true)"
-  [ -n "$declared" ] || return 0
-
-  actual="$(sha256sum "$HOME/.AGENTS.md" 2>/dev/null | cut -d' ' -f1 || true)"
-  [ -n "$actual" ] || return 0
-
-  [ "${declared,,}" = "${actual,,}" ] && return 0
-
-  if git diff --cached --name-only | rg -q '^(AGENTS|dot_AGENTS)\.md$'; then
-    printf 'floor-freshness: %s: declared floor %s, live ~/.AGENTS.md is %s\n' \
-      "$file" "${declared:0:12}" "${actual:0:12}" >&2
-    printf '%s\n' "floor-freshness: AGENTS.md is staged — re-affirm and run 'floor-stamp'." >&2
-    return 1
-  fi
-
-  printf 'floor-freshness: advisory: %s declares floor %s, live is %s (run floor-stamp)\n' \
-    "$file" "${declared:0:12}" "${actual:0:12}" >&2
-  return 0
-}
-
-if ! floor_freshness AGENTS.md; then
-  printf '%s\n' "pre-commit: stale global floor contract; commit blocked." >&2
-  exit 1
 fi

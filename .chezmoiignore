@@ -4,9 +4,11 @@
 # - README.md would create an unwanted ~/README.md.
 # - justfile is this repository's own verification entry point,
 #   the global pre-push hook runs it here in the source tree, not from $HOME.
+# - selftest.fish is invoked by `just selftest` from this tree only.
 AGENTS.md
 README.md
 justfile
+selftest.fish
 
 # Local-only SSH host definitions (cloud servers/VPS): never manage or deploy.
 .ssh/config.local

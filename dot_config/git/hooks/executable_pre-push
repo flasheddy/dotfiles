@@ -24,7 +24,7 @@ if ! recipes="$(just --summary 2>/dev/null)"; then
 fi
 
 # Opt-in: repository defines a `check` recipe
-if ! printf '%s\n' "$recipes" | rg -qw check; then
+if ! printf '%s\n' "$recipes" | tr -s '[:space:]' '\n' | rg -qx check; then
   exit 0
 fi
 
