@@ -68,7 +68,7 @@ Add `dictate toggle` on `Super+Space` in COSMIC Settings.
 
 ### PATH Symlinks
 
-Managed via `dot_local/bin/symlink_*` (tracked in `toolchains/local-bin.txt`): `hx` → `/usr/bin/helix`.
+Managed via `dot_local/bin/symlink_*` (tracked in `toolchains/local-bin.txt`): `hx` → `/usr/bin/helix`, `node` → `~/.bun/bin/bun`.
 
 ### Editing Files
 
@@ -93,7 +93,7 @@ chezmoi apply
 **System / AUR package:** append to the manifest matching its origin, then `chezmoi apply` — hook 00 detects the changed checksum and installs it (native via `pacman`, AUR via `paru`/`yay`).
 
 - **Native** (official CachyOS/Arch repos) → `packages/00-system-base.txt` (core/drivers/networking), `10-desktop-environment.txt` (desktop/fonts/GUI), `20-dev-stacks.txt` (compilers/runtimes/dev tools), or `30-terminal-utilities.txt` (terminals/editors/CLI).
-- **AUR-only** → `archive/pacman-foreign.txt`. **Never** add AUR names to `packages/*.txt`: they feed `pacman -S` directly, and an unknown name aborts the whole run ([AGENTS.md §1.2](AGENTS.md)). Verify origin: `pacman -Si <pkg>` (native) vs `paru -Si <pkg>` (AUR).
+- **AUR-only** → `archive/pacman-foreign.txt`. **Never** add AUR names to `packages/*.txt`: they feed `pacman -S` directly, and an unknown name aborts the whole run ([AGENTS.md](AGENTS.md)). Verify origin: `pacman -Si <pkg>` (native) vs `paru -Si <pkg>` (AUR).
 
 **Language CLI tool:** append to `toolchains/uv.txt` (Python), `cargo.txt` (Rust), `bun.txt` (JS/TS), or `go.txt` (Go), then `chezmoi apply` — hook 10 installs it.
 
@@ -118,7 +118,7 @@ chezmoi apply # restart keyd.service
 
 This workstation is maintained with AI agents (Antigravity CLI, OpenCode) working directly in the chezmoi source directory: drift audits, config edits, package/toolchain manifest maintenance, hook updates — always under strict operating rules.
 
-**The binding contract for all agents is [`AGENTS.md`](AGENTS.md).** Point any agent at it before letting it touch this repository or the live system. It carries the chezmoi execution model (§1–§2), the repository enforcement and verification gates ([§1.3](AGENTS.md)), the refinement and maintenance protocol ([§2.3](AGENTS.md)), and the operator git workflow ([§2.4](AGENTS.md)).
+**The operational contract for this repository is [`AGENTS.md`](AGENTS.md).** Point any agent at it before letting it touch this repository. It defines source discipline, package layering, root hook safety, and the two-phase verification gate. Global workstation invariants (offline by default, mandated tools, polkit escalation) are governed by the global floor (`~/.AGENTS.md` deployed via `dot_AGENTS.md`).
 
 ---
 
@@ -137,8 +137,8 @@ managed targets. Use it with `chezmoi status`; the source of truth remains
 All `run_onchange_*.sh.tmpl` files use Go templates for checksums. Validate templates and all configs with the repository linter before pushing:
 
 ```fish
-just lint    # checks hook templates, git hooks, fish syntax, TOML, typos, and whitespace
-just check   # full pre-push verification gate (hygiene, lint, secrets, drift)
+just check-source # in-repo agent gate: verifies hooks, templates, lint, docs, and secrets
+just check        # full pre-push gate on host: includes deployed drift check
 ```
 
 ### Re-Running a Single Hook
